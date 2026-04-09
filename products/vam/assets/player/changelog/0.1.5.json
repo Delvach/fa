@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.5",
+  "title": "Recover screen-core overlay sizing and reduce the extra visible slab",
+  "summary": "Corrected the screen-core runtime overlay sizing in displayed space so fit/full-width no longer compute against the wrong local aspect, and hid the authored front slab when the screen-core overlay path is active.",
+  "reasoning": "After 0.1.4 restored hosted transport, the remaining live failure was clearly visual: the bare CUA screen still showed the runtime overlay detour, a separate visible front slab, and aspect behavior that looked vertically wrong. This version stays tightly scoped to the screen-core presentation seam instead of widening back into transport, Meta, or asset-authoring drift.",
+  "changes": [
+    {
+      "area": "presentation-aspect",
+      "summary": "Changed runtime overlay sizing to compute presentation in displayed space and then convert back to local overlay scale.",
+      "reasoning": "The overlay helper was preserving aspect against the surface's local 1x1 geometry instead of the displayed 1.6x0.9 screen, which compressed fit/full-width content vertically on the authored CUA screen."
+    },
+    {
+      "area": "surface-stack",
+      "summary": "Hid the authored screen-surface renderers when the screen-core runtime overlay path is active, while leaving the runtime overlay itself visible.",
+      "reasoning": "The user witness showed an extra visible slab on the bare player screen. The runtime overlay should not sit on top of another visible authored front plate if the goal is one readable screen with a clean backing."
+    },
+    {
+      "area": "bounds-guard",
+      "summary": "Kept runtime helper surfaces out of later surface-bound calculations and extended authored-screen hiding to skip the runtime overlay child.",
+      "reasoning": "The visual seam is easier to recover if the helper plane cannot contaminate later measurements or accidentally disappear when the authored slab is hidden."
+    }
+  ],
+  "verification": [
+    "Compile-checked the player runtime after the presentation patch.",
+    "Build and deploy fa_cua_player.0.1.5.dll and fa_player_asset.0.1.5.assetbundle.",
+    "Validate the 0.1.5 release packet, including changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "The screen-core seam still uses the runtime overlay path; this release improves it but does not yet remove that detour entirely.",
+    "Hosted phase-1 playback remains video-only; image loading in the same lane is still a later slice."
+  ]
+}

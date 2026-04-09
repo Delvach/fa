@@ -1615,19 +1615,33 @@ public partial class FASyncRuntime : MVRScript
         if (renderers == null || renderers.Length <= 0)
             return;
 
-        bool[] states = new bool[renderers.Length];
+        Transform runtimeSurfaceTransform = slot.runtimeMediaSurfaceObject != null
+            ? slot.runtimeMediaSurfaceObject.transform
+            : null;
+
+        List<Renderer> capturedRenderers = new List<Renderer>(renderers.Length);
+        List<bool> capturedStates = new List<bool>(renderers.Length);
         for (int i = 0; i < renderers.Length; i++)
         {
             Renderer renderer = renderers[i];
             if (renderer == null)
                 continue;
 
-            states[i] = renderer.enabled;
+            if (runtimeSurfaceTransform != null
+                && renderer.transform != null
+                && (renderer.transform == runtimeSurfaceTransform
+                    || renderer.transform.IsChildOf(runtimeSurfaceTransform)))
+            {
+                continue;
+            }
+
+            capturedRenderers.Add(renderer);
+            capturedStates.Add(renderer.enabled);
             renderer.enabled = false;
         }
 
-        binding.hiddenShellRenderers = renderers;
-        binding.hiddenShellRendererStates = states;
+        binding.hiddenShellRenderers = capturedRenderers.ToArray();
+        binding.hiddenShellRendererStates = capturedStates.ToArray();
     }
 
     private void RestoreHiddenShellRenderers(PlayerScreenBindingRecord binding)
@@ -2596,7 +2610,12 @@ public partial class FASyncRuntime : MVRScript
             }
         }
 
-        if (useDisconnectSurface && binding != null)
+        bool hideAuthoredScreenSurface =
+            binding != null
+            && string.Equals(instance != null ? (instance.screenContractVersion ?? "") : "", HostedPlayerScreenCoreContractVersion, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(ExtractJsonArgString(binding.debugJson, "attachMode"), "runtime_overlay_quad", StringComparison.OrdinalIgnoreCase);
+
+        if (binding != null && (useDisconnectSurface || hideAuthoredScreenSurface))
             CaptureAndHideScreenSurface(slot, binding);
 
         return true;
@@ -2763,15 +2782,43 @@ public partial class FASyncRuntime : MVRScript
                 centerY = targetLocalCenter.y + ((rectCenterY - 0.5f) * targetLocalSize.y);
             }
 
-            float surfaceAspect = width / Mathf.Max(0.001f, height);
-            TryResolveDisplayedSurfaceAspect(targetSurfaceObject, width, height, out surfaceAspect);
-            FrameAngelPlayerMediaParity.ComputePresentedSize(
-                width,
-                height,
-                contentAspect,
-                aspectMode,
-                out width,
-                out height);
+            float displayedWidth = width;
+            float displayedHeight = height;
+            if (TryResolveDisplayedSurfaceSize(targetSurfaceObject, width, height, out displayedWidth, out displayedHeight))
+            {
+                float presentedDisplayedWidth;
+                float presentedDisplayedHeight;
+                FrameAngelPlayerMediaParity.ComputePresentedSize(
+                    displayedWidth,
+                    displayedHeight,
+                    contentAspect,
+                    aspectMode,
+                    out presentedDisplayedWidth,
+                    out presentedDisplayedHeight);
+
+                float displayedUnitWidth;
+                float displayedUnitHeight;
+                if (TryResolveDisplayedSurfaceSize(targetSurfaceObject, 1f, 1f, out displayedUnitWidth, out displayedUnitHeight))
+                {
+                    width = presentedDisplayedWidth / Mathf.Max(0.001f, displayedUnitWidth);
+                    height = presentedDisplayedHeight / Mathf.Max(0.001f, displayedUnitHeight);
+                }
+                else
+                {
+                    width = presentedDisplayedWidth;
+                    height = presentedDisplayedHeight;
+                }
+            }
+            else
+            {
+                FrameAngelPlayerMediaParity.ComputePresentedSize(
+                    width,
+                    height,
+                    contentAspect,
+                    aspectMode,
+                    out width,
+                    out height);
+            }
 
             float halfDepth = Mathf.Max(0.0001f, targetLocalSize.z * 0.5f);
             bool isAuthoredFrontScreen =
@@ -3007,6 +3054,27 @@ public partial class FASyncRuntime : MVRScript
 
         aspect = displayedWidth / displayedHeight;
         return aspect > 0.001f;
+    }
+
+    private bool TryResolveDisplayedSurfaceSize(
+        GameObject surfaceObject,
+        float localWidth,
+        float localHeight,
+        out float displayedWidth,
+        out float displayedHeight)
+    {
+        displayedWidth = 0f;
+        displayedHeight = 0f;
+        if (surfaceObject == null)
+            return false;
+
+        Transform surfaceTransform = surfaceObject.transform;
+        if (surfaceTransform == null)
+            return false;
+
+        displayedWidth = surfaceTransform.TransformVector(new Vector3(localWidth, 0f, 0f)).magnitude;
+        displayedHeight = surfaceTransform.TransformVector(new Vector3(0f, localHeight, 0f)).magnitude;
+        return displayedWidth > 0.001f && displayedHeight > 0.001f;
     }
 
     private bool TryResolveTextureAspect(Material material, Texture fallbackTexture, out float aspect)
