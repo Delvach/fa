@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.2",
+  "title": "Refactor the CUA input seam so right-stick scrub is isolated, axis-locked, and no longer fights the VaM slider",
+  "summary": "The baseline player is still stable and the 0.3.x work remains explicitly optional, but the first pass of gaze-plus-joystick input was still mixing the left and right sticks together and suppressing the normal scrub slider truth path. This release keeps the same product direction while narrowing the live input seam: only the right stick is read, movement locks onto one axis at a time until the stick returns near neutral, joystick scrub applies lighter-weight seeks, and the external VaM scrub slider can resume reflecting playback because joystick input no longer reuses the user-slider holdoff path.",
+  "reasoning": "Live operator proof showed that gaze capture was fundamentally viable, but joystick scrub only half-worked: it responded briefly, then felt janky, and the external scrub slider stopped being a truthful display surface. The code confirmed why. The CUA input module was still collapsing left and right sticks into one dominant vector and only consuming the horizontal component, so a clean right-stick-only lane did not yet exist. Separately, joystick scrub was still rearming the same scrub-field holdoff that exists to protect manual slider drags, which meant the VaM slider could not visibly track playback while the new input layer was active. The correct fix is not to widen the feature set. It is to refactor the optional input seam so it behaves like a thin modular layer on top of the recovered player core instead of competing with the stable controls.",
+  "changes": [
+    {
+      "area": "right-stick-only-capture",
+      "summary": "The CUA input module now reads only the right navigation stick instead of merging left and right into one dominant vector.",
+      "reasoning": "The user explicitly wants the left stick to remain inert for now, and the old dominant-vector merge made it impossible to reason cleanly about focus, scrub, and future per-stick behavior."
+    },
+    {
+      "area": "axis-locking",
+      "summary": "Navigation capture now locks onto either horizontal or vertical input until the stick returns near neutral, so drifting off-axis does not contaminate the active control path.",
+      "reasoning": "The desired feel is two distinct analog lanes that cannot both be active at once. Locking the axis at the input-read layer preserves that behavior for future features without polluting the stable player transport layer."
+    },
+    {
+      "area": "joystick-scrub-lightening",
+      "summary": "Joystick scrub no longer forces the external slider holdoff or extra visible debug refresh on every seek, and it now skips redundant seek applies when the target has barely moved.",
+      "reasoning": "The old path still behaved too much like a per-tick control loop. Removing the wrong holdoff and reducing redundant work keeps the joystick lane from fighting the stable playback and UI update paths."
+    },
+    {
+      "area": "compile-flag-honesty",
+      "summary": "The project file now treats `FRAMEANGEL_FEATURE_PLAYER_INPUT` as an explicit build override instead of hard-enabling it in every build configuration.",
+      "reasoning": "The modular compile story was structurally present in source but false in the actual build config. This release makes the flag real, even though disabling it still produces a post-0.3 baseline with the non-input 0.3.x fixes intact."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.2 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the fa_cua_player clean-room solution with the default CUA input feature override still enabled.",
+    "Run the versioned release wrapper to deploy fa_cua_player.0.3.2.dll and fa_player_asset.0.3.2.assetbundle and validate the release packet.",
+    "In VaM, confirm gaze capture still acquires focus, only the right stick drives the input lane, off-axis drift no longer contaminates the active axis, and the external scrub slider can reflect playback again while joystick scrub remains responsive."
+  ],
+  "knownIssues": [
+    "The current 0.3.2 slice does not yet add vertical-axis behavior; vertical lock is preserved as an input-seam contract for later features.",
+    "The no-input build override now exists, but disabling the input feature still preserves the unconditional 0.3.1 playback/loop fixes rather than recreating an exact 0.2.x binary.",
+    "Image scrub on the shared scrub slider remains a later feature slice once the joystick lane is settled."
+  ]
+}

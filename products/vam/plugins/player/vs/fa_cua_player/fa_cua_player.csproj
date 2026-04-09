@@ -15,12 +15,17 @@
     <VamManagedDir Condition="'$(VamManagedDir)' == ''">F:\sim\vam\VaM_Data\Managed</VamManagedDir>
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
+  <PropertyGroup>
+    <EnablePlayerInputFeatures Condition="'$(EnablePlayerInputFeatures)' == ''">true</EnablePlayerInputFeatures>
+    <PlayerInputFeatureDefine Condition="'$(EnablePlayerInputFeatures)' == 'false'"></PlayerInputFeatureDefine>
+    <PlayerInputFeatureDefine Condition="'$(EnablePlayerInputFeatures)' != 'false'">;FRAMEANGEL_FEATURE_PLAYER_INPUT</PlayerInputFeatureDefine>
+  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;FRAMEANGEL_CUA_PLAYER;FRAMEANGEL_FEATURE_PLAYER_INPUT</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;FRAMEANGEL_CUA_PLAYER$(PlayerInputFeatureDefine)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,7 +33,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;FRAMEANGEL_CUA_PLAYER;FRAMEANGEL_FEATURE_PLAYER_INPUT</DefineConstants>
+    <DefineConstants>TRACE;FRAMEANGEL_CUA_PLAYER$(PlayerInputFeatureDefine)</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

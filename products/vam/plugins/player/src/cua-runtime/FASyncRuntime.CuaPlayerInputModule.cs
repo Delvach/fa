@@ -10,8 +10,10 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerFocusReleaseGraceSeconds = 0.20f;
     private const float CuaPlayerFocusInputGraceSeconds = 0.45f;
     private const float CuaPlayerNavigationDeadzone = 0.32f;
+    private const float CuaPlayerNavigationAxisReleaseDeadzone = 0.18f;
     private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
-    private const float CuaPlayerVideoSeekApplyIntervalSeconds = 0.08f;
+    private const float CuaPlayerVideoSeekApplyIntervalSeconds = 0.10f;
+    private const float CuaPlayerVideoSeekApplyMinDeltaNormalized = 0.008f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
@@ -29,6 +31,13 @@ public partial class FASyncRuntime : MVRScript
         public bool disableGrabNavigationToggle;
     }
 
+    private enum CuaPlayerNavigationAxisLock
+    {
+        None = 0,
+        Horizontal = 1,
+        Vertical = 2
+    }
+
     private static FASyncRuntime cuaPlayerInputOwner;
     private static bool cuaPlayerNavigationCaptureActive;
     private static bool cuaPlayerNavigationSnapshotKnown;
@@ -39,8 +48,10 @@ public partial class FASyncRuntime : MVRScript
     private float cuaPlayerLastInputActiveAt = -1000f;
     private float cuaPlayerNextImageStepTime = 0f;
     private int cuaPlayerImageStepDirection = 0;
+    private CuaPlayerNavigationAxisLock cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
     private bool cuaPlayerVideoScrubTargetKnown = false;
     private float cuaPlayerVideoScrubTargetNormalized = 0f;
+    private float cuaPlayerLastAppliedVideoScrubNormalized = -1f;
     private float cuaPlayerNextVideoSeekApplyAt = 0f;
     private float cuaPlayerNextInputStateUpdateAt = 0f;
     private string cuaPlayerLastInputState = "";
@@ -88,7 +99,8 @@ public partial class FASyncRuntime : MVRScript
 
         Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
         float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
-        if (Mathf.Abs(horizontal) > 0f)
+        float vertical = Mathf.Abs(navigation.y) >= CuaPlayerNavigationDeadzone ? navigation.y : 0f;
+        if (Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f)
             cuaPlayerLastInputActiveAt = now;
 
         bool inputActiveRecently = (now - cuaPlayerLastInputActiveAt) <= CuaPlayerFocusInputGraceSeconds;
@@ -140,15 +152,31 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.mediaIsStillImage)
         {
+            if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
+                horizontal = 0f;
             cuaPlayerVideoScrubTargetKnown = false;
+            cuaPlayerLastAppliedVideoScrubNormalized = -1f;
             cuaPlayerNextVideoSeekApplyAt = 0f;
             TickCuaPlayerImageStepInput(record, horizontal);
-            UpdateCuaPlayerInputState(true, gazeActive, "image_step", navigation, gazeReason);
+            UpdateCuaPlayerInputState(
+                true,
+                gazeActive,
+                Mathf.Abs(horizontal) > 0f ? "image_step" : "focused",
+                navigation,
+                gazeReason);
             return;
         }
 
+        if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
+            horizontal = 0f;
+
         TickCuaPlayerVideoScrubInput(record, horizontal);
-        UpdateCuaPlayerInputState(true, gazeActive, Mathf.Abs(horizontal) > 0f ? "video_scrub" : "focused", navigation, gazeReason);
+        UpdateCuaPlayerInputState(
+            true,
+            gazeActive,
+            Mathf.Abs(horizontal) > 0f ? "video_scrub" : "focused",
+            navigation,
+            gazeReason);
     }
 
     private void OnCuaPlayerInputDestroy()
@@ -214,8 +242,10 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
+        cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
         cuaPlayerVideoScrubTargetKnown = false;
         cuaPlayerVideoScrubTargetNormalized = 0f;
+        cuaPlayerLastAppliedVideoScrubNormalized = -1f;
         cuaPlayerNextVideoSeekApplyAt = 0f;
         if (wasOwner || cuaPlayerNavigationCaptureActive)
             SetInputCaptureState(false);
@@ -235,7 +265,10 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("focus=").Append(focusActive ? "on" : "off");
         sb.Append(" gaze=").Append(gazeActive ? "on" : "off");
         sb.Append(" mode=").Append(string.IsNullOrEmpty(mode) ? "idle" : mode);
-        sb.Append(" axis=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
+        sb.Append(" stick=right");
+        sb.Append(" lock=").Append(FormatCuaPlayerNavigationAxisLock(cuaPlayerNavigationAxisLock));
+        sb.Append(" x=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
+        sb.Append(" y=").Append(navigation.y.ToString("0.00", CultureInfo.InvariantCulture));
         if (!string.IsNullOrEmpty(reason))
             sb.Append(" note=").Append(reason);
 
@@ -360,24 +393,85 @@ public partial class FASyncRuntime : MVRScript
         if (sc == null)
             return Vector2.zero;
 
-        Vector2 navigation = Vector2.zero;
+        Vector2 rightNavigation = Vector2.zero;
         try
         {
             SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
             if (moveAction != null)
             {
                 Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
-                Vector2 left = new Vector2(raw.x, raw.y);
-                Vector2 right = new Vector2(raw.z, raw.w);
-                navigation = left.sqrMagnitude >= right.sqrMagnitude ? left : right;
+                rightNavigation = new Vector2(raw.z, raw.w);
             }
         }
         catch
         {
-            navigation = Vector2.zero;
+            rightNavigation = Vector2.zero;
         }
 
-        return navigation;
+        return ApplyCuaPlayerNavigationAxisLock(rightNavigation);
+    }
+
+    private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)
+    {
+        float absX = Mathf.Abs(navigation.x);
+        float absY = Mathf.Abs(navigation.y);
+        bool xActive = absX >= CuaPlayerNavigationDeadzone;
+        bool yActive = absY >= CuaPlayerNavigationDeadzone;
+
+        if (absX <= CuaPlayerNavigationAxisReleaseDeadzone
+            && absY <= CuaPlayerNavigationAxisReleaseDeadzone)
+        {
+            cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
+            return Vector2.zero;
+        }
+
+        if (cuaPlayerNavigationAxisLock == CuaPlayerNavigationAxisLock.Horizontal)
+        {
+            if (absX <= CuaPlayerNavigationAxisReleaseDeadzone)
+            {
+                cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
+                return Vector2.zero;
+            }
+
+            return new Vector2(navigation.x, 0f);
+        }
+
+        if (cuaPlayerNavigationAxisLock == CuaPlayerNavigationAxisLock.Vertical)
+        {
+            if (absY <= CuaPlayerNavigationAxisReleaseDeadzone)
+            {
+                cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
+                return Vector2.zero;
+            }
+
+            return new Vector2(0f, navigation.y);
+        }
+
+        if (xActive && (!yActive || absX >= absY))
+            cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.Horizontal;
+        else if (yActive)
+            cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.Vertical;
+
+        if (cuaPlayerNavigationAxisLock == CuaPlayerNavigationAxisLock.Horizontal)
+            return new Vector2(navigation.x, 0f);
+
+        if (cuaPlayerNavigationAxisLock == CuaPlayerNavigationAxisLock.Vertical)
+            return new Vector2(0f, navigation.y);
+
+        return Vector2.zero;
+    }
+
+    private string FormatCuaPlayerNavigationAxisLock(CuaPlayerNavigationAxisLock axisLock)
+    {
+        switch (axisLock)
+        {
+            case CuaPlayerNavigationAxisLock.Horizontal:
+                return "horizontal";
+            case CuaPlayerNavigationAxisLock.Vertical:
+                return "vertical";
+            default:
+                return "none";
+        }
     }
 
     private void TickCuaPlayerVideoScrubInput(StandalonePlayerRecord record, float horizontal)
@@ -388,6 +482,7 @@ public partial class FASyncRuntime : MVRScript
         if (Mathf.Abs(horizontal) <= 0f)
         {
             cuaPlayerVideoScrubTargetKnown = false;
+            cuaPlayerLastAppliedVideoScrubNormalized = -1f;
             cuaPlayerNextVideoSeekApplyAt = 0f;
             return;
         }
@@ -414,6 +509,11 @@ public partial class FASyncRuntime : MVRScript
         if (Time.unscaledTime < cuaPlayerNextVideoSeekApplyAt)
             return;
 
+        if (cuaPlayerLastAppliedVideoScrubNormalized >= 0f
+            && Mathf.Abs(cuaPlayerVideoScrubTargetNormalized - cuaPlayerLastAppliedVideoScrubNormalized)
+                < CuaPlayerVideoSeekApplyMinDeltaNormalized)
+            return;
+
         string argsJson = "{\"playbackKey\":\""
             + EscapeJsonString(record.playbackKey)
             + "\",\"normalized\":"
@@ -423,9 +523,8 @@ public partial class FASyncRuntime : MVRScript
         string ignoredResult;
         if (TrySeekStandalonePlayerNormalized("Player.InputScrub", argsJson, out ignoredResult, out errorMessage))
         {
+            cuaPlayerLastAppliedVideoScrubNormalized = cuaPlayerVideoScrubTargetNormalized;
             cuaPlayerNextVideoSeekApplyAt = Time.unscaledTime + CuaPlayerVideoSeekApplyIntervalSeconds;
-            ArmStandalonePlayerScrubFieldSyncHoldoff();
-            RefreshVisiblePlayerDebugFields();
         }
     }
 
