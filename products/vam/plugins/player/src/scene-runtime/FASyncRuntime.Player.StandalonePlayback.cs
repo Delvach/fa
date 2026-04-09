@@ -123,10 +123,9 @@ public partial class FASyncRuntime : MVRScript
                     record.volume = record.muted ? 0f : record.storedVolume;
                 }
 
-                if (!IsSupportedPlayerRuntimeMediaPath(mediaPath)
-                    || !FrameAngelPlayerMediaParity.IsSupportedVideoPath(mediaPath))
+                if (!IsSupportedPlayerRuntimeMediaPath(mediaPath))
                 {
-                    errorMessage = "hosted player currently supports video playback only";
+                    errorMessage = "hosted player media type unsupported";
                     resultJson = BuildBrokerResult(false, errorMessage, "{}");
                     return false;
                 }
@@ -296,9 +295,9 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        record.desiredPlaying = true;
+        record.desiredPlaying = !record.mediaIsStillImage;
         record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
-        if (record.prepared && record.videoPlayer != null && !record.videoPlayer.isPlaying)
+        if (!record.mediaIsStillImage && record.prepared && record.videoPlayer != null && !record.videoPlayer.isPlaying)
         {
             try
             {

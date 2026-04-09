@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using FrameAngel.Runtime.Shared;
+using MVR.FileManagementSecure;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -162,6 +163,8 @@ public partial class FASyncRuntime : MVRScript
         public AudioSource audioSource;
         public VideoPlayer videoPlayer;
         public RenderTexture renderTexture;
+        public Texture2D imageTexture;
+        public bool mediaIsStillImage = false;
         public PlayerScreenBindingRecord binding;
         public Coroutine resizeCoroutine;
     }
@@ -6096,6 +6099,12 @@ public partial class FASyncRuntime : MVRScript
         currentTimeSeconds = 0d;
         durationSeconds = 0d;
         errorMessage = "";
+        if (record != null && record.mediaIsStillImage)
+        {
+            errorMessage = "player timeline unavailable for still image";
+            return false;
+        }
+
         if (record == null || record.videoPlayer == null)
         {
             errorMessage = "player runtime missing";
@@ -6169,6 +6178,7 @@ public partial class FASyncRuntime : MVRScript
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
+        record.mediaIsStillImage = false;
         record.hasObservedPlaybackTime = false;
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
@@ -6182,6 +6192,8 @@ public partial class FASyncRuntime : MVRScript
         catch
         {
         }
+
+        DestroyStandalonePlayerImageTexture(record);
 
         if (record.renderTexture != null)
         {
@@ -6201,6 +6213,8 @@ public partial class FASyncRuntime : MVRScript
 
         ApplyStandalonePlayerLoopMode(record);
         ApplyStandalonePlayerAudioState(record);
+        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath))
+            return TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage);
 
         try
         {
@@ -6330,7 +6344,7 @@ public partial class FASyncRuntime : MVRScript
 
     private double GetStandalonePlayerDurationSeconds(StandalonePlayerRecord record)
     {
-        if (record == null || record.videoPlayer == null)
+        if (record == null || record.mediaIsStillImage || record.videoPlayer == null)
             return 0d;
 
         try
@@ -6356,10 +6370,35 @@ public partial class FASyncRuntime : MVRScript
         for (int i = 0; i < records.Count; i++)
         {
             StandalonePlayerRecord record = records[i];
-            if (record == null || record.videoPlayer == null)
+            if (record == null)
                 continue;
 
             ApplyStandalonePlayerAudioState(record);
+
+            if (record.mediaIsStillImage)
+            {
+                record.prepared = record.imageTexture != null;
+                record.preparePending = false;
+                record.prepareStartedAt = 0f;
+                record.desiredPlaying = false;
+
+                if (record.imageTexture != null && (record.textureWidth <= 0 || record.textureHeight <= 0))
+                    TryResolveTextureDimensions(record.imageTexture, out record.textureWidth, out record.textureHeight);
+
+                if (record.needsScreenRefresh)
+                {
+                    string stillRefreshError;
+                    if (!TryRefreshStandalonePlayerScreenBinding(record, out stillRefreshError))
+                        record.lastError = stillRefreshError;
+                    else
+                        record.lastError = "";
+                }
+
+                continue;
+            }
+
+            if (record.videoPlayer == null)
+                continue;
 
             bool preparedNow = false;
             try
@@ -7005,6 +7044,142 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
+    private void DestroyStandalonePlayerImageTexture(StandalonePlayerRecord record)
+    {
+        if (record == null || record.imageTexture == null)
+            return;
+
+        try
+        {
+            UnityEngine.Object.Destroy(record.imageTexture);
+        }
+        catch
+        {
+        }
+
+        record.imageTexture = null;
+    }
+
+    private bool TryLoadStandalonePlayerImageTexture(
+        StandalonePlayerRecord record,
+        string resolvedMediaPath,
+        out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null)
+        {
+            errorMessage = "player record missing";
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(resolvedMediaPath))
+        {
+            errorMessage = "mediaPath could not be resolved";
+            record.lastError = errorMessage;
+            return false;
+        }
+
+        byte[] imageBytes;
+        try
+        {
+            if (!FileManagerSecure.FileExists(resolvedMediaPath, false))
+            {
+                errorMessage = "image file not found";
+                record.lastError = errorMessage;
+                return false;
+            }
+
+            imageBytes = FileManagerSecure.ReadAllBytes(resolvedMediaPath);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "image read failed: " + ex.Message;
+            record.lastError = errorMessage;
+            return false;
+        }
+
+        if (imageBytes == null || imageBytes.Length <= 0)
+        {
+            errorMessage = "image file was empty";
+            record.lastError = errorMessage;
+            return false;
+        }
+
+        Texture2D loadedTexture = null;
+        try
+        {
+            loadedTexture = new Texture2D(2, 2, TextureFormat.ARGB32, false);
+            if (!loadedTexture.LoadImage(imageBytes, false))
+            {
+                errorMessage = "image decode failed";
+                record.lastError = errorMessage;
+                return false;
+            }
+
+            loadedTexture.name = "FAPlayerImage_" + SanitizeStandalonePlayerName(record.playbackKey);
+            loadedTexture.wrapMode = TextureWrapMode.Clamp;
+            loadedTexture.filterMode = FilterMode.Bilinear;
+
+            try
+            {
+                if (record.videoPlayer != null)
+                {
+                    record.videoPlayer.Stop();
+                    record.videoPlayer.targetTexture = null;
+                    record.videoPlayer.url = "";
+                }
+            }
+            catch
+            {
+            }
+
+            if (record.renderTexture != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(record.renderTexture);
+                }
+                catch
+                {
+                }
+
+                record.renderTexture = null;
+            }
+
+            DestroyStandalonePlayerImageTexture(record);
+            record.imageTexture = loadedTexture;
+            record.mediaIsStillImage = true;
+            record.prepared = true;
+            record.preparePending = false;
+            record.prepareStartedAt = 0f;
+            record.desiredPlaying = false;
+            record.nextPlaybackStateApplyTime = 0f;
+            record.lastError = "";
+            record.needsScreenRefresh = true;
+            TryResolveTextureDimensions(loadedTexture, out record.textureWidth, out record.textureHeight);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "image load failed: " + ex.Message;
+            record.lastError = errorMessage;
+            return false;
+        }
+        finally
+        {
+            if (!string.IsNullOrEmpty(errorMessage) && loadedTexture != null && loadedTexture != record.imageTexture)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(loadedTexture);
+                }
+                catch
+                {
+                }
+            }
+        }
+    }
+
     private bool TryEnsureStandalonePlayerRenderTexture(StandalonePlayerRecord record, int width, int height)
     {
         if (record == null)
@@ -7108,6 +7283,13 @@ public partial class FASyncRuntime : MVRScript
 
         if (record == null)
             return false;
+
+        if (record.mediaIsStillImage && record.imageTexture != null)
+        {
+            sourceTexture = record.imageTexture;
+            sourceName = "StandalonePlayer.imageTexture";
+            return true;
+        }
 
         if (record.renderTexture != null
             && record.textureWidth > 0
@@ -7596,7 +7778,7 @@ public partial class FASyncRuntime : MVRScript
             null,
             mediaTargetObject,
             usingDisconnectSurfaceTarget ? "disconnect_overlay_quad" : "runtime_overlay_quad",
-            "standalone_videoplayer",
+            record.mediaIsStillImage ? "standalone_image" : "standalone_videoplayer",
             new Renderer[0],
             new List<ProjectedMaterialCandidate>(),
             selectedCandidate,
@@ -7688,6 +7870,8 @@ public partial class FASyncRuntime : MVRScript
 
             record.renderTexture = null;
         }
+
+        DestroyStandalonePlayerImageTexture(record);
 
         if (record.runtimeObject != null)
         {
@@ -7792,20 +7976,23 @@ public partial class FASyncRuntime : MVRScript
         double currentTimeSeconds = 0d;
         double currentDurationSeconds = 0d;
         double currentTimeNormalized = 0d;
-        try
+        if (!record.mediaIsStillImage)
         {
-            if (record.videoPlayer != null)
+            try
             {
-                isPlaying = record.videoPlayer.isPlaying;
-                currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
-                currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                if (record.videoPlayer != null)
+                {
+                    isPlaying = record.videoPlayer.isPlaying;
+                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
+                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                }
             }
-        }
-        catch
-        {
-            isPlaying = false;
-            currentTimeSeconds = 0d;
-            currentDurationSeconds = 0d;
+            catch
+            {
+                isPlaying = false;
+                currentTimeSeconds = 0d;
+                currentDurationSeconds = 0d;
+            }
         }
         if (double.IsNaN(currentTimeSeconds) || double.IsInfinity(currentTimeSeconds))
             currentTimeSeconds = 0d;
@@ -7849,6 +8036,8 @@ public partial class FASyncRuntime : MVRScript
 
         string mediaSummary = "media="
             + mediaName
+            + " kind="
+            + (record.mediaIsStillImage ? "image" : "video")
             + " playing="
             + (isPlaying ? "true" : "false")
             + " aspect="
@@ -8195,18 +8384,21 @@ public partial class FASyncRuntime : MVRScript
         double currentTimeSeconds = 0d;
         double currentDurationSeconds = 0d;
         double currentTimeNormalized = 0d;
-        try
+        if (!record.mediaIsStillImage)
         {
-            if (record.videoPlayer != null)
+            try
             {
-                isPlaying = record.videoPlayer.isPlaying;
-                currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
-                currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                if (record.videoPlayer != null)
+                {
+                    isPlaying = record.videoPlayer.isPlaying;
+                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
+                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                }
             }
-        }
-        catch
-        {
-            isPlaying = false;
+            catch
+            {
+                isPlaying = false;
+            }
         }
 
         if (double.IsNaN(currentTimeSeconds) || double.IsInfinity(currentTimeSeconds))
@@ -8231,6 +8423,7 @@ public partial class FASyncRuntime : MVRScript
         AppendStandalonePlayerStringArrayJson(sb, record.playlistPaths);
         sb.Append(',');
         sb.Append("\"currentPath\":\"").Append(EscapeJsonString(GetStandalonePlayerCurrentPlaylistPath(record))).Append("\",");
+        sb.Append("\"mediaKind\":\"").Append(record.mediaIsStillImage ? "image" : "video").Append("\",");
         sb.Append("\"aspectMode\":\"").Append(EscapeJsonString(record.aspectMode)).Append("\",");
         sb.Append("\"loopMode\":\"").Append(EscapeJsonString(record.loopMode)).Append("\",");
         sb.Append("\"randomEnabled\":").Append(record.randomEnabled ? "true" : "false").Append(',');

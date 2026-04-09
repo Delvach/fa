@@ -841,9 +841,12 @@ public partial class FASyncRuntime : MVRScript
         record.resolvedMediaPath = "";
         record.desiredPlaying = false;
         record.prepared = false;
+        record.preparePending = false;
+        record.prepareStartedAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.lastError = "";
+        record.mediaIsStillImage = false;
 
         try
         {
@@ -870,6 +873,8 @@ public partial class FASyncRuntime : MVRScript
 
             record.renderTexture = null;
         }
+
+        DestroyStandalonePlayerImageTexture(record);
     }
 
     private bool TryEnsureHostedPlayerControlSurfaceBound(
@@ -1448,10 +1453,13 @@ public partial class FASyncRuntime : MVRScript
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
+        record.mediaIsStillImage = false;
         record.hasObservedPlaybackTime = false;
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
         record.naturalEndHandled = false;
+
+        DestroyStandalonePlayerImageTexture(record);
 
         List<string> resolvedPlaylistPaths = new List<string>();
         if (requestedPaths != null)
@@ -1460,7 +1468,7 @@ public partial class FASyncRuntime : MVRScript
             {
                 string candidate = requestedPaths[i];
                 if (!string.IsNullOrEmpty(candidate)
-                    && FrameAngelPlayerMediaParity.IsSupportedVideoPath(candidate))
+                    && FrameAngelPlayerMediaParity.IsSupportedMediaPath(candidate))
                 {
                     resolvedPlaylistPaths.Add(candidate);
                 }
@@ -1484,11 +1492,15 @@ public partial class FASyncRuntime : MVRScript
         ApplyStandalonePlayerLoopMode(record);
         ApplyStandalonePlayerAudioState(record);
 
+        bool loadStillImage = FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
+        if (loadStillImage && !TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage))
+            return false;
+
         // If the host surface is already present when load is invoked, bind immediately to the
         // authored screen instead of waiting for a later refresh tick to discover it.
         HostedPlayerSurfaceContract eagerContract;
         string eagerContractError;
-        if (record.renderTexture != null)
+        if (record.renderTexture != null || record.imageTexture != null)
         {
             if (TryResolveHostedPlayerSurfaceContract(hostAtomUid, out eagerContract, out eagerContractError)
                 && eagerContract != null)
@@ -1514,6 +1526,14 @@ public partial class FASyncRuntime : MVRScript
             {
                 record.lastError = eagerContractError;
             }
+        }
+
+        if (loadStillImage)
+        {
+            if (record.binding == null && string.IsNullOrEmpty(record.lastError))
+                record.lastError = "screen owner unresolved";
+            record.needsScreenRefresh = true;
+            return true;
         }
 
         try

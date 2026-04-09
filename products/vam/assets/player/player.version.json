@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.5",
-    "notes":  "0.1.5 corrects screen-core overlay aspect sizing in displayed space and hides the extra authored front slab when runtime overlay presentation is active.",
+    "version":  "0.1.6",
+    "notes":  "0.1.6 teaches the hosted standalone player to treat still images as a first-class media kind, bind them to the same authored screen, and report honest debug state instead of falling back to the video render-texture path.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.1.5.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.1.6.json"
 }

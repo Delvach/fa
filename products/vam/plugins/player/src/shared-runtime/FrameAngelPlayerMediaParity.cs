@@ -39,6 +39,16 @@ namespace FrameAngel.Runtime.Shared
             ".mpeg"
         };
 
+        private static readonly string[] SupportedImageExtensions =
+        {
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".bmp",
+            ".tga",
+            ".gif"
+        };
+
         public static string NormalizeAspectMode(string value, string fallback)
         {
             if (string.IsNullOrEmpty(value) || value.Trim().Length == 0)
@@ -248,6 +258,21 @@ namespace FrameAngel.Runtime.Shared
             for (int i = 0; i < SupportedVideoExtensions.Length; i++)
             {
                 if (string.Equals(extension, SupportedVideoExtensions[i], StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public static bool IsSupportedImagePath(string path)
+        {
+            string extension = TryGetExtension(path);
+            if (string.IsNullOrEmpty(extension))
+                return false;
+
+            for (int i = 0; i < SupportedImageExtensions.Length; i++)
+            {
+                if (string.Equals(extension, SupportedImageExtensions[i], StringComparison.OrdinalIgnoreCase))
                     return true;
             }
 

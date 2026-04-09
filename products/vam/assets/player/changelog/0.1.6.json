@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.6",
+  "title": "Recover still-image loading inside the hosted CUA player lane",
+  "summary": "Extended the current hosted standalone player seam so image selections load as real still textures on the authored CUA screen, reuse the same playlist lane as videos, and report honest image-vs-video debug state.",
+  "reasoning": "After 0.1.5 recovered aspect and screen presentation, the remaining phase-1 blocker was narrow and concrete: videos now played correctly, but image selections still collapsed into the old video-only runtime path and showed black or stale output. This version keeps the fix inside the current clean-room hosted player seam instead of reviving the older helper/image-panel architecture. The goal is to let the same basic screen plus VaM controls handle both movies and images without widening back into Meta or monorepo drift.",
+  "changes": [
+    {
+      "area": "media-kind",
+      "summary": "Added a still-image branch to the standalone player record and runtime so hosted and direct loads can carry a Texture2D source alongside the existing VideoPlayer and RenderTexture path.",
+      "reasoning": "The picker and playlist layers already accepted image extensions, but the runtime record could only represent video-backed textures. A first-class still-image source was the smallest honest way to stop image selections from pretending to be videos."
+    },
+    {
+      "area": "hosted-load",
+      "summary": "Widened the hosted playlist rebuild from video-only entries to general supported media, removed the hosted load-time video-only rejection, and routed still-image selections through a real image decode path.",
+      "reasoning": "Next, previous, loop, and random had already recovered for hosted video playback. Keeping those behaviors for images required the hosted lane to stop dropping image entries before they ever reached the runtime."
+    },
+    {
+      "area": "screen-binding",
+      "summary": "Taught the screen-binding seam to resolve an image texture before the video render-texture path and labeled the projection mode honestly as image or video.",
+      "reasoning": "The screen attach path was already generic enough to project any Texture. The real bug was that source resolution and debug reporting still forced everything through the video texture story, which matched the user's black-screen witness."
+    },
+    {
+      "area": "truthful-state",
+      "summary": "Made still-image records short-circuit video-only prepare and timeline logic, clear stale image state during cleanup, and emit clearer failure messages for missing or undecodable images.",
+      "reasoning": "Without that guardrail, image loads could inherit stale video runtime state, claim they were still using the FAPlayerRT path, or fail too quietly to be useful during recovery."
+    }
+  ],
+  "verification": [
+    "Compile-check the player runtime after the still-image seam changes.",
+    "Build and deploy fa_cua_player.0.1.6.dll and fa_player_asset.0.1.6.assetbundle.",
+    "Validate the 0.1.6 release packet, including changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "This version keeps still images inside the current standalone/hosted player seam; it does not yet add richer image-specific transport behaviors such as joystick skip-through or dedicated file-browser UX.",
+    "The bare player screen still uses the recovered runtime overlay presentation path rather than a fully re-authored direct display-only screen contract."
+  ]
+}
