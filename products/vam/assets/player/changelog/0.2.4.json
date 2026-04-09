@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.4",
+  "title": "Close the remaining screen-core mirror bug on the authored front-screen overlay path",
+  "summary": "Finish the current screen-core recovery lane by correcting the last front-screen presentation defect. The hosted CUA runtime overlay now keeps media on the visible front screen and applies the missing horizontal mirror correction so the picture is readable instead of backwards.",
+  "reasoning": "Version 0.2.3 fixed the front-vs-rear side selection bug by removing the stale Y-180 fallback correction from the authored screen-core overlay path. The operator retest then exposed the final remaining defect: the media was on the correct front side but still mirrored horizontally. Live code showed that the older Y-180 seam had been masking a missing horizontal mirror on the authored front-screen runtime overlay path. Version 0.2.4 keeps the fix narrow by adding that mirror only to the current screen-core overlay seam, while preserving the older disconnect-surface and fallback contracts separately.",
+  "changes": [
+    {
+      "area": "screen-core-runtime",
+      "summary": "Added horizontal mirror correction to the authored screen-core runtime overlay path after the existing video vertical-flip handling.",
+      "reasoning": "The screen-core overlay now stays on the correct front face, but without the old Y-180 compensation the content remains backwards. Applying the mirror on the authored overlay path restores readable front-screen playback for both video and still images."
+    },
+    {
+      "area": "presentation-boundary",
+      "summary": "Kept the mirror fix scoped to the authored screen-core overlay instead of mutating the older disconnect-surface presentation seam.",
+      "reasoning": "The recovery goal is to stabilize the current phase-1 direct-CUA screen lane, not to reopen older fallback geometry assumptions. A bounded fix reduces the risk of breaking the already-recovered playlist and transport paths."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.4 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.4.dll and fa_player_asset.0.2.4.assetbundle.",
+    "Validate the 0.2.4 release packet, including the generated changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}

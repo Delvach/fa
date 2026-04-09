@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.3",
-    "notes":  "0.2.3 finishes the remaining screen-core front-face presentation fix. It removes the stale legacy Y-180 overlay correction from the authored screen-core runtime path so the visible media stays on the front display instead of reading from the rear.",
+    "version":  "0.2.4",
+    "notes":  "0.2.4 closes the remaining screen-core mirror bug. It keeps the media on the front display and adds the missing horizontal mirror correction on the authored screen-core runtime overlay so the visible front image is readable instead of backwards.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.3.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.4.json"
 }

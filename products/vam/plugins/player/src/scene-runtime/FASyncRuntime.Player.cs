@@ -2000,8 +2000,8 @@ public partial class FASyncRuntime : MVRScript
             {
                 // The disconnect surface UVs are mirrored relative to the visible front face.
                 // The direct-material path needs the horizontal flip so front-view playback is
-                // readable, but the overlay-quad fit path already uses a normal-facing runtime
-                // quad and must not inherit this mirror.
+                // readable, while the authored screen-core overlay path keeps its own mirror
+                // correction on the runtime quad instead of inheriting the older Y-180 seam.
                 if (usingDisconnectSurfaceTarget)
                     MirrorProjectedScreenTextureHorizontally(projectedMaterial);
 
@@ -2105,6 +2105,14 @@ public partial class FASyncRuntime : MVRScript
                 // presentation on the same flip contract so fit/full_width/crop do not
                 // silently diverge by source type.
                 FlipProjectedScreenTextureVertically(projectedMaterial);
+            }
+
+            if (isScreenCoreSurface)
+            {
+                // Once the stale Y-180 front-face correction is removed, the authored
+                // screen-core overlay still needs its own horizontal mirror to keep the
+                // operator-facing front screen readable on the current runtime quad path.
+                MirrorProjectedScreenTextureHorizontally(projectedMaterial);
             }
 
             if (isScreenCoreSurface)
@@ -7758,6 +7766,14 @@ public partial class FASyncRuntime : MVRScript
         if (ShouldFlipProjectedOverlayVertically(directSourceTexture, directSourceName))
         {
             FlipProjectedScreenTextureVertically(projectedMaterial);
+        }
+
+        if (isScreenCoreSurface)
+        {
+            // The authored screen-core runtime overlay now stays on the real front
+            // face, so it needs an explicit horizontal mirror to keep the visible
+            // operator side readable without the older Y-180 fallback correction.
+            MirrorProjectedScreenTextureHorizontally(projectedMaterial);
         }
 
         if (isScreenCoreSurface)
