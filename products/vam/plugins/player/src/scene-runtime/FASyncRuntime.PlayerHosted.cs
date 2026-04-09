@@ -1790,11 +1790,13 @@ public partial class FASyncRuntime : MVRScript
         // path look dead when the host scaffold is actually present and bound.
         SetHostedPlayerNodeRendererEnabled(contract.screenSurfaceObject, true);
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
+        SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
 #else
         SetHostedPlayerNodeRendererEnabled(contract.screenSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
+        SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
 #endif
@@ -1813,9 +1815,14 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        GameObject backdropObject = contract.screenBodyObject != null
-            ? contract.screenBodyObject
-            : contract.disconnectSurfaceObject;
+        // For the bare screen-core lane, the authored disconnect_surface already sits
+        // almost flush behind screen_surface and matches the visible screen dimensions.
+        // Using screen_body as the moving backdrop makes the rear slab look detached even
+        // when playback itself is correct, so prefer the thinner authored disconnect quad
+        // and keep the thicker body hidden in this phase-1 presentation seam.
+        GameObject backdropObject = contract.disconnectSurfaceObject != null
+            ? contract.disconnectSurfaceObject
+            : contract.screenBodyObject;
         if (backdropObject == null || backdropObject.transform == null)
             return;
 
@@ -1879,9 +1886,11 @@ public partial class FASyncRuntime : MVRScript
 
         if (contract.disconnectSurfaceObject != null
             && !ReferenceEquals(contract.disconnectSurfaceObject, backdropObject))
-        {
             SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
-        }
+
+        if (contract.screenBodyObject != null
+            && !ReferenceEquals(contract.screenBodyObject, backdropObject))
+            SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
     }
 
     private void SetHostedPlayerNodeRendererEnabled(GameObject nodeObject, bool enabled)

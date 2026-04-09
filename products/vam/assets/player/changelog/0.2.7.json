@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.7",
+  "title": "Close the current screen-core backing detachment regression on the hosted overlay path",
+  "summary": "Stabilize the bare screen-core presentation after the orientation fixes by switching the visible rear backing to the thinner authored disconnect_surface and keeping the thicker screen_body hidden in the phase-1 direct-CUA lane.",
+  "reasoning": "After 0.2.6, front-facing video orientation was correct again, which isolated the remaining visible defect back to geometry: the media plane and the black rear backing were separating. Live prefab inspection showed that the authored screen-core resource already carries a disconnect_surface almost flush behind screen_surface, while screen_body is a deeper cube farther back. The current hosted presentation code was following screen_body, which matches the detached black slab the operator still sees. Version 0.2.7 keeps the fix narrow by preferring disconnect_surface as the screen-core backdrop follower and hiding screen_body in this phase-1 presentation seam.",
+  "changes": [
+    {
+      "area": "screen-core-backdrop",
+      "summary": "Changed the hosted screen-core backdrop presentation to prefer disconnect_surface instead of screen_body when the runtime overlay path is active.",
+      "reasoning": "disconnect_surface already matches the visible screen dimensions and sits close to the authored front screen, so it is the right rear backing for the current direct-CUA overlay contract."
+    },
+    {
+      "area": "phase-1-visual-boundary",
+      "summary": "Explicitly hid screen_body in the standalone CUA placeholder and runtime backdrop seam when it is not the chosen backing object.",
+      "reasoning": "Leaving the thicker body visible behind the overlay creates the detached-slab look even when playback and orientation are otherwise correct."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.7 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.7.dll and fa_player_asset.0.2.7.assetbundle.",
+    "Validate the 0.2.7 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}
