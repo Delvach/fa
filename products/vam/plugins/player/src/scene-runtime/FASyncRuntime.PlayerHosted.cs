@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FrameAngel.Runtime.Shared;
 using UnityEngine;
 
 public partial class FASyncRuntime : MVRScript
@@ -1442,20 +1443,33 @@ public partial class FASyncRuntime : MVRScript
         record.resolvedMediaPath = resolvedMediaPath;
         record.lastError = "";
         record.prepared = false;
+        record.preparePending = false;
+        record.prepareStartedAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
+        record.hasObservedPlaybackTime = false;
+        record.lastObservedPlaybackTimeSeconds = 0d;
+        record.lastPlaybackMotionObservedAt = 0f;
+        record.naturalEndHandled = false;
 
-        record.playlistPaths.Clear();
+        List<string> resolvedPlaylistPaths = new List<string>();
         if (requestedPaths != null)
         {
             for (int i = 0; i < requestedPaths.Count; i++)
             {
                 string candidate = requestedPaths[i];
-                if (!string.IsNullOrEmpty(candidate))
-                    record.playlistPaths.Add(candidate);
+                if (!string.IsNullOrEmpty(candidate)
+                    && FrameAngelPlayerMediaParity.IsSupportedVideoPath(candidate))
+                {
+                    resolvedPlaylistPaths.Add(candidate);
+                }
             }
         }
+
+        record.playlistPaths.Clear();
+        for (int i = 0; i < resolvedPlaylistPaths.Count; i++)
+            record.playlistPaths.Add(resolvedPlaylistPaths[i]);
 
         if (record.playlistPaths.Count <= 0)
             record.playlistPaths.Add(mediaPath);
@@ -1517,6 +1531,8 @@ public partial class FASyncRuntime : MVRScript
             {
                 record.videoPlayer.url = resolvedMediaPath;
                 record.videoPlayer.Prepare();
+                record.preparePending = true;
+                record.prepareStartedAt = Time.unscaledTime;
                 if (record.binding == null && string.IsNullOrEmpty(record.lastError))
                 {
                     // Starting Prepare() only proves the runtime accepted the source; the hosted

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.4",
+  "title": "Recover hosted next/previous and surface load-preparation truth",
+  "summary": "Fixed the hosted player stepping path so next and previous can advance through the real playlist again, preserved hosted playlists across reloads, and added truthful loading-versus-failure state for media that never prepares.",
+  "reasoning": "The first clean-room runtime checkpoint already played and scrubbed, so the next release needed to target the smallest real user-facing regressions instead of widening the repo again. The strongest live failures were next/previous doing nothing and supported-looking media failing without honest feedback. This version keeps the fix set inside the current player runtime and release lane so it is worth a real 0.1.4 test without dragging Meta, shells, or older seams back in.",
+  "changes": [
+    {
+      "area": "transport",
+      "summary": "Routed hosted next/previous through the hosted load path instead of the non-hosted write path.",
+      "reasoning": "The attached CUA player already had a valid hosted load seam; next and previous were bypassing it, which made stepping fail even though play, scrub, and skip worked."
+    },
+    {
+      "area": "playlist",
+      "summary": "Preserved hosted playlists across reloads by copying requested paths before clearing the record playlist, and filtered hosted playlists to supported video entries.",
+      "reasoning": "The hosted load path was collapsing its own playlist to a single item when the same list instance was passed back into reload, which left next and previous with no truthful place to go."
+    },
+    {
+      "area": "load-state",
+      "summary": "Added async prepare-pending tracking, timeout-based prepare failure reporting, and VideoPlayer error capture to the standalone player runtime.",
+      "reasoning": "Prepare() accepting a URL is not the same as the media actually preparing. The runtime needed an honest loading state and a bounded failure surface for files that look supported but never become playable."
+    },
+    {
+      "area": "operator-debug",
+      "summary": "Updated the visible player state to show loading while media is still preparing instead of collapsing to ok too early.",
+      "reasoning": "A truthful operator surface matters for this lane because the user is testing manually in VaM and cannot afford another silent-failure cycle."
+    },
+    {
+      "area": "presentation-guard",
+      "summary": "Excluded runtime helper surfaces from local screen-bound calculations.",
+      "reasoning": "This is a small safe guardrail against the runtime helper plane polluting later surface measurements while the larger screen-core presentation seam is still being recovered."
+    }
+  ],
+  "verification": [
+    "Build and deploy fa_cua_player.0.1.4.dll and fa_player_asset.0.1.4.assetbundle.",
+    "Validate the 0.1.4 release packet, including changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "The screen-core presentation seam still needs a deeper aspect and surface-stack recovery pass.",
+    "Hosted phase-1 playback remains video-only; image loading in the same lane is not restored yet."
+  ]
+}

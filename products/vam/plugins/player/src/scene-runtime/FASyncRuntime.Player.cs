@@ -50,6 +50,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerDefaultSkipSeconds = 10f;
     private const float StandalonePlayerPlaybackRetryIntervalSeconds = 0.20f;
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
+    private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
@@ -133,6 +134,8 @@ public partial class FASyncRuntime : MVRScript
         public bool randomEnabled = false;
         public bool looping = false;
         public bool prepared = false;
+        public bool preparePending = false;
+        public float prepareStartedAt = 0f;
         public bool desiredPlaying = true;
         public float nextPlaybackStateApplyTime = 0f;
         public bool muted = false;
@@ -154,6 +157,7 @@ public partial class FASyncRuntime : MVRScript
         public double lastObservedPlaybackTimeSeconds = 0d;
         public float lastPlaybackMotionObservedAt = 0f;
         public bool naturalEndHandled = false;
+        public bool runtimeErrorHooked = false;
         public GameObject runtimeObject;
         public AudioSource audioSource;
         public VideoPlayer videoPlayer;
@@ -2936,6 +2940,14 @@ public partial class FASyncRuntime : MVRScript
             if (renderer == null)
                 continue;
 
+            GameObject rendererObject = renderer.gameObject;
+            if (rendererObject != null
+                && !string.IsNullOrEmpty(rendererObject.name)
+                && rendererObject.name.StartsWith("FAPlayerRuntimeSurface_", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             Bounds worldBounds = renderer.bounds;
             Vector3 worldMin = worldBounds.min;
             Vector3 worldMax = worldBounds.max;
@@ -5587,9 +5599,7 @@ public partial class FASyncRuntime : MVRScript
         errorMessage = "";
 
         StandalonePlayerRecord record;
-        InnerPieceInstanceRecord instance;
-        InnerPieceScreenSlotRuntimeRecord slot;
-        if (!TryResolveOrCreateStandalonePlayerRecordForWrite(argsJson, out record, out instance, out slot, out errorMessage))
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage) || record == null)
         {
             resultJson = BuildBrokerResult(false, errorMessage, "{}");
             return false;
@@ -5615,10 +5625,37 @@ public partial class FASyncRuntime : MVRScript
         {
             record.currentIndex = targetIndex;
             string targetPath = record.playlistPaths[targetIndex];
-            if (!TryLoadStandalonePlayerRecordPath(record, instance, slot, targetPath, out errorMessage))
+            if (IsHostedPlayerInstanceId(record.instanceId))
             {
-                resultJson = BuildBrokerResult(false, errorMessage, "{}");
-                return false;
+                string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
+                if (string.IsNullOrEmpty(hostAtomUid))
+                {
+                    errorMessage = "hosted player host atom uid not resolved";
+                    resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                    return false;
+                }
+
+                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage))
+                {
+                    resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                    return false;
+                }
+            }
+            else
+            {
+                InnerPieceInstanceRecord instance;
+                InnerPieceScreenSlotRuntimeRecord slot;
+                if (!TryResolveInnerPieceScreenSlot(record.instanceId, record.slotId, out instance, out slot, out errorMessage))
+                {
+                    resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                    return false;
+                }
+
+                if (!TryLoadStandalonePlayerRecordPath(record, instance, slot, targetPath, out errorMessage))
+                {
+                    resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                    return false;
+                }
             }
         }
 
@@ -6059,6 +6096,8 @@ public partial class FASyncRuntime : MVRScript
         record.resolvedMediaPath = resolvedMediaPath;
         record.lastError = "";
         record.prepared = false;
+        record.preparePending = false;
+        record.prepareStartedAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
@@ -6114,6 +6153,8 @@ public partial class FASyncRuntime : MVRScript
         {
             record.videoPlayer.url = resolvedMediaPath;
             record.videoPlayer.Prepare();
+            record.preparePending = true;
+            record.prepareStartedAt = Time.unscaledTime;
             return true;
         }
         catch (Exception ex)
@@ -6266,7 +6307,21 @@ public partial class FASyncRuntime : MVRScript
             {
                 record.prepared = preparedNow;
                 if (preparedNow)
+                {
+                    record.preparePending = false;
+                    record.prepareStartedAt = 0f;
                     record.needsScreenRefresh = true;
+                }
+            }
+
+            if (!preparedNow
+                && record.preparePending
+                && record.prepareStartedAt > 0f
+                && (Time.unscaledTime - record.prepareStartedAt) >= StandalonePlayerPrepareTimeoutSeconds)
+            {
+                record.preparePending = false;
+                record.prepareStartedAt = 0f;
+                record.lastError = "player media did not prepare; file may be unsupported or unplayable";
             }
 
             // Hosted CUA playback should never sit on a live render texture without a binding.
@@ -6850,6 +6905,24 @@ public partial class FASyncRuntime : MVRScript
         record.videoPlayer.renderMode = VideoRenderMode.RenderTexture;
         record.videoPlayer.isLooping = record.looping;
         record.videoPlayer.aspectRatio = VideoAspectRatio.NoScaling;
+
+        if (!record.runtimeErrorHooked)
+        {
+            record.videoPlayer.errorReceived += delegate(VideoPlayer source, string message)
+            {
+                if (record == null)
+                    return;
+
+                record.preparePending = false;
+                record.prepareStartedAt = 0f;
+                record.prepared = false;
+                record.needsScreenRefresh = true;
+                record.lastError = string.IsNullOrEmpty(message)
+                    ? "player media error"
+                    : "player media error: " + message;
+            };
+            record.runtimeErrorHooked = true;
+        }
 
         // Restore the older eager RT contract so hosted binding can come up
         // before the first real video dimensions are detected.
@@ -7717,8 +7790,12 @@ public partial class FASyncRuntime : MVRScript
             + "x"
             + renderTextureHeight.ToString(CultureInfo.InvariantCulture);
 
+        string stateKind = !string.IsNullOrEmpty(effectiveLastError)
+            ? "error"
+            : (record.preparePending ? "loading" : "ok");
+
         string stateSummary = "state="
-            + (string.IsNullOrEmpty(effectiveLastError) ? "ok" : "error")
+            + stateKind
             + " proj="
             + (string.IsNullOrEmpty(projectionMode) ? "unknown" : projectionMode)
             + " shader="

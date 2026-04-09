@@ -1,7 +1,7 @@
 {
-    "version":  "0.1.3",
-    "notes":  "0.1.3 moves the player-screen Unity authoring project out of build/, adds tracked per-version changelogs with reasoning, and makes the release wrapper emit and validate changelog artifacts.",
+    "version":  "0.1.4",
+    "notes":  "0.1.4 fixes hosted next/previous stepping, preserves hosted playlists across reloads, and surfaces loading versus prepare-failure truth more honestly.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.1.3.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.1.4.json"
 }
