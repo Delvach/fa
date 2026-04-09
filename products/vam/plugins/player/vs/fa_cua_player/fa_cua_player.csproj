@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;FRAMEANGEL_CUA_PLAYER</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;FRAMEANGEL_CUA_PLAYER;FRAMEANGEL_FEATURE_PLAYER_INPUT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;FRAMEANGEL_CUA_PLAYER</DefineConstants>
+    <DefineConstants>TRACE;FRAMEANGEL_CUA_PLAYER;FRAMEANGEL_FEATURE_PLAYER_INPUT</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -72,12 +72,16 @@
     <Reference Include="UnityEngine.UI">
       <HintPath>$(VamManagedDir)\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="SteamVR">
+      <HintPath>$(VamManagedDir)\SteamVR.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\..\src\innerpiece-core\FAInnerPieceCoreModels.cs" />
     <Compile Include="..\..\src\innerpiece-core\FAInnerPiecePackageModels.cs" />
     <Compile Include="..\..\src\innerpiece-core\FAInnerPiecePackageSupport.cs" />
     <Compile Include="..\..\src\innerpiece-core\FAInnerPieceStorage.cs" />
+    <Compile Include="..\..\src\cua-runtime\FASyncRuntime.CuaPlayerInputModule.cs" />
     <Compile Include="..\..\src\cua-runtime\FASyncRuntime.CuaTextInputBridge.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.InnerPiece.cs" />

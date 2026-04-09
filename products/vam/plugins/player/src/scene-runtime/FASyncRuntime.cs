@@ -114,6 +114,8 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerRuntimeAspectModeField;
     private JSONStorableString playerRuntimeTimelineField;
     private JSONStorableString playerRuntimePlaylistField;
+    private JSONStorableString playerInputStateField;
+    private JSONStorableBool playerFocusActiveField;
     private JSONStorableFloat playerScrubNormalizedField;
     private JSONStorableFloat playerVolumeNormalizedField;
     private JSONStorableAction playerAspectFitAction;
@@ -268,6 +270,9 @@ public partial class FASyncRuntime : MVRScript
         TickInnerPieceFollowBindings();
         TickPlayerControlSurfaceRelativeBindings();
         TickStandalonePlayerRuntime();
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        TickCuaPlayerInput();
+#endif
 
 #if !FRAMEANGEL_CUA_PLAYER
         if (syncDevMode && IsVrRuntimeActive())
@@ -277,8 +282,9 @@ public partial class FASyncRuntime : MVRScript
 
     private void OnDestroy()
     {
-#if !FRAMEANGEL_CUA_PLAYER
         SetInputCaptureState(false);
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        OnCuaPlayerInputDestroy();
 #endif
 #if !FRAMEANGEL_CUA_PLAYER
         ClearReferencePreviewVisuals();
@@ -329,6 +335,10 @@ public partial class FASyncRuntime : MVRScript
 
         playerRuntimePlaylistField = new JSONStorableString("FrameAngel Player Playlist", "playlist=idle");
         ConfigureTransientField(playerRuntimePlaylistField, false);
+
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        BuildCuaPlayerInputStorables();
+#endif
 
         playerScrubNormalizedField = new JSONStorableFloat(
             "scrub_normalized",
@@ -588,6 +598,9 @@ public partial class FASyncRuntime : MVRScript
         RegisterString(playerRuntimeAspectModeField);
         RegisterString(playerRuntimeTimelineField);
         RegisterString(playerRuntimePlaylistField);
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        RegisterCuaPlayerInputStorables();
+#endif
         RegisterFloat(playerScrubNormalizedField);
         RegisterFloat(playerVolumeNormalizedField);
         if (ShouldExposePlayerAspectControls())
@@ -650,6 +663,9 @@ public partial class FASyncRuntime : MVRScript
         CreateTextField(playerRuntimeAspectModeField, false);
         CreateTextField(playerRuntimeTimelineField, false);
         CreateTextField(playerRuntimePlaylistField, false);
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        BuildCuaPlayerInputUi();
+#endif
         CreateSlider(playerScrubNormalizedField, false);
         CreateSlider(playerVolumeNormalizedField, false);
         if (ShouldExposePlayerAspectControls())
@@ -5234,6 +5250,8 @@ public partial class FASyncRuntime : MVRScript
     {
 #if !FRAMEANGEL_CUA_PLAYER
         SetSceneOnlyInputCaptureState(enabled);
+#elif FRAMEANGEL_FEATURE_PLAYER_INPUT
+        SetCuaPlayerInputCaptureState(enabled);
 #endif
     }
 
@@ -5391,7 +5409,11 @@ public partial class FASyncRuntime : MVRScript
     private bool IsSceneInputCaptureEnabled()
     {
 #if FRAMEANGEL_CUA_PLAYER
+#if FRAMEANGEL_FEATURE_PLAYER_INPUT
+        return IsCuaPlayerInputCaptureEnabled();
+#else
         return false;
+#endif
 #else
         return syncInputCapture;
 #endif

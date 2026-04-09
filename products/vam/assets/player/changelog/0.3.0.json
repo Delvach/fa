@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.0",
+  "title": "Start the clean-room CUA input layer with gaze focus, navigation capture, and joystick media routing",
+  "summary": "The restored screen/player baseline stays intact while the CUA build gains a new input sidecar behind its own compile flag. Gaze on the authored screen acquires focus, gaze off releases it, focus suppresses native VaM navigation, joystick input scrubs video on the existing seek seam, and still images step through previous/next without pulling the old scene-only manipulation stack back in.",
+  "reasoning": "The screen lane is finally stable enough to stop spending versions on presentation recovery, so the next real product seam is input. Live code already had the hosted-player verbs, attached-player targeting, slider holdoff logic, image support, and random-aware next/previous behavior; what it did not have was a clean CUA focus/capture loop. Historical recovery also showed that the old scene/session input stack carried too much manipulation baggage to lift wholesale. This version therefore introduces a bounded CUA-only input module, keeps it behind an explicit feature define so it can later be compiled out for baseline/freemium builds, and routes all new behavior through the existing player actions instead of forking transport a second time.",
+  "changes": [
+    {
+      "area": "cua-player-input-module",
+      "summary": "Add a new CUA-only input sidecar file and compile it behind FRAMEANGEL_FEATURE_PLAYER_INPUT.",
+      "reasoning": "The player needs gaze/focus/nav behavior, but that seam should remain modular so future baseline, premium, and demo variants can include or exclude it at compile time instead of disabling dead code at runtime."
+    },
+    {
+      "area": "gaze-focus-and-navigation-capture",
+      "summary": "Resolve gaze directly against the authored screen surface, acquire focus while gazed, release focus when gaze leaves, and suppress native VaM navigation only while the focused player owns capture.",
+      "reasoning": "The requested operator contract is gaze on screen captures focus and gaze off screen releases it. A small dedicated capture owner also prevents multiple copied subscene players from fighting over the global navigation state."
+    },
+    {
+      "area": "joystick-media-routing",
+      "summary": "Route horizontal joystick input into hosted video scrubbing and still-image previous/next stepping by calling the existing standalone player seek and advance seams.",
+      "reasoning": "The current clean-room player already has durable playback actions and scrub display holdoff logic. Reusing those paths keeps joystick behavior truthful to the player instead of introducing a second hidden transport layer."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.0 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the fa_cua_player clean-room solution with FRAMEANGEL_FEATURE_PLAYER_INPUT enabled.",
+    "Run the versioned release wrapper to deploy fa_cua_player.0.3.0.dll and fa_player_asset.0.3.0.assetbundle and validate the release packet.",
+    "In VaM, confirm gaze on the screen acquires focus, gaze off releases focus, focused joystick horizontal input scrubs video, and focused joystick horizontal input steps still images via previous/next."
+  ],
+  "knownIssues": [
+    "Config-backed defaults for shuffle, loop mode, volume, and related settings remain a later slice.",
+    "Image scrub on the shared scrub slider itself remains a later slice; this version starts with joystick-driven previous/next stepping for still images.",
+    "VAR packaging, obfuscation, and freemium/auth-code distribution seams are recovered as documentation but are not yet ported into the clean-room build pipeline."
+  ]
+}
