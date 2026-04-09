@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.6",
+  "title": "Close the remaining screen-core video upside-down bug on the authored front-screen overlay path",
+  "summary": "Finish the current screen-core presentation recovery by removing the last video-only orientation defect. The screen was already front-facing and horizontally readable after 0.2.5, but videos still inherited an older RenderTexture vertical flip that no longer belongs on the authored direct-CUA front-screen path.",
+  "reasoning": "The operator retest after 0.2.5 narrowed the remaining problem further: still images were correct, but videos were upside down. That means the horizontal contract is now right and the remaining defect is specifically the VideoPlayer or RenderTexture Y-flip seam. Live code showed that ShouldFlipProjectedOverlayVertically still applied to every RenderTexture or VideoPlayer overlay, including the authored screen-core front path. Version 0.2.6 keeps the fix narrow by turning that legacy Y-flip off only for the direct-CUA screen-core surface, while preserving the older disconnect-surface and fallback overlay contracts separately.",
+  "changes": [
+    {
+      "area": "screen-core-runtime",
+      "summary": "Scoped the RenderTexture and VideoPlayer vertical-flip rule off for the authored screen-core front-screen overlay path.",
+      "reasoning": "The current direct-CUA screen-core front path now presents on the correct side and with the correct horizontal orientation. Carrying the older fallback Y-flip forward into that seam leaves videos readable only upside down."
+    },
+    {
+      "area": "orientation-boundary",
+      "summary": "Kept the vertical-flip correction on the older fallback and disconnect-surface overlay seams instead of removing it globally.",
+      "reasoning": "The recovery goal is to stabilize the current phase-1 direct-CUA screen lane without reopening older fallback paths that may still rely on the existing VideoPlayer texture contract."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.6 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.6.dll and fa_player_asset.0.2.6.assetbundle.",
+    "Validate the 0.2.6 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}

@@ -2098,12 +2098,12 @@ public partial class FASyncRuntime : MVRScript
             // runtime quad is asked to present fit/letterbox content on differently shaped slabs.
             float runtimeSurfaceAspect = contentAspect;
 
-            if (ShouldFlipProjectedOverlayVertically(directSourceTexture, directSourceName))
+            if (ShouldFlipProjectedOverlayVertically(directSourceTexture, directSourceName, isScreenCoreSurface))
             {
-                // Any overlay-backed VideoPlayer/RenderTexture source still arrives
-                // vertically inverted on the runtime quad. Keep hosted and standalone
-                // presentation on the same flip contract so fit/full_width/crop do not
-                // silently diverge by source type.
+                // The older disconnect/fallback overlay seams still need the VideoPlayer
+                // RenderTexture Y flip. The authored direct-CUA screen-core front path does
+                // not, and carrying that legacy correction forward makes front-facing video
+                // readable only upside down.
                 FlipProjectedScreenTextureVertically(projectedMaterial);
             }
 
@@ -2250,8 +2250,11 @@ public partial class FASyncRuntime : MVRScript
         }
     }
 
-    private bool ShouldFlipProjectedOverlayVertically(Texture directSourceTexture, string directSourceName)
+    private bool ShouldFlipProjectedOverlayVertically(Texture directSourceTexture, string directSourceName, bool isScreenCoreSurface)
     {
+        if (isScreenCoreSurface)
+            return false;
+
         return directSourceTexture is RenderTexture
             || (!string.IsNullOrEmpty(directSourceName)
                 && directSourceName.IndexOf("VideoPlayer", StringComparison.OrdinalIgnoreCase) >= 0);
@@ -7775,7 +7778,7 @@ public partial class FASyncRuntime : MVRScript
                 : contentAspect;
         }
 
-        if (ShouldFlipProjectedOverlayVertically(directSourceTexture, directSourceName))
+        if (ShouldFlipProjectedOverlayVertically(directSourceTexture, directSourceName, isScreenCoreSurface))
         {
             FlipProjectedScreenTextureVertically(projectedMaterial);
         }

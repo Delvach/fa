@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.5",
-    "notes":  "0.2.5 closes the remaining screen-core front-facing mirror bug. The runtime overlay mirror helper no longer cancels its own _MainTex correction on common Unity overlay shaders, so the authored front screen should finally read correctly from the operator side.",
+    "version":  "0.2.6",
+    "notes":  "0.2.6 closes the remaining screen-core video orientation bug. The authored direct-CUA screen-core front path no longer inherits the older RenderTexture vertical flip that was leaving video upside down while still images were already correct.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.5.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.6.json"
 }
