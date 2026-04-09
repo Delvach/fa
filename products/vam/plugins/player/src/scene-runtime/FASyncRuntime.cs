@@ -165,6 +165,7 @@ public partial class FASyncRuntime : MVRScript
     private bool pendingPlayerMediaBrowserTargetsMetaProof = false;
     private bool playerMediaBrowserOpen = false;
     private bool suppressStandalonePlayerSliderCallbacks = false;
+    private float standalonePlayerScrubFieldSyncHoldoffUntil = 0f;
     private static readonly string[] PlayerRuntimeMediaExtensions = new[]
     {
         ".mp4",
@@ -337,6 +338,7 @@ public partial class FASyncRuntime : MVRScript
                 if (suppressStandalonePlayerSliderCallbacks)
                     return;
 
+                ArmStandalonePlayerScrubFieldSyncHoldoff();
                 RunAttachedPlayerSeekNormalizedAction(value, "Player scrub set");
             },
             0f,

@@ -1468,6 +1468,7 @@ public partial class FASyncRuntime : MVRScript
 
         DestroyStandalonePlayerImageTexture(record);
 
+        List<string> existingPlaylistPaths = new List<string>(record.playlistPaths);
         List<string> resolvedPlaylistPaths = new List<string>();
         bool canReuseExistingPlaylist =
             record.playlistPaths != null
@@ -1504,6 +1505,9 @@ public partial class FASyncRuntime : MVRScript
         record.playlistPaths.Clear();
         for (int i = 0; i < resolvedPlaylistPaths.Count; i++)
             record.playlistPaths.Add(resolvedPlaylistPaths[i]);
+
+        if (!AreStandalonePlayerPlaylistsEquivalent(existingPlaylistPaths, record.playlistPaths))
+            ClearStandalonePlayerRandomHistory(record);
 
         if (record.playlistPaths.Count <= 0)
             record.playlistPaths.Add(mediaPath);

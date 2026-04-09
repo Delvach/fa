@@ -98,6 +98,7 @@ public partial class FASyncRuntime : MVRScript
 
                 mediaPath = ResolvePrimaryPlayerRuntimeMediaPath(mediaPath, hostedMediaPaths);
                 SetPendingPlayerSelection(mediaPath);
+                ClearStandalonePlayerRandomHistory(record);
                 record.playlistPaths.Clear();
                 for (int playlistIndex = 0; playlistIndex < hostedMediaPaths.Count; playlistIndex++)
                 {

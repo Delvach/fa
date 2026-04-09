@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.12",
+  "title": "Restore random-aware Previous and protect live scrub display during user drag",
+  "summary": "Random-enabled playback now keeps enough bounded history for Previous to step back through the actual random trail instead of falling back to ordered playlist decrement, and the exposed scrub slider keeps tracking playback without fighting a user who is actively dragging it.",
+  "reasoning": "The screen lane is stable enough that the next real operator-facing seam is transport/control truth. Live code showed that random logic only existed on the forward step, so Previous silently dropped back to ordered stepping. The scrub display path already refreshed from playback state every rig tick, but it had no short holdoff for a person actively scrubbing through a scene-bound slider. This version keeps the fix narrow: add bounded random history to the standalone player record, preserve it across hosted next/previous reloads when the playlist is still the same playlist, and add a short scrub-display holdoff on the exposed JSON storable so playback updates do not immediately overwrite a manual drag.",
+  "changes": [
+    {
+      "area": "playlist-random-history",
+      "summary": "Teach Previous to follow the actual random playback trail by storing bounded random history and popping it on reverse steps.",
+      "reasoning": "Random-enabled Next already chose a non-current item, but Previous had no memory of that choice and could only decrement the ordered index. Tracking the random trail is the minimum change that makes Previous honest without rewriting the rest of playlist stepping."
+    },
+    {
+      "area": "hosted-playlist-continuity",
+      "summary": "Preserve random history when hosted next/previous reloads stay on the same playlist, and clear it when an explicit reload replaces the playlist.",
+      "reasoning": "Hosted next/previous re-enters the load path, so the random history must survive those internal reloads. At the same time, explicit load-path changes should start a new trail instead of dragging stale random history forward."
+    },
+    {
+      "area": "scrub-display-sync",
+      "summary": "Add a short user-scrub holdoff before playback-driven scrub field updates resume.",
+      "reasoning": "The exposed scrub field is already the prototype-safe path for subscene controls, but without a holdoff the playback tick can snap it back while the user is still dragging. The holdoff keeps the field live without making it fight the operator."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.12 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.12.dll and fa_player_asset.0.2.12.assetbundle.",
+    "Validate the 0.2.12 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Still-image scrub behavior remains a separate follow-up; this version does not add image timeline semantics.",
+    "The remaining rear-only visual polish around the black backing is unchanged in this slice.",
+    "Config-backed defaults for shuffle, loop mode, volume, and related player settings remain deferred to a later version."
+  ]
+}

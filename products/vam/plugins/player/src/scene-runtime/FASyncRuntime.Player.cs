@@ -52,9 +52,11 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackRetryIntervalSeconds = 0.20f;
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
+    private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
+    private const int StandalonePlayerRandomHistoryLimit = 64;
 
     private sealed class PlayerScreenBindingRecord
     {
@@ -137,6 +139,7 @@ public partial class FASyncRuntime : MVRScript
         public string resolvedMediaPath = "";
         public string aspectMode = GhostScreenAspectModeFit;
         public readonly List<string> playlistPaths = new List<string>();
+        public readonly List<string> randomHistoryPaths = new List<string>();
         public int currentIndex = -1;
         public string loopMode = PlayerLoopModeNone;
         public bool randomEnabled = false;
@@ -5778,7 +5781,10 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        bool changed = record.randomEnabled != enabled;
         record.randomEnabled = enabled;
+        if (changed)
+            ClearStandalonePlayerRandomHistory(record);
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_random ok", payload);
@@ -6197,17 +6203,25 @@ public partial class FASyncRuntime : MVRScript
                 currentIndex = 0;
         }
 
-        if (forward && record.randomEnabled && count > 1)
+        if (record.randomEnabled && count > 1)
         {
-            int randomIndex = currentIndex;
-            for (int i = 0; i < 8 && randomIndex == currentIndex; i++)
-                randomIndex = UnityEngine.Random.Range(0, count);
+            if (forward)
+            {
+                PushStandalonePlayerRandomHistoryPath(record, record.playlistPaths[currentIndex]);
 
-            if (randomIndex == currentIndex)
-                randomIndex = (currentIndex + 1) % count;
+                int randomIndex = currentIndex;
+                for (int i = 0; i < 8 && randomIndex == currentIndex; i++)
+                    randomIndex = UnityEngine.Random.Range(0, count);
 
-            targetIndex = randomIndex;
-            return targetIndex != currentIndex;
+                if (randomIndex == currentIndex)
+                    randomIndex = (currentIndex + 1) % count;
+
+                targetIndex = randomIndex;
+                return targetIndex != currentIndex;
+            }
+
+            if (TryPopStandalonePlayerRandomHistoryIndex(record, currentIndex, out targetIndex))
+                return targetIndex != currentIndex;
         }
 
         if (forward)
@@ -6467,6 +6481,7 @@ public partial class FASyncRuntime : MVRScript
         if (record == null)
             return;
 
+        List<string> previousPlaylistPaths = new List<string>(record.playlistPaths);
         List<string> requestedPaths = ExtractJsonStringList(argsJson, "playlist", "playlistPaths", "paths");
         if (requestedPaths.Count <= 0)
         {
@@ -6503,6 +6518,8 @@ public partial class FASyncRuntime : MVRScript
 
         int matchedIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, requestedPath);
         record.currentIndex = matchedIndex >= 0 ? matchedIndex : 0;
+        if (!AreStandalonePlayerPlaylistsEquivalent(previousPlaylistPaths, record.playlistPaths))
+            ClearStandalonePlayerRandomHistory(record);
     }
 
     private void EnsureStandalonePlayerPathPresentInPlaylist(StandalonePlayerRecord record, string mediaPath)
@@ -6517,9 +6534,72 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
+        ClearStandalonePlayerRandomHistory(record);
         record.playlistPaths.Clear();
         record.playlistPaths.Add(mediaPath);
         record.currentIndex = 0;
+    }
+
+    private void ClearStandalonePlayerRandomHistory(StandalonePlayerRecord record)
+    {
+        if (record == null || record.randomHistoryPaths == null)
+            return;
+
+        record.randomHistoryPaths.Clear();
+    }
+
+    private void PushStandalonePlayerRandomHistoryPath(StandalonePlayerRecord record, string mediaPath)
+    {
+        if (record == null || record.randomHistoryPaths == null || string.IsNullOrEmpty(mediaPath))
+            return;
+
+        if (record.randomHistoryPaths.Count >= StandalonePlayerRandomHistoryLimit)
+            record.randomHistoryPaths.RemoveAt(0);
+
+        record.randomHistoryPaths.Add(mediaPath);
+    }
+
+    private bool TryPopStandalonePlayerRandomHistoryIndex(StandalonePlayerRecord record, int currentIndex, out int targetIndex)
+    {
+        targetIndex = -1;
+        if (record == null || record.randomHistoryPaths == null || record.randomHistoryPaths.Count <= 0)
+            return false;
+
+        while (record.randomHistoryPaths.Count > 0)
+        {
+            int historyIndex = record.randomHistoryPaths.Count - 1;
+            string historyPath = record.randomHistoryPaths[historyIndex];
+            record.randomHistoryPaths.RemoveAt(historyIndex);
+            if (string.IsNullOrEmpty(historyPath))
+                continue;
+
+            int matchedIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, historyPath);
+            if (matchedIndex < 0 || matchedIndex == currentIndex)
+                continue;
+
+            targetIndex = matchedIndex;
+            return true;
+        }
+
+        return false;
+    }
+
+    private bool AreStandalonePlayerPlaylistsEquivalent(IList<string> left, IList<string> right)
+    {
+        int leftCount = left != null ? left.Count : 0;
+        int rightCount = right != null ? right.Count : 0;
+        if (leftCount != rightCount)
+            return false;
+
+        for (int i = 0; i < leftCount; i++)
+        {
+            string leftPath = NormalizeStandalonePlayerPathForMatch(left[i]);
+            string rightPath = NormalizeStandalonePlayerPathForMatch(right[i]);
+            if (!string.Equals(leftPath, rightPath, StringComparison.Ordinal))
+                return false;
+        }
+
+        return true;
     }
 
     private int FindStandalonePlayerPlaylistIndex(List<string> playlistPaths, string mediaPath)
@@ -8556,10 +8636,11 @@ public partial class FASyncRuntime : MVRScript
         if (playerScrubNormalizedField == null && playerVolumeNormalizedField == null)
             return;
 
+        float now = Time.unscaledTime;
         suppressStandalonePlayerSliderCallbacks = true;
         try
         {
-            if (playerScrubNormalizedField != null)
+            if (playerScrubNormalizedField != null && now >= standalonePlayerScrubFieldSyncHoldoffUntil)
                 playerScrubNormalizedField.valNoCallback = Mathf.Clamp01(scrubNormalized);
             if (playerVolumeNormalizedField != null)
                 playerVolumeNormalizedField.valNoCallback = Mathf.Clamp01(volumeNormalized);
@@ -8568,6 +8649,13 @@ public partial class FASyncRuntime : MVRScript
         {
             suppressStandalonePlayerSliderCallbacks = false;
         }
+    }
+
+    private void ArmStandalonePlayerScrubFieldSyncHoldoff()
+    {
+        standalonePlayerScrubFieldSyncHoldoffUntil = Mathf.Max(
+            standalonePlayerScrubFieldSyncHoldoffUntil,
+            Time.unscaledTime + StandalonePlayerScrubDisplayHoldoffSeconds);
     }
 
     private bool TryResolveAttachedHostedStandalonePlayerRecord(out StandalonePlayerRecord record, out Atom hostAtom)
