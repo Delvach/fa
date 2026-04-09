@@ -2145,13 +2145,16 @@ public partial class FASyncRuntime : MVRScript
                 return false;
             }
 
-            if (isScreenCoreSurface)
+            bool applyLegacyFrontFaceCorrection =
+                usingDisconnectSurfaceTarget
+                || (slot != null && slot.forceOperatorFacingFrontFace);
+
+            if (applyLegacyFrontFaceCorrection)
             {
-                // The bare direct-CUA screen-core still needs the runtime overlay's
-                // visible face corrected in live VaM when fit/full-width route through
-                // `runtime_overlay_quad`; otherwise the operator can read the quad's
-                // back face from the normal front-view approach and the movie appears
-                // mirrored even though the screen_surface binding itself is correct.
+                // Keep the older Y-180 correction on the fallback disconnect-surface
+                // seam and explicit force-flag contracts only. The authored screen-core
+                // overlay already uses the modern front-facing rotation contract and
+                // must not be rotated back onto its rear side here.
                 ApplyStandaloneFitOverlayFrontFace(overlayRenderer);
             }
 
@@ -7798,15 +7801,15 @@ public partial class FASyncRuntime : MVRScript
 
         bool applyFrontFaceCorrection =
             (useFitBlackPresentation && usingDisconnectSurfaceTarget)
-            || (slot != null && slot.forceOperatorFacingFrontFace)
-            || isScreenCoreSurface;
+            || (slot != null && slot.forceOperatorFacingFrontFace);
 
         if (applyFrontFaceCorrection)
         {
             // Keep front-face correction scoped to the exact overlay-backed seams
-            // that still need it: the older disconnect-surface fallback path,
-            // explicit force-flag contracts, and the bare screen-core runtime overlay
-            // path exercised by the raw direct-CUA release.
+            // that still need it: the older disconnect-surface fallback path and
+            // explicit force-flag contracts. The bare screen-core runtime overlay
+            // already uses the authored front-screen rotation contract and should
+            // stay operator-facing without the legacy Y-180 flip.
             ApplyStandaloneFitOverlayFrontFace(overlayRenderer);
         }
 

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.3",
+  "title": "Finish the screen-core front-face fix so hosted media stays on the visible front screen",
+  "summary": "Correct the remaining authored screen-core presentation bug in the hosted CUA lane. The runtime overlay no longer reuses the old Y-180 fallback correction on the current front-screen contract, so video and still images present on the front display instead of showing from the rear while the front stays black.",
+  "reasoning": "Version 0.2.2 narrowed the screen bug correctly, but the operator report showed that video and still images were still landing on the rear side of the screen. The live code confirmed a contradiction: authored front screens already resolve the overlay with the modern identity rotation contract, but the runtime later reapplied the older Y-180 front-face correction that belongs only to fallback seams. Version 0.2.3 keeps the fix tight by removing that legacy correction from the current screen-core overlay path while preserving it for the older disconnect-surface and explicit force-front-face cases that still need it.",
+  "changes": [
+    {
+      "area": "screen-core-runtime",
+      "summary": "Stopped applying the legacy Y-180 overlay rotation on the authored screen-core runtime overlay path.",
+      "reasoning": "The authored screen-core contract already defines the correct front-facing overlay orientation. Reapplying the old fallback flip rotated the readable side onto the rear of the screen, which matches the operator-visible black-front/rear-image bug."
+    },
+    {
+      "area": "fallback-front-face-correction",
+      "summary": "Kept the emergency front-face correction only on the older disconnect-surface and explicit force-flag seams.",
+      "reasoning": "The Y-180 correction still has value on older fallback paths, so the fix should not delete it globally. Scoping it back to the seams that genuinely need it keeps the current screen-core contract clean without reopening older mirrored-overlay cases."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.3 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.3.dll and fa_player_asset.0.2.3.assetbundle.",
+    "Validate the 0.2.3 release packet, including the generated changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}
