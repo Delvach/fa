@@ -515,7 +515,7 @@ function Resolve-PlayerAssetName {
         }
     }
 
-    return "assets/frameangel/playerscreencore2018/fa_player_screen_core.prefab"
+    return "assets/frameangel/playerscreen/fa_player_screen.prefab"
 }
 
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold

@@ -6,8 +6,8 @@ using UnityEngine.Rendering;
 
 public static class FrameAngelPlayerHost2018Exporter
 {
-    private const string AssetRoot = "Assets/FrameAngel/PlayerScreenCore2018";
-    private const string PrefabPath = AssetRoot + "/fa_player_screen_core.prefab";
+    private const string AssetRoot = "Assets/FrameAngel/PlayerScreen";
+    private const string PrefabPath = AssetRoot + "/fa_player_screen.prefab";
     private const string MaterialsRoot = AssetRoot + "/Materials";
     private const string TexturesRoot = AssetRoot + "/Textures";
     private const string DefaultBundleFileName = "fa_player_screen_core_current.assetbundle";
