@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.5",
+  "title": "Close the remaining screen-core front-facing mirror bug on the runtime overlay material seam",
+  "summary": "Finish the current screen-core presentation recovery by fixing the last front-facing readability defect. The screen was on the correct front side after 0.2.3 and 0.2.4, but common Unity overlay shaders were still reading backwards because the mirror helper canceled its own _MainTex correction.",
+  "reasoning": "Version 0.2.3 moved the readable media face back to the intended front side of the screen-core runtime overlay, and version 0.2.4 tried to add the missing horizontal mirror correction. The operator retest still showed the screen backwards from the front, which narrowed the defect from screen selection to the material UV helper itself. Live code inspection showed that MirrorProjectedScreenTextureHorizontally flipped the explicit texture properties and then flipped material.mainTextureScale again. On the common runtime overlay shaders used by the current direct-CUA lane, mainTextureScale aliases _MainTex, so the helper could cancel its own mirror. Version 0.2.5 keeps the fix narrow by preserving explicit property flips and only falling back to mainTextureScale when the material does not expose the named texture properties.",
+  "changes": [
+    {
+      "area": "screen-core-runtime",
+      "summary": "Changed the projected-screen mirror helper so explicit _MainTex/_BaseMap/_EmissionMap flips are not immediately canceled by a second mainTextureScale flip on the same material.",
+      "reasoning": "The current direct-CUA runtime overlay commonly uses Unity shaders where mainTextureScale is just an alias for _MainTex. Double-applying the horizontal correction left the front-facing screen backwards even though it was now on the correct side."
+    },
+    {
+      "area": "uv-contract",
+      "summary": "Applied the same explicit-property-first fallback rule to the vertical flip helper for consistency across the shared projected-material seam.",
+      "reasoning": "The front-screen bug exposed a general helper problem, not just a one-off horizontal branch. Keeping the vertical helper on the same contract avoids future cancellations when the active overlay shader changes."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.5 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.5.dll and fa_player_asset.0.2.5.assetbundle.",
+    "Validate the 0.2.5 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}

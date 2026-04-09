@@ -2205,19 +2205,23 @@ public partial class FASyncRuntime : MVRScript
         if (material == null)
             return;
 
-        MirrorProjectedTextureProperty(material, "_MainTex");
-        MirrorProjectedTextureProperty(material, "_BaseMap");
-        MirrorProjectedTextureProperty(material, "_EmissionMap");
+        bool mirroredExplicitProperty = false;
+        mirroredExplicitProperty |= MirrorProjectedTextureProperty(material, "_MainTex");
+        mirroredExplicitProperty |= MirrorProjectedTextureProperty(material, "_BaseMap");
+        mirroredExplicitProperty |= MirrorProjectedTextureProperty(material, "_EmissionMap");
 
-        try
+        if (!mirroredExplicitProperty)
         {
-            Vector2 scale = material.mainTextureScale;
-            Vector2 offset = material.mainTextureOffset;
-            material.mainTextureScale = new Vector2(-scale.x, scale.y);
-            material.mainTextureOffset = new Vector2(offset.x + scale.x, offset.y);
-        }
-        catch
-        {
+            try
+            {
+                Vector2 scale = material.mainTextureScale;
+                Vector2 offset = material.mainTextureOffset;
+                material.mainTextureScale = new Vector2(-scale.x, scale.y);
+                material.mainTextureOffset = new Vector2(offset.x + scale.x, offset.y);
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -2226,19 +2230,23 @@ public partial class FASyncRuntime : MVRScript
         if (material == null)
             return;
 
-        FlipProjectedTexturePropertyVertically(material, "_MainTex");
-        FlipProjectedTexturePropertyVertically(material, "_BaseMap");
-        FlipProjectedTexturePropertyVertically(material, "_EmissionMap");
+        bool flippedExplicitProperty = false;
+        flippedExplicitProperty |= FlipProjectedTexturePropertyVertically(material, "_MainTex");
+        flippedExplicitProperty |= FlipProjectedTexturePropertyVertically(material, "_BaseMap");
+        flippedExplicitProperty |= FlipProjectedTexturePropertyVertically(material, "_EmissionMap");
 
-        try
+        if (!flippedExplicitProperty)
         {
-            Vector2 scale = material.mainTextureScale;
-            Vector2 offset = material.mainTextureOffset;
-            material.mainTextureScale = new Vector2(scale.x, -scale.y);
-            material.mainTextureOffset = new Vector2(offset.x, offset.y + scale.y);
-        }
-        catch
-        {
+            try
+            {
+                Vector2 scale = material.mainTextureScale;
+                Vector2 offset = material.mainTextureOffset;
+                material.mainTextureScale = new Vector2(scale.x, -scale.y);
+                material.mainTextureOffset = new Vector2(offset.x, offset.y + scale.y);
+            }
+            catch
+            {
+            }
         }
     }
 
@@ -2249,43 +2257,47 @@ public partial class FASyncRuntime : MVRScript
                 && directSourceName.IndexOf("VideoPlayer", StringComparison.OrdinalIgnoreCase) >= 0);
     }
 
-    private void MirrorProjectedTextureProperty(Material material, string propertyName)
+    private bool MirrorProjectedTextureProperty(Material material, string propertyName)
     {
         if (material == null || string.IsNullOrEmpty(propertyName))
-            return;
+            return false;
 
         try
         {
             if (!material.HasProperty(propertyName))
-                return;
+                return false;
 
             Vector2 scale = material.GetTextureScale(propertyName);
             Vector2 offset = material.GetTextureOffset(propertyName);
             material.SetTextureScale(propertyName, new Vector2(-scale.x, scale.y));
             material.SetTextureOffset(propertyName, new Vector2(offset.x + scale.x, offset.y));
+            return true;
         }
         catch
         {
+            return false;
         }
     }
 
-    private void FlipProjectedTexturePropertyVertically(Material material, string propertyName)
+    private bool FlipProjectedTexturePropertyVertically(Material material, string propertyName)
     {
         if (material == null || string.IsNullOrEmpty(propertyName))
-            return;
+            return false;
 
         try
         {
             if (!material.HasProperty(propertyName))
-                return;
+                return false;
 
             Vector2 scale = material.GetTextureScale(propertyName);
             Vector2 offset = material.GetTextureOffset(propertyName);
             material.SetTextureScale(propertyName, new Vector2(scale.x, -scale.y));
             material.SetTextureOffset(propertyName, new Vector2(offset.x, offset.y + scale.y));
+            return true;
         }
         catch
         {
+            return false;
         }
     }
 
