@@ -5747,7 +5747,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode);
+        record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record != null ? record.playlistPaths.Count : 0);
         ApplyStandalonePlayerLoopMode(record);
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
@@ -6112,7 +6112,6 @@ public partial class FASyncRuntime : MVRScript
         {
             record.videoPlayer.time = targetTimeSeconds;
             TryRefreshStandalonePlayerPausedFrame(record);
-            record.needsScreenRefresh = true;
             record.naturalEndHandled = false;
             record.lastError = "";
         }
@@ -6295,7 +6294,6 @@ public partial class FASyncRuntime : MVRScript
         {
             record.videoPlayer.time = targetTimeSeconds;
             TryRefreshStandalonePlayerPausedFrame(record);
-            record.needsScreenRefresh = true;
             record.lastError = "";
             return true;
         }
@@ -6986,14 +6984,16 @@ public partial class FASyncRuntime : MVRScript
         return CoercePlayerReleaseAspectMode(GhostScreenAspectModeCrop);
     }
 
-    private string ResolveStandalonePlayerLoopMode(string argsJson, string defaultLoopMode)
+    private string ResolveStandalonePlayerLoopMode(string argsJson, string defaultLoopMode, int playlistCount = 0)
     {
         string raw = ExtractJsonArgString(argsJson, "loopMode", "mode", "value");
         if (string.IsNullOrEmpty(raw))
         {
             bool looping;
             if (TryReadBoolArg(argsJson, out looping, "loop", "isLooping"))
-                raw = looping ? PlayerLoopModeSingle : PlayerLoopModeNone;
+                raw = looping
+                    ? (playlistCount > 1 ? PlayerLoopModePlaylist : PlayerLoopModeSingle)
+                    : PlayerLoopModeNone;
             else
                 raw = defaultLoopMode;
         }

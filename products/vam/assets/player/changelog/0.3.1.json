@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.1",
+  "title": "Stabilize the first CUA input slice so scrub stays responsive and playlist loop survives reloads",
+  "summary": "The 0.3.0 gaze/focus/input lane remains the active product direction, but its first pass was too expensive and too fragile for real testing. This version keeps the same operator contract while making joystick scrub stateful instead of per-frame jitter, reducing unnecessary hosted screen work during scrub, holding focus briefly while the stick is still active, and preserving playlist loop intent when hosted or direct player reloads rebuild the playlist.",
+  "reasoning": "Live operator proof showed the new input layer had the right shape but the wrong feel: gaze capture worked, scrubbing briefly responded and then degraded, performance dropped while scrubbing, and videos could fall back to looping themselves instead of respecting playlist intent. The winning fix is not a broad rewrite. The scrub path already had a valid transport seam through the existing seek action, so the real problem was that 0.3.0 reissued seeks and UI/status churn every frame while also forcing extra hosted screen work. Separately, the loop seam was being normalized before the playlist existed during load/reload, which let legacy boolean loop intent collapse back to single-item behavior. This release narrows both failures without changing the recovered screen baseline.",
+  "changes": [
+    {
+      "area": "cua-input-focus-and-scrub-stability",
+      "summary": "Keep focus alive briefly while stick input is still active, cache the authored screen surface lookup, and throttle scrub seeks plus input-state UI updates instead of mutating them every frame.",
+      "reasoning": "The user reported that scrub almost worked and then felt terrible. The per-frame contract resolve, per-frame status string writes, and per-frame seek requests were creating avoidable overhead and making focus easy to lose mid-input."
+    },
+    {
+      "area": "video-scrub-targeting",
+      "summary": "Scrub now accumulates against a persistent normalized target and applies seeks on a short cadence instead of re-deriving target time from the moving video clock every frame.",
+      "reasoning": "Using the current playback clock as the scrub base on every tick makes stick input feel sticky and inconsistent, especially once playback motion and delayed seek application interact. A stable scrub target makes the control predictable again."
+    },
+    {
+      "area": "playlist-loop-truth-through-load",
+      "summary": "Hosted and direct player load paths now resolve legacy boolean loop requests after the playlist is known, so multi-item loads keep playlist looping instead of collapsing to single-item video looping.",
+      "reasoning": "The user-visible bug was videos continuing to loop themselves. The underlying issue was not only the loop button path, but also the load/reload seam re-normalizing loop intent before playlist length was available."
+    },
+    {
+      "area": "paused-seek-screen-refresh-cost",
+      "summary": "Seek and skip continue to refresh the paused frame, but they no longer force a full standalone screen refresh flag on every scrub step.",
+      "reasoning": "The paused frame still needs to update truthfully, but the extra screen refresh flag on every scrub step amplified the runtime cost without improving the visible result."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.1 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the fa_cua_player clean-room solution with the current CUA input feature define enabled.",
+    "Run the versioned release wrapper to deploy fa_cua_player.0.3.1.dll and fa_player_asset.0.3.1.assetbundle and validate the release packet.",
+    "In VaM, confirm gaze capture still works, joystick scrub feels responsive without major performance collapse, and loop playlist continues across multi-item video playback instead of same-item self-looping."
+  ],
+  "knownIssues": [
+    "Config-backed defaults for shuffle, loop mode, volume, and related settings remain a later slice.",
+    "Image scrub on the shared scrub slider remains a later feature slice.",
+    "VAR packaging, obfuscation, and freemium/auth-code distribution seams remain documented recovery work and are not changed in this stabilization release."
+  ]
+}

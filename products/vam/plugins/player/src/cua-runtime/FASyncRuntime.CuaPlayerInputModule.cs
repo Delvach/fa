@@ -8,11 +8,15 @@ public partial class FASyncRuntime : MVRScript
 {
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
     private const float CuaPlayerFocusReleaseGraceSeconds = 0.20f;
+    private const float CuaPlayerFocusInputGraceSeconds = 0.45f;
     private const float CuaPlayerNavigationDeadzone = 0.32f;
     private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
+    private const float CuaPlayerVideoSeekApplyIntervalSeconds = 0.08f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
+    private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
+    private const float CuaPlayerSurfaceResolveIntervalSeconds = 0.15f;
 
     private struct CuaPlayerNavigationSnapshot
     {
@@ -32,8 +36,17 @@ public partial class FASyncRuntime : MVRScript
 
     private bool cuaPlayerFocusActive = false;
     private float cuaPlayerLastGazeSeenAt = -1000f;
+    private float cuaPlayerLastInputActiveAt = -1000f;
     private float cuaPlayerNextImageStepTime = 0f;
     private int cuaPlayerImageStepDirection = 0;
+    private bool cuaPlayerVideoScrubTargetKnown = false;
+    private float cuaPlayerVideoScrubTargetNormalized = 0f;
+    private float cuaPlayerNextVideoSeekApplyAt = 0f;
+    private float cuaPlayerNextInputStateUpdateAt = 0f;
+    private string cuaPlayerLastInputState = "";
+    private string cuaPlayerCachedSurfaceHostAtomUid = "";
+    private GameObject cuaPlayerCachedScreenSurfaceObject;
+    private float cuaPlayerNextSurfaceResolveAt = 0f;
 
     private void BuildCuaPlayerInputStorables()
     {
@@ -73,7 +86,16 @@ public partial class FASyncRuntime : MVRScript
         if (gazeActive)
             cuaPlayerLastGazeSeenAt = now;
 
-        bool wantsFocus = gazeActive || (cuaPlayerFocusActive && now - cuaPlayerLastGazeSeenAt <= CuaPlayerFocusReleaseGraceSeconds);
+        Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
+        float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
+        if (Mathf.Abs(horizontal) > 0f)
+            cuaPlayerLastInputActiveAt = now;
+
+        bool inputActiveRecently = (now - cuaPlayerLastInputActiveAt) <= CuaPlayerFocusInputGraceSeconds;
+        bool wantsFocus = gazeActive
+            || (cuaPlayerFocusActive
+                && ((now - cuaPlayerLastGazeSeenAt) <= CuaPlayerFocusReleaseGraceSeconds
+                    || inputActiveRecently));
         bool ownerAvailable = cuaPlayerInputOwner == null || ReferenceEquals(cuaPlayerInputOwner, this);
         bool ownsFocus = false;
 
@@ -85,6 +107,8 @@ public partial class FASyncRuntime : MVRScript
 
             ownsFocus = true;
             cuaPlayerFocusActive = true;
+            if (gazeActive)
+                cuaPlayerLastGazeSeenAt = now;
             if (becameOwner || !cuaPlayerNavigationCaptureActive)
                 SetInputCaptureState(true);
         }
@@ -103,7 +127,7 @@ public partial class FASyncRuntime : MVRScript
                 cuaPlayerFocusActive,
                 gazeActive,
                 ownerAvailable ? "idle" : "waiting",
-                Vector2.zero,
+                navigation,
                 gazeReason);
             return;
         }
@@ -114,11 +138,10 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
-        float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
-
         if (record.mediaIsStillImage)
         {
+            cuaPlayerVideoScrubTargetKnown = false;
+            cuaPlayerNextVideoSeekApplyAt = 0f;
             TickCuaPlayerImageStepInput(record, horizontal);
             UpdateCuaPlayerInputState(true, gazeActive, "image_step", navigation, gazeReason);
             return;
@@ -191,6 +214,9 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
+        cuaPlayerVideoScrubTargetKnown = false;
+        cuaPlayerVideoScrubTargetNormalized = 0f;
+        cuaPlayerNextVideoSeekApplyAt = 0f;
         if (wasOwner || cuaPlayerNavigationCaptureActive)
             SetInputCaptureState(false);
 
@@ -212,7 +238,16 @@ public partial class FASyncRuntime : MVRScript
         sb.Append(" axis=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
         if (!string.IsNullOrEmpty(reason))
             sb.Append(" note=").Append(reason);
-        playerInputStateField.valNoCallback = sb.ToString();
+
+        string summary = sb.ToString();
+        float now = Time.unscaledTime;
+        if (string.Equals(summary, cuaPlayerLastInputState, StringComparison.Ordinal)
+            && now < cuaPlayerNextInputStateUpdateAt)
+            return;
+
+        playerInputStateField.valNoCallback = summary;
+        cuaPlayerLastInputState = summary;
+        cuaPlayerNextInputStateUpdateAt = now + CuaPlayerInputStateUpdateIntervalSeconds;
     }
 
     private bool TryResolveCuaPlayerGazeHit(out string reason)
@@ -232,22 +267,60 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        HostedPlayerSurfaceContract contract;
-        string errorMessage;
-        if (!TryResolveHostedPlayerSurfaceContract(hostAtom.uid ?? "", out contract, out errorMessage) || contract == null)
-        {
-            reason = string.IsNullOrEmpty(errorMessage) ? "surface_missing" : errorMessage;
-            return false;
-        }
-
-        GameObject surfaceObject = contract.screenSurfaceObject;
+        GameObject surfaceObject = ResolveCuaPlayerScreenSurfaceObject(hostAtom, out reason);
         if (surfaceObject == null)
         {
-            reason = "screen_surface_missing";
+            if (string.IsNullOrEmpty(reason))
+                reason = "screen_surface_missing";
             return false;
         }
 
         return TryResolveCuaPlayerGazeIntersection(surfaceObject, sc.lookCamera);
+    }
+
+    private GameObject ResolveCuaPlayerScreenSurfaceObject(Atom hostAtom, out string errorMessage)
+    {
+        errorMessage = "";
+        if (hostAtom == null)
+        {
+            errorMessage = "host_atom_missing";
+            return null;
+        }
+
+        string hostAtomUid = string.IsNullOrEmpty(hostAtom.uid) ? "" : hostAtom.uid.Trim();
+        float now = Time.unscaledTime;
+        if (!string.IsNullOrEmpty(hostAtomUid)
+            && string.Equals(cuaPlayerCachedSurfaceHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase)
+            && cuaPlayerCachedScreenSurfaceObject != null)
+        {
+            return cuaPlayerCachedScreenSurfaceObject;
+        }
+
+        if (now < cuaPlayerNextSurfaceResolveAt
+            && !string.IsNullOrEmpty(hostAtomUid)
+            && string.Equals(cuaPlayerCachedSurfaceHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase))
+        {
+            errorMessage = "screen_surface_pending";
+            return null;
+        }
+
+        HostedPlayerSurfaceContract contract;
+        string contractErrorMessage;
+        if (!TryResolveHostedPlayerSurfaceContract(hostAtomUid, out contract, out contractErrorMessage)
+            || contract == null
+            || contract.screenSurfaceObject == null)
+        {
+            cuaPlayerCachedSurfaceHostAtomUid = hostAtomUid;
+            cuaPlayerCachedScreenSurfaceObject = null;
+            cuaPlayerNextSurfaceResolveAt = now + CuaPlayerSurfaceResolveIntervalSeconds;
+            errorMessage = string.IsNullOrEmpty(contractErrorMessage) ? "screen_surface_missing" : contractErrorMessage;
+            return null;
+        }
+
+        cuaPlayerCachedSurfaceHostAtomUid = hostAtomUid;
+        cuaPlayerCachedScreenSurfaceObject = contract.screenSurfaceObject;
+        cuaPlayerNextSurfaceResolveAt = now + CuaPlayerSurfaceResolveIntervalSeconds;
+        return cuaPlayerCachedScreenSurfaceObject;
     }
 
     private bool TryResolveCuaPlayerGazeIntersection(GameObject surfaceObject, Camera lookCamera)
@@ -309,8 +382,15 @@ public partial class FASyncRuntime : MVRScript
 
     private void TickCuaPlayerVideoScrubInput(StandalonePlayerRecord record, float horizontal)
     {
-        if (record == null || record.mediaIsStillImage || Mathf.Abs(horizontal) <= 0f)
+        if (record == null || record.mediaIsStillImage)
             return;
+
+        if (Mathf.Abs(horizontal) <= 0f)
+        {
+            cuaPlayerVideoScrubTargetKnown = false;
+            cuaPlayerNextVideoSeekApplyAt = 0f;
+            return;
+        }
 
         double currentTimeSeconds;
         double durationSeconds;
@@ -321,19 +401,29 @@ public partial class FASyncRuntime : MVRScript
         if (durationSeconds <= 0.0001d)
             return;
 
-        float targetNormalized = Mathf.Clamp01(
-            (float)(currentTimeSeconds / durationSeconds)
+        if (!cuaPlayerVideoScrubTargetKnown)
+        {
+            cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01((float)(currentTimeSeconds / durationSeconds));
+            cuaPlayerVideoScrubTargetKnown = true;
+        }
+
+        cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
+            cuaPlayerVideoScrubTargetNormalized
             + (horizontal * CuaPlayerVideoScrubNormalizedPerSecond * Time.unscaledDeltaTime));
+
+        if (Time.unscaledTime < cuaPlayerNextVideoSeekApplyAt)
+            return;
 
         string argsJson = "{\"playbackKey\":\""
             + EscapeJsonString(record.playbackKey)
             + "\",\"normalized\":"
-            + FormatFloat(targetNormalized)
+            + FormatFloat(cuaPlayerVideoScrubTargetNormalized)
             + "}";
 
         string ignoredResult;
         if (TrySeekStandalonePlayerNormalized("Player.InputScrub", argsJson, out ignoredResult, out errorMessage))
         {
+            cuaPlayerNextVideoSeekApplyAt = Time.unscaledTime + CuaPlayerVideoSeekApplyIntervalSeconds;
             ArmStandalonePlayerScrubFieldSyncHoldoff();
             RefreshVisiblePlayerDebugFields();
         }

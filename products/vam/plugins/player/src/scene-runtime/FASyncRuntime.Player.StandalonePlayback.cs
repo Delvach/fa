@@ -84,7 +84,6 @@ public partial class FASyncRuntime : MVRScript
                 record.displayId = HostedPlayerDisplayId;
                 record.playbackKey = hostedPlaybackKey;
                 record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, record.aspectMode);
-                record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode);
                 record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
                 record.desiredPlaying = TryReadStandalonePlayerDesiredPlaying(argsJson, true);
 
@@ -109,6 +108,7 @@ public partial class FASyncRuntime : MVRScript
 
                 int hostedCurrentIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, mediaPath);
                 record.currentIndex = hostedCurrentIndex >= 0 ? hostedCurrentIndex : 0;
+                record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
 
                 float hostedParsedVolume;
                 if (TryExtractJsonFloatField(argsJson, "volume", out hostedParsedVolume))
@@ -189,10 +189,10 @@ public partial class FASyncRuntime : MVRScript
         record.displayId = slot.displayId;
         record.playbackKey = playbackKey;
         record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, instance.defaultAspectMode);
-        record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode);
         record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
         record.desiredPlaying = TryReadStandalonePlayerDesiredPlaying(argsJson, true);
         ApplyStandalonePlayerPlaylistArgs(record, argsJson, mediaPath);
+        record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
 
         float parsedVolume;
         if (TryExtractJsonFloatField(argsJson, "volume", out parsedVolume))
