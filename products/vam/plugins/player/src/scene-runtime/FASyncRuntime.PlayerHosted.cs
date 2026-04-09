@@ -1526,7 +1526,13 @@ public partial class FASyncRuntime : MVRScript
         // authored screen instead of waiting for a later refresh tick to discover it.
         HostedPlayerSurfaceContract eagerContract;
         string eagerContractError;
-        if (record.renderTexture != null || record.imageTexture != null)
+        bool preserveExistingHostedBindingUntilPrepared =
+            !loadStillImage
+            && record.binding != null
+            && record.binding.runtimeMediaSurfaceObject != null;
+
+        if (!preserveExistingHostedBindingUntilPrepared
+            && (record.renderTexture != null || record.imageTexture != null))
         {
             if (TryResolveHostedPlayerSurfaceContract(hostAtomUid, out eagerContract, out eagerContractError)
                 && eagerContract != null)

@@ -6659,7 +6659,19 @@ public partial class FASyncRuntime : MVRScript
             bool canRefreshPendingHostedBinding =
                 record.needsScreenRefresh
                 && record.renderTexture != null
-                && IsHostedPlayerInstanceId(record.instanceId);
+                && IsHostedPlayerInstanceId(record.instanceId)
+                && record.binding == null;
+
+            bool hostedVideoBindingRequiresKnownDimensions =
+                IsHostedPlayerInstanceId(record.instanceId)
+                && !record.mediaIsStillImage
+                && record.binding != null;
+            bool hasKnownPresentedVideoDimensions =
+                record.textureWidth > 16
+                && record.textureHeight > 16;
+            bool canRefreshScreenBindingNow =
+                !hostedVideoBindingRequiresKnownDimensions
+                || hasKnownPresentedVideoDimensions;
 
             if (record.prepared || canRefreshPendingHostedBinding)
             {
@@ -6744,7 +6756,7 @@ public partial class FASyncRuntime : MVRScript
                     }
                 }
 
-                if (record.needsScreenRefresh)
+                if (record.needsScreenRefresh && canRefreshScreenBindingNow)
                 {
                     string refreshError;
                     if (!TryRefreshStandalonePlayerScreenBinding(record, out refreshError))
@@ -7395,14 +7407,33 @@ public partial class FASyncRuntime : MVRScript
             record.runtimeErrorHooked = true;
         }
 
-        // Restore the older eager RT contract so hosted binding can come up
-        // before the first real video dimensions are detected.
-        if (!TryEnsureStandalonePlayerRenderTexture(record, 16, 16))
+        // For the first hosted bind we still need a tiny eager RT, but once a
+        // live hosted screen already has a real RT attached we should not
+        // downgrade it back to 16x16 during a media switch. Doing that forces a
+        // transient square rebind before the new movie dimensions arrive.
+        if (record.renderTexture == null)
         {
-            errorMessage = string.IsNullOrEmpty(record.lastError)
-                ? "player render texture not created"
-                : record.lastError;
-            return false;
+            if (!TryEnsureStandalonePlayerRenderTexture(record, 16, 16))
+            {
+                errorMessage = string.IsNullOrEmpty(record.lastError)
+                    ? "player render texture not created"
+                    : record.lastError;
+                return false;
+            }
+        }
+        else
+        {
+            try
+            {
+                if (record.videoPlayer != null && record.videoPlayer.targetTexture != record.renderTexture)
+                    record.videoPlayer.targetTexture = record.renderTexture;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = "player render texture reuse failed: " + ex.Message;
+                record.lastError = errorMessage;
+                return false;
+            }
         }
 
         return true;

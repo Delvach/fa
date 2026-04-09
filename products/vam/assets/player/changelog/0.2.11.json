@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.11",
+  "title": "Keep hosted screen-core shape stable during video switches",
+  "summary": "Preserve an already-bound hosted screen's last valid render-texture shape during Next/media switches so the runtime overlay and its rear backing do not briefly rebind as a square placeholder before the new movie dimensions are known.",
+  "reasoning": "The remaining visible screen glitch was not a new geometry drift in the asset. Live code and runtime proof pointed at the hosted video-switch order instead: the player reset its tracked dimensions to zero, recreated or rebound against a placeholder 16x16 render texture, and eagerly rebuilt the overlay/backing before the new movie had real prepared dimensions. Because the rear backing is parented to that runtime overlay, it inherited the same temporary wrong shape and visibly jumped. Version 0.2.11 keeps the fix narrow by preserving an existing hosted binding and render texture until the new movie has real prepared dimensions, instead of rebuilding the screen from placeholder geometry mid-switch.",
+  "changes": [
+    {
+      "area": "hosted-screen-binding",
+      "summary": "Skip the eager hosted screen refresh for video switches when an existing runtime-bound screen is already present.",
+      "reasoning": "This keeps the current valid screen presentation alive until the new movie can provide real prepared dimensions, instead of replacing it with a placeholder square bind."
+    },
+    {
+      "area": "render-texture-lifecycle",
+      "summary": "Reuse an existing hosted render texture during video switches instead of downgrading it back to 16x16.",
+      "reasoning": "The placeholder 16x16 RT is still useful for first bind, but once a real hosted screen is already alive it should not be reintroduced during Next/media-switch churn."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.11 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.11.dll and fa_player_asset.0.2.11.assetbundle.",
+    "Validate the 0.2.11 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "The rear still reading as a larger black slab from the back is a separate polish seam and is not changed by 0.2.11.",
+    "Random-aware previous behavior remains a separate playlist follow-up.",
+    "Defaults config for shuffle, loop mode, volume, and related player values remains deferred.",
+    "Image scrub on the existing scrub path remains deferred."
+  ]
+}
