@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.10",
+  "title": "Harden hosted playlist continuity so loop playlist does not silently collapse to single-item behavior",
+  "summary": "Keep an existing multi-item hosted playlist when a later load or rebind only resolves the selected file, preventing the player from silently collapsing to a one-item playlist and then behaving like single-loop at natural end even though the UI still says playlist.",
+  "reasoning": "The natural-end loop code itself is fairly deterministic: playlist mode advances when there is a valid multi-item playlist, single restarts, and none stops. The more plausible intermittent failure seam is earlier, in the hosted load path. If a later load only surfaces the selected file instead of the richer sibling playlist, the record can be reduced to one item. At that point playlist and single become indistinguishable at natural end, which looks like a loop bug even though the branch is simply operating on a collapsed playlist. Version 0.2.10 keeps the fix narrow by preserving the existing richer playlist only when the newly selected media already belongs to it.",
+  "changes": [
+    {
+      "area": "hosted-playlist-load",
+      "summary": "When a hosted load resolves one item or less, the player now reuses the existing multi-item playlist if the selected media is already part of it.",
+      "reasoning": "This preserves playlist continuity across narrower reloads without incorrectly carrying an old playlist forward when the operator has actually selected media outside that playlist."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.10 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.10.dll and fa_player_asset.0.2.10.assetbundle.",
+    "Validate the 0.2.10 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Defaults config for shuffle, loop mode, volume, and related player values is still a separate follow-up.",
+    "Image scrub on the existing scrub path remains deferred until the next focused slice."
+  ]
+}

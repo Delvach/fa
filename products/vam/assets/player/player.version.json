@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.9",
-    "notes":  "0.2.9 keeps the screen-core front surface transparent, gives the runtime media quad its own attached black rear backing, and removes authored backdrop slabs from the live hosted presentation path so repeated next events stop reintroducing detached rear geometry.",
+    "version":  "0.2.10",
+    "notes":  "0.2.10 hardens hosted playlist continuity so a load or rebind that only surfaces the selected file does not collapse an existing multi-item playlist back to one item, which can otherwise make playlist loop behavior appear to fall back to single-item restart at natural end.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.9.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.10.json"
 }
