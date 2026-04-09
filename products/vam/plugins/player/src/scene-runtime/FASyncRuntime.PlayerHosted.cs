@@ -1815,82 +1815,48 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        // For the bare screen-core lane, the authored disconnect_surface already sits
-        // almost flush behind screen_surface and matches the visible screen dimensions.
-        // Using screen_body as the moving backdrop makes the rear slab look detached even
-        // when playback itself is correct, so prefer the thinner authored disconnect quad
-        // and keep the thicker body hidden in this phase-1 presentation seam.
-        GameObject backdropObject = contract.disconnectSurfaceObject != null
-            ? contract.disconnectSurfaceObject
-            : contract.screenBodyObject;
-        if (backdropObject == null || backdropObject.transform == null)
-            return;
-
-        Transform backdropTransform = backdropObject.transform;
-        Transform backdropParent = backdropTransform.parent;
-        Transform overlayTransform = binding.runtimeMediaSurfaceObject.transform;
-        if (overlayTransform == null)
-            return;
-
         if (!binding.backdropTransformCaptured)
         {
-            binding.backdropTransform = backdropTransform;
-            binding.backdropOriginalLocalPosition = backdropTransform.localPosition;
-            binding.backdropOriginalLocalRotation = backdropTransform.localRotation;
-            binding.backdropOriginalLocalScale = backdropTransform.localScale;
+            List<Renderer> capturedRenderers = new List<Renderer>();
+            List<bool> capturedStates = new List<bool>();
+
+            CaptureHostedBackdropRendererStates(contract.disconnectSurfaceObject, capturedRenderers, capturedStates);
+            CaptureHostedBackdropRendererStates(contract.screenBodyObject, capturedRenderers, capturedStates);
+
+            binding.backdropTransform = null;
             binding.backdropTransformCaptured = true;
-
-            Renderer[] renderers = backdropObject.GetComponentsInChildren<Renderer>(true);
-            binding.backdropRenderers = renderers ?? new Renderer[0];
-            binding.backdropRendererStates = new bool[binding.backdropRenderers.Length];
-            for (int i = 0; i < binding.backdropRenderers.Length; i++)
-            {
-                Renderer renderer = binding.backdropRenderers[i];
-                binding.backdropRendererStates[i] = renderer != null && renderer.enabled;
-            }
+            binding.backdropRenderers = capturedRenderers.ToArray();
+            binding.backdropRendererStates = capturedStates.ToArray();
         }
 
-        Vector3 worldWidth = overlayTransform.TransformVector(Vector3.right);
-        Vector3 worldHeight = overlayTransform.TransformVector(Vector3.up);
-        float localWidth = backdropParent != null
-            ? backdropParent.InverseTransformVector(worldWidth).magnitude
-            : worldWidth.magnitude;
-        float localHeight = backdropParent != null
-            ? backdropParent.InverseTransformVector(worldHeight).magnitude
-            : worldHeight.magnitude;
+        // The runtime overlay now owns its own rear backing quad. Leave the authored
+        // disconnect/body slabs out of the live presentation path so repeated next/rebind
+        // events cannot drag a stale helper slab back into view behind the media plane.
+        SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
+        SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
+    }
 
-        Vector3 desiredLocalScale = binding.backdropOriginalLocalScale;
-        desiredLocalScale.x = Mathf.Max(0.001f, localWidth);
-        desiredLocalScale.y = Mathf.Max(0.001f, localHeight);
+    private void CaptureHostedBackdropRendererStates(
+        GameObject nodeObject,
+        List<Renderer> capturedRenderers,
+        List<bool> capturedStates)
+    {
+        if (nodeObject == null || capturedRenderers == null || capturedStates == null)
+            return;
 
-        float worldDepth = backdropParent != null
-            ? backdropParent.TransformVector(new Vector3(0f, 0f, desiredLocalScale.z)).magnitude
-            : Mathf.Abs(desiredLocalScale.z);
-        Vector3 desiredWorldPosition = overlayTransform.position
-            - (overlayTransform.forward * Mathf.Max(0.0002f, (worldDepth * 0.5f) + 0.0001f));
-        Quaternion desiredWorldRotation = overlayTransform.rotation;
+        Renderer[] renderers = nodeObject.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length <= 0)
+            return;
 
-        if (backdropParent != null)
+        for (int i = 0; i < renderers.Length; i++)
         {
-            backdropTransform.localPosition = backdropParent.InverseTransformPoint(desiredWorldPosition);
-            backdropTransform.localRotation = Quaternion.Inverse(backdropParent.rotation) * desiredWorldRotation;
+            Renderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            capturedRenderers.Add(renderer);
+            capturedStates.Add(renderer.enabled);
         }
-        else
-        {
-            backdropTransform.position = desiredWorldPosition;
-            backdropTransform.rotation = desiredWorldRotation;
-        }
-
-        backdropTransform.localScale = desiredLocalScale;
-        SetHostedPlayerNodeRendererEnabled(backdropObject, true);
-
-        if (contract.disconnectSurfaceObject != null
-            && !ReferenceEquals(contract.disconnectSurfaceObject, backdropObject))
-            SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
-
-        if (contract.screenBodyObject != null
-            && !ReferenceEquals(contract.screenBodyObject, backdropObject))
-            SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
     }
 
     private void SetHostedPlayerNodeRendererEnabled(GameObject nodeObject, bool enabled)

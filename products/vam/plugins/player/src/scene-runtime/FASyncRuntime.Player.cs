@@ -2049,8 +2049,10 @@ public partial class FASyncRuntime : MVRScript
             Material[][] backdropAppliedMaterials = new Material[0][];
 
             bool applyBackdropToTarget =
-                (useFitBlackPresentation || useWidthLockedPresentation)
-                && (usingDisconnectSurfaceTarget || isScreenCoreSurface);
+                FrameAngelPlayerMediaParity.ShouldApplyBackdropToTarget(
+                    aspectMode,
+                    usingDisconnectSurfaceTarget,
+                    isScreenCoreSurface);
 
             if (applyBackdropToTarget)
             {
@@ -2153,6 +2155,33 @@ public partial class FASyncRuntime : MVRScript
                 return false;
             }
 
+            Renderer runtimeBackdropRenderer = null;
+            Material runtimeBackdropMaterial = null;
+            if (isScreenCoreSurface)
+            {
+                if (!TryCreateRuntimeMediaBackingSurface(
+                    slot.runtimeMediaSurfaceObject,
+                    slot.slotId,
+                    targetBasisMaterial,
+                    out runtimeBackdropRenderer,
+                    out runtimeBackdropMaterial,
+                    out errorMessage))
+                {
+                    DestroyRuntimeMediaSurface(slot);
+                    try
+                    {
+                        UnityEngine.Object.Destroy(projectedMaterial);
+                    }
+                    catch
+                    {
+                    }
+
+                    TryRestoreScreenSurfaceMaterials(backdropRenderers, backdropOriginalMaterials);
+                    DestroyAppliedScreenSurfaceMaterials(backdropAppliedMaterials);
+                    return false;
+                }
+            }
+
             bool applyLegacyFrontFaceCorrection =
                 usingDisconnectSurfaceTarget
                 || (slot != null && slot.forceOperatorFacingFrontFace);
@@ -2177,6 +2206,13 @@ public partial class FASyncRuntime : MVRScript
                 attachedRenderers = overlayRenderer != null ? new[] { overlayRenderer } : new Renderer[0];
                 originalMaterials = new[] { new Material[0] };
                 appliedMaterials = new[] { new[] { projectedMaterial } };
+            }
+
+            if (runtimeBackdropRenderer != null && runtimeBackdropMaterial != null)
+            {
+                attachedRenderers = AppendRenderer(attachedRenderers, runtimeBackdropRenderer);
+                originalMaterials = AppendMaterialRows(originalMaterials, new[] { new Material[0] });
+                appliedMaterials = AppendMaterialRows(appliedMaterials, new[] { new[] { runtimeBackdropMaterial } });
             }
 
             debugJson = BuildPlayerScreenBindingDebugJson(
@@ -7061,6 +7097,155 @@ public partial class FASyncRuntime : MVRScript
         }
     }
 
+    private bool TryCreateRuntimeBackingMaterial(Material targetMaterial, out Material backingMaterial)
+    {
+        backingMaterial = null;
+        if (!TryCreateBlackBackdropMaterial(targetMaterial, out backingMaterial) || backingMaterial == null)
+            return false;
+
+        try
+        {
+            TrySetMaterialFloat(backingMaterial, "_ZWrite", 1f);
+            TrySetMaterialFloat(backingMaterial, "_Cull", 0f);
+            TrySetMaterialFloat(backingMaterial, "_Mode", 0f);
+            TrySetMaterialFloat(backingMaterial, "_Surface", 0f);
+
+            int basisRenderQueue = -1;
+            try
+            {
+                if (targetMaterial != null)
+                    basisRenderQueue = targetMaterial.renderQueue;
+            }
+            catch
+            {
+                basisRenderQueue = -1;
+            }
+
+            if (basisRenderQueue >= 0)
+            {
+                try
+                {
+                    backingMaterial.renderQueue = Math.Max(0, basisRenderQueue - 5);
+                }
+                catch
+                {
+                }
+            }
+
+            return true;
+        }
+        catch
+        {
+            if (backingMaterial != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(backingMaterial);
+                }
+                catch
+                {
+                }
+            }
+
+            backingMaterial = null;
+            return false;
+        }
+    }
+
+    private bool TryCreateRuntimeMediaBackingSurface(
+        GameObject runtimeSurfaceObject,
+        string slotId,
+        Material targetMaterial,
+        out Renderer backingRenderer,
+        out Material backingMaterial,
+        out string errorMessage)
+    {
+        backingRenderer = null;
+        backingMaterial = null;
+        errorMessage = "";
+
+        if (runtimeSurfaceObject == null)
+        {
+            errorMessage = "runtime media surface not found";
+            return false;
+        }
+
+        if (!TryCreateRuntimeBackingMaterial(targetMaterial, out backingMaterial) || backingMaterial == null)
+        {
+            errorMessage = "runtime backing material not created";
+            return false;
+        }
+
+        GameObject backingObject = null;
+        try
+        {
+            backingObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            backingObject.name = "FAPlayerRuntimeSurface_Backing_" + (string.IsNullOrEmpty(slotId) ? "main" : slotId);
+            backingObject.layer = runtimeSurfaceObject.layer;
+            backingObject.transform.SetParent(runtimeSurfaceObject.transform, false);
+            backingObject.transform.localRotation = Quaternion.identity;
+            backingObject.transform.localScale = Vector3.one;
+
+            Vector3 overlayScale = runtimeSurfaceObject.transform.localScale;
+            float backingGap = Mathf.Max(
+                0.0002f,
+                Mathf.Max(Mathf.Abs(overlayScale.x), Mathf.Abs(overlayScale.y)) * 0.0005f);
+            backingObject.transform.localPosition = new Vector3(0f, 0f, -backingGap);
+
+            Collider backingCollider = backingObject.GetComponent<Collider>();
+            if (backingCollider != null)
+                UnityEngine.Object.Destroy(backingCollider);
+
+            backingRenderer = backingObject.GetComponent<Renderer>();
+            if (backingRenderer == null)
+            {
+                UnityEngine.Object.Destroy(backingObject);
+                UnityEngine.Object.Destroy(backingMaterial);
+                backingMaterial = null;
+                errorMessage = "runtime backing renderer not created";
+                return false;
+            }
+
+            backingRenderer.sharedMaterials = new[] { backingMaterial };
+            backingRenderer.enabled = true;
+            backingRenderer.receiveShadows = false;
+#pragma warning disable CS0618
+            backingRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+#pragma warning restore CS0618
+            backingRenderer.allowOcclusionWhenDynamic = false;
+            return true;
+        }
+        catch
+        {
+            if (backingObject != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(backingObject);
+                }
+                catch
+                {
+                }
+            }
+
+            if (backingMaterial != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(backingMaterial);
+                }
+                catch
+                {
+                }
+            }
+
+            backingRenderer = null;
+            backingMaterial = null;
+            errorMessage = "runtime backing surface not created";
+            return false;
+        }
+    }
+
     private bool TryAdvanceStandalonePlayerAfterNaturalEnd(StandalonePlayerRecord record, out string errorMessage)
     {
         errorMessage = "";
@@ -7933,6 +8118,33 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        Renderer runtimeBackdropRenderer = null;
+        Material runtimeBackdropMaterial = null;
+        if (isScreenCoreSurface)
+        {
+            if (!TryCreateRuntimeMediaBackingSurface(
+                slot.runtimeMediaSurfaceObject,
+                slot.slotId,
+                targetBasisMaterial,
+                out runtimeBackdropRenderer,
+                out runtimeBackdropMaterial,
+                out errorMessage))
+            {
+                DestroyRuntimeMediaSurface(slot);
+                try
+                {
+                    UnityEngine.Object.Destroy(projectedMaterial);
+                }
+                catch
+                {
+                }
+
+                TryRestoreScreenSurfaceMaterials(backdropRenderers, backdropOriginalMaterials);
+                DestroyAppliedScreenSurfaceMaterials(backdropAppliedMaterials);
+                return false;
+            }
+        }
+
         bool applyFrontFaceCorrection =
             (useFitBlackPresentation && usingDisconnectSurfaceTarget)
             || (slot != null && slot.forceOperatorFacingFrontFace);
@@ -7958,6 +8170,13 @@ public partial class FASyncRuntime : MVRScript
             attachedRenderers = overlayRenderer != null ? new[] { overlayRenderer } : new Renderer[0];
             originalMaterials = new[] { new Material[0] };
             appliedMaterials = new[] { new[] { projectedMaterial } };
+        }
+
+        if (runtimeBackdropRenderer != null && runtimeBackdropMaterial != null)
+        {
+            attachedRenderers = AppendRenderer(attachedRenderers, runtimeBackdropRenderer);
+            originalMaterials = AppendMaterialRows(originalMaterials, new[] { new Material[0] });
+            appliedMaterials = AppendMaterialRows(appliedMaterials, new[] { new[] { runtimeBackdropMaterial } });
         }
 
         debugJson = BuildPlayerScreenBindingDebugJson(

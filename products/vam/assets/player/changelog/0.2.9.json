@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.9",
+  "title": "Make the screen-core runtime overlay self-contained with a transparent front and attached black rear backing",
+  "summary": "Stop using full-surface blacking on the authored screen-core front face, add a same-shape black rear backing directly under the runtime media quad, and take the authored disconnect/body slabs out of the live hosted presentation path so the picture no longer carries built-in black bars and repeated next events cannot drag an old rear slab back into view.",
+  "reasoning": "The operator wanted the front host surface to behave more like ImagePanel: transparent around the actual image or video instead of blacked out to the full screen slab. At the same time, the back still needs to be solid black and attached to the media itself so buttons and scene items do not show through the picture area and the rear does not become a readable media face. The 0.2.8 fix closed the inflated-depth bug, but the hosted code was still reusing authored backdrop geometry as moving presentation state, which is why next/rebind events could reintroduce a detached rear slab. Version 0.2.9 keeps the fix narrow by making the runtime media quad own its own rear backing and by leaving the authored disconnect/body slabs hidden during the live screen-core overlay path.",
+  "changes": [
+    {
+      "area": "screen-core-front-surface",
+      "summary": "Stopped applying the full-surface black backdrop treatment to the authored screen-core target surface.",
+      "reasoning": "The operator explicitly wants no built-in black bars on the front slab. The visible image or video should be the runtime quad itself, not a blacked-out host surface."
+    },
+    {
+      "area": "runtime-media-backing",
+      "summary": "Added an attached opaque black rear backing quad as a child of the runtime media surface so the backing matches the current presented media shape.",
+      "reasoning": "This keeps the rear black, blocks show-through behind the visible image or video area, and avoids relying on larger authored slabs that do not match the presented media bounds."
+    },
+    {
+      "area": "hosted-screen-core-presentation",
+      "summary": "Removed the authored disconnect/body backdrop repositioning from the live hosted screen-core overlay path and now keep those authored slabs hidden while media is bound.",
+      "reasoning": "Repeated next/rebind transitions were able to drag the old authored backdrop geometry back into presentation, recreating the detached rear slab even after the underlying overlay-depth bug was fixed."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.9 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.9.dll and fa_player_asset.0.2.9.assetbundle.",
+    "Validate the 0.2.9 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Playlist loop behavior still needs a dedicated follow-up if natural end continues to behave like single instead of playlist.",
+    "Defaults config for shuffle, loop mode, volume, and related player values is still a separate follow-up.",
+    "Image scrub on the existing scrub path remains deferred until the screen and loop seams are stable."
+  ]
+}

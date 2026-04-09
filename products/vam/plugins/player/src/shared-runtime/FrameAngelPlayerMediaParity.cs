@@ -106,8 +106,11 @@ namespace FrameAngel.Runtime.Shared
 
         public static bool ShouldApplyBackdropToTarget(string aspectMode, bool usingDisconnectSurfaceTarget, bool isScreenCoreSurface)
         {
+            if (isScreenCoreSurface)
+                return false;
+
             return (IsFitBlackAspectMode(aspectMode) || IsWidthLockedAspectMode(aspectMode))
-                && (usingDisconnectSurfaceTarget || isScreenCoreSurface);
+                && usingDisconnectSurfaceTarget;
         }
 
         public static bool CanSeekWithoutKnownDuration(float normalizedTarget)
