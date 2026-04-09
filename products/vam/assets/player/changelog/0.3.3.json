@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.3",
+  "title": "Harden live joystick scrub recovery and restore the low-end player volume taper",
+  "summary": "The baseline player remains stable and the 0.3.x input lane stays explicitly optional, but live joystick scrub was still brittle enough to leave playback half-dead after repeated seeks and the clean-room audio seam was still using a raw linear volume mapping. This release keeps the same modular direction while tightening the active playback seam: a playing seek now behaves like a small controlled restart instead of a naked time mutation, playback-motion observation is reset to match the new target time, and the final audio output regains a curved low-end taper without changing the external normalized volume contract.",
+  "reasoning": "Live operator proof showed the new right-stick scrub path could work briefly and then degrade into a bad state where the movie timer kept advancing while audio and visible playback stopped until a new movie load reset the runtime. The local code and scrub-side review both pointed at the same seam: active seeks were writing directly into VideoPlayer.time with no pause/replay recovery path, and the runtime's health checks were based on time and isPlaying rather than decoded-frame truth. Separately, the volume seam in the clean-room repo was still fully linear from the UI slider to AudioSource.volume, which made 5 to 10 percent much louder than the old intended feel. The correct fix is not a wider input rewrite. It is to harden the core seek mutation path so the optional joystick layer cannot poison playback, and to restore the old-style quieter low end by curving only the final audio gain write while leaving stored and reported volume normalized and honest.",
+  "changes": [
+    {
+      "area": "active-seek-recovery",
+      "summary": "Standalone video seeks now pause, retarget, reset playback-motion tracking, and explicitly replay when the player was meant to stay playing.",
+      "reasoning": "Repeated live scrubs were mutating VideoPlayer.time directly while playback was active. Treating a live seek as a small restart gives Unity's video decoder a deterministic recovery path instead of leaving playback in a half-alive state."
+    },
+    {
+      "area": "playback-motion-reset",
+      "summary": "The standalone playback observer now gets reset to the new seek target immediately after a seek instead of inheriting stale motion timestamps from the pre-seek timeline.",
+      "reasoning": "The runtime's playback watchdog depends on observed time and motion windows. Resetting those fields at the seek boundary keeps the post-seek state coherent and reduces false assumptions about whether playback already resumed."
+    },
+    {
+      "area": "volume-taper-restore",
+      "summary": "Player audio output now applies a quadratic gain taper to the final AudioSource.volume write while keeping stored and exposed volume values in linear normalized control space.",
+      "reasoning": "The clean-room repo never preserved the old nonlinear low-end taper, but the current operator complaint was specifically about low percentages still being too loud. Applying the curve only at the final audio-output edge restores the quieter feel without breaking the control surface or JSON state contract."
+    },
+    {
+      "area": "modular-build-proof",
+      "summary": "The patched player was also rebuilt with the optional input feature compiled out using a separate output and intermediate path.",
+      "reasoning": "The current 0.3.x work is only acceptable if gaze and joystick features remain a real layer on top of the recovered baseline instead of contaminating the base build. Rebuilding with the feature flag disabled keeps that contract honest."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.3 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the default fa_cua_player clean-room solution against the live VaM managed assemblies.",
+    "Build a second no-input variant with EnablePlayerInputFeatures=false and a separate obj/output path to verify the optional compile seam still holds.",
+    "Run the versioned release wrapper to deploy fa_cua_player.0.3.3.dll and fa_player_asset.0.3.3.assetbundle and validate the release packet.",
+    "In VaM, confirm gaze capture still acquires focus, repeated right-stick scrubs no longer leave playback frozen with the timer still advancing, and low normalized volume settings feel materially quieter than the old linear mapping."
+  ],
+  "knownIssues": [
+    "This slice does not yet change the external VaM scrub slider holdoff used during manual slider drags.",
+    "Image scrub on the shared scrub axis remains a later follow-on slice once the optional input lane is fully settled.",
+    "The current playback watchdog still reasons from VideoPlayer time and motion windows rather than decoded-frame truth, so deeper Unity VideoPlayer edge cases may still need a future dedicated seam."
+  ]
+}

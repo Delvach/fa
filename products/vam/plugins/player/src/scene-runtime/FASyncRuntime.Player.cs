@@ -53,6 +53,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
+    private const float StandalonePlayerVolumeCurveExponent = 2f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
@@ -6108,11 +6109,34 @@ public partial class FASyncRuntime : MVRScript
             okMessage = "player_seek_seconds ok";
         }
 
+        bool shouldResumePlayback = record.desiredPlaying && !record.mediaIsStillImage;
         try
         {
+            if (shouldResumePlayback)
+            {
+                try
+                {
+                    record.videoPlayer.Pause();
+                }
+                catch
+                {
+                }
+            }
+
             record.videoPlayer.time = targetTimeSeconds;
-            TryRefreshStandalonePlayerPausedFrame(record);
-            record.naturalEndHandled = false;
+            ResetStandalonePlayerPlaybackMotionState(record, targetTimeSeconds);
+
+            if (shouldResumePlayback)
+            {
+                record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
+                ApplyStandalonePlayerAudioState(record);
+                record.videoPlayer.Play();
+            }
+            else
+            {
+                TryRefreshStandalonePlayerPausedFrame(record);
+            }
+
             record.lastError = "";
         }
         catch (Exception ex)
@@ -6702,6 +6726,17 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return 0d;
+    }
+
+    private void ResetStandalonePlayerPlaybackMotionState(StandalonePlayerRecord record, double currentTimeSeconds)
+    {
+        if (record == null)
+            return;
+
+        record.hasObservedPlaybackTime = true;
+        record.lastObservedPlaybackTimeSeconds = Math.Max(0d, currentTimeSeconds);
+        record.lastPlaybackMotionObservedAt = Time.unscaledTime;
+        record.naturalEndHandled = false;
     }
 
     private void TickStandalonePlayerRuntime()
@@ -7510,7 +7545,7 @@ public partial class FASyncRuntime : MVRScript
         record.audioSource.loop = false;
         record.audioSource.spatialBlend = 0f;
         record.audioSource.dopplerLevel = 0f;
-        record.audioSource.volume = record.muted ? 0f : Mathf.Clamp01(record.storedVolume);
+        record.audioSource.volume = record.muted ? 0f : MapStandalonePlayerNormalizedVolumeToAudioGain(record.storedVolume);
         record.audioSource.mute = record.muted;
 
         record.videoPlayer.playOnAwake = false;
@@ -7791,7 +7826,7 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             record.audioSource.mute = record.muted;
-            record.audioSource.volume = record.muted ? 0f : Mathf.Clamp01(record.storedVolume);
+            record.audioSource.volume = record.muted ? 0f : MapStandalonePlayerNormalizedVolumeToAudioGain(record.storedVolume);
             record.videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
             record.videoPlayer.EnableAudioTrack(0, true);
             record.videoPlayer.SetTargetAudioSource(0, record.audioSource);
@@ -7800,6 +7835,15 @@ public partial class FASyncRuntime : MVRScript
         {
             record.lastError = "player audio state failed: " + ex.Message;
         }
+    }
+
+    private static float MapStandalonePlayerNormalizedVolumeToAudioGain(float normalized)
+    {
+        normalized = Mathf.Clamp01(normalized);
+        if (normalized <= 0f)
+            return 0f;
+
+        return Mathf.Pow(normalized, StandalonePlayerVolumeCurveExponent);
     }
 
     private bool TryResolveStandalonePlayerSourceTexture(
