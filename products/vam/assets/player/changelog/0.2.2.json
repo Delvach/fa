@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.2",
+  "title": "Tighten the hosted CUA screen-core presentation so the front display and rear backing stay coherent",
+  "summary": "Fix the current hosted screen-core presentation seam without widening the player. The runtime now treats the presented front plane as the authority and makes the rear backing follow that same displayed footprint, instead of leaving a full-rect slab behind the aspect-correct front overlay.",
+  "reasoning": "The restored 0.2.1 baseline proved that the player is back, but the screen presentation still read as wrong in side view: the front display could appear detached from the rear backing, objects could show through the front when the backing sat elsewhere, and next-driven rebinds made the gap more obvious. The authored screen asset is not the main failure. The unstable seam is the runtime overlay presentation path for the hosted CUA screen-core contract. Version 0.2.2 therefore keeps the asset and runtime boundary intact and narrows the fix to the current runtime binding path so the rear basis follows the same presented screen that the operator actually sees.",
+  "changes": [
+    {
+      "area": "screen-core-runtime",
+      "summary": "Added hosted screen-core backdrop presentation state so the active rear backing can be restored cleanly on refresh and unbind.",
+      "reasoning": "The runtime was already creating and destroying front overlays on media refresh, but it was not carrying a corresponding restore contract for the rear presentation state. Capturing and restoring that state keeps the fix bounded and reversible."
+    },
+    {
+      "area": "hosted-cua-presentation",
+      "summary": "Resolved the authored screen body on the attached CUA host and used it as the runtime backing surface for the screen-core overlay path.",
+      "reasoning": "The operator-visible issue is not that the front plane is wrong; it is that the old full-size backing keeps reading independently from it. Using the authored body as the runtime-following backing preserves the existing screen-core asset while making the rear presentation match the front display footprint."
+    },
+    {
+      "area": "backing-alignment",
+      "summary": "Aligned the rear backing to the same presented runtime overlay position, rotation, and size that the front display uses in hosted screen-core mode.",
+      "reasoning": "This is the narrowest way to eliminate the detached-slab look, reduce see-through artifacts on transparent media, and keep next-driven rebinds from reading like the front plane is walking away from the back."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.2 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.2.dll and fa_player_asset.0.2.2.assetbundle.",
+    "Validate the 0.2.2 release packet, including the generated changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "Loop mode truth still needs a dedicated follow-up if the operator continues to see loop behave like single in some flows.",
+    "Gaze, focus capture, and joystick-driven navigation are intentionally deferred to the next bounded recovery slice after the screen-core presentation is stable."
+  ]
+}

@@ -39,6 +39,7 @@ public partial class FASyncRuntime : MVRScript
         public Atom hostAtom;
         public GameObject screenSurfaceObject;
         public GameObject disconnectSurfaceObject;
+        public GameObject screenBodyObject;
         public GameObject screenGlassObject;
         public GameObject screenApertureObject;
         public GameObject controlSurfaceObject;
@@ -171,16 +172,19 @@ public partial class FASyncRuntime : MVRScript
 
         GameObject screenSurfaceObject;
         GameObject disconnectSurfaceObject;
+        GameObject screenBodyObject;
         GameObject controlSurfaceObject;
 #if FRAMEANGEL_CUA_PLAYER
         screenSurfaceObject = FindHostedPlayerAttachedCuaNode(hostAtom, HostedPlayerScreenSurfaceNodeId);
         disconnectSurfaceObject = FindHostedPlayerAttachedCuaNode(hostAtom, HostedPlayerDisconnectSurfaceNodeId);
+        screenBodyObject = FindHostedPlayerAttachedCuaNode(hostAtom, HostedPlayerScreenBodyNodeId);
         controlSurfaceObject = FindHostedPlayerAttachedCuaNode(hostAtom, HostedPlayerControlSurfaceNodeId);
         if (screenSurfaceObject != null)
             TryPruneHostedPlayerFallbackPackageRoot(hostAtom);
 #else
         screenSurfaceObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerScreenSurfaceNodeId);
         disconnectSurfaceObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerDisconnectSurfaceNodeId);
+        screenBodyObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerScreenBodyNodeId);
         controlSurfaceObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerControlSurfaceNodeId);
 #endif
         if (screenSurfaceObject == null)
@@ -205,6 +209,7 @@ public partial class FASyncRuntime : MVRScript
         contract.hostAtom = hostAtom;
         contract.screenSurfaceObject = screenSurfaceObject;
         contract.disconnectSurfaceObject = disconnectSurfaceObject;
+        contract.screenBodyObject = screenBodyObject;
         contract.screenGlassObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerScreenGlassNodeId);
         contract.screenApertureObject = FindHostedPlayerNodeObjectOnHostAtom(hostAtom, HostedPlayerScreenApertureNodeId);
         contract.controlSurfaceObject = controlSurfaceObject;
@@ -989,6 +994,8 @@ public partial class FASyncRuntime : MVRScript
             instance.nodeObjects[HostedPlayerScreenSurfaceNodeId] = contract.screenSurfaceObject;
         if (contract.disconnectSurfaceObject != null)
             instance.nodeObjects[HostedPlayerDisconnectSurfaceNodeId] = contract.disconnectSurfaceObject;
+        if (contract.screenBodyObject != null)
+            instance.nodeObjects[HostedPlayerScreenBodyNodeId] = contract.screenBodyObject;
         if (contract.screenGlassObject != null)
             instance.nodeObjects[HostedPlayerScreenGlassNodeId] = contract.screenGlassObject;
         if (contract.screenApertureObject != null)
@@ -1686,6 +1693,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        ApplyHostedScreenCoreBackdropPresentation(contract, nextBinding);
         record.binding = nextBinding;
         playerScreenBindings[hostAtomUid] = nextBinding;
         record.needsScreenRefresh = false;
@@ -1790,6 +1798,90 @@ public partial class FASyncRuntime : MVRScript
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
 #endif
+    }
+
+    private void ApplyHostedScreenCoreBackdropPresentation(
+        HostedPlayerSurfaceContract contract,
+        PlayerScreenBindingRecord binding)
+    {
+        if (contract == null
+            || binding == null
+            || binding.runtimeMediaSurfaceObject == null
+            || !string.Equals(binding.screenContractVersion ?? "", HostedPlayerScreenCoreContractVersion, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(ExtractJsonArgString(binding.debugJson, "attachMode"), "runtime_overlay_quad", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        GameObject backdropObject = contract.screenBodyObject != null
+            ? contract.screenBodyObject
+            : contract.disconnectSurfaceObject;
+        if (backdropObject == null || backdropObject.transform == null)
+            return;
+
+        Transform backdropTransform = backdropObject.transform;
+        Transform backdropParent = backdropTransform.parent;
+        Transform overlayTransform = binding.runtimeMediaSurfaceObject.transform;
+        if (overlayTransform == null)
+            return;
+
+        if (!binding.backdropTransformCaptured)
+        {
+            binding.backdropTransform = backdropTransform;
+            binding.backdropOriginalLocalPosition = backdropTransform.localPosition;
+            binding.backdropOriginalLocalRotation = backdropTransform.localRotation;
+            binding.backdropOriginalLocalScale = backdropTransform.localScale;
+            binding.backdropTransformCaptured = true;
+
+            Renderer[] renderers = backdropObject.GetComponentsInChildren<Renderer>(true);
+            binding.backdropRenderers = renderers ?? new Renderer[0];
+            binding.backdropRendererStates = new bool[binding.backdropRenderers.Length];
+            for (int i = 0; i < binding.backdropRenderers.Length; i++)
+            {
+                Renderer renderer = binding.backdropRenderers[i];
+                binding.backdropRendererStates[i] = renderer != null && renderer.enabled;
+            }
+        }
+
+        Vector3 worldWidth = overlayTransform.TransformVector(Vector3.right);
+        Vector3 worldHeight = overlayTransform.TransformVector(Vector3.up);
+        float localWidth = backdropParent != null
+            ? backdropParent.InverseTransformVector(worldWidth).magnitude
+            : worldWidth.magnitude;
+        float localHeight = backdropParent != null
+            ? backdropParent.InverseTransformVector(worldHeight).magnitude
+            : worldHeight.magnitude;
+
+        Vector3 desiredLocalScale = binding.backdropOriginalLocalScale;
+        desiredLocalScale.x = Mathf.Max(0.001f, localWidth);
+        desiredLocalScale.y = Mathf.Max(0.001f, localHeight);
+
+        float worldDepth = backdropParent != null
+            ? backdropParent.TransformVector(new Vector3(0f, 0f, desiredLocalScale.z)).magnitude
+            : Mathf.Abs(desiredLocalScale.z);
+        Vector3 desiredWorldPosition = overlayTransform.position
+            - (overlayTransform.forward * Mathf.Max(0.0002f, (worldDepth * 0.5f) + 0.0001f));
+        Quaternion desiredWorldRotation = overlayTransform.rotation;
+
+        if (backdropParent != null)
+        {
+            backdropTransform.localPosition = backdropParent.InverseTransformPoint(desiredWorldPosition);
+            backdropTransform.localRotation = Quaternion.Inverse(backdropParent.rotation) * desiredWorldRotation;
+        }
+        else
+        {
+            backdropTransform.position = desiredWorldPosition;
+            backdropTransform.rotation = desiredWorldRotation;
+        }
+
+        backdropTransform.localScale = desiredLocalScale;
+        SetHostedPlayerNodeRendererEnabled(backdropObject, true);
+
+        if (contract.disconnectSurfaceObject != null
+            && !ReferenceEquals(contract.disconnectSurfaceObject, backdropObject))
+        {
+            SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
+        }
     }
 
     private void SetHostedPlayerNodeRendererEnabled(GameObject nodeObject, bool enabled)

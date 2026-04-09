@@ -76,6 +76,13 @@ public partial class FASyncRuntime : MVRScript
         public Renderer runtimeMediaSurfaceRenderer;
         public Renderer[] hiddenShellRenderers = new Renderer[0];
         public bool[] hiddenShellRendererStates = new bool[0];
+        public Transform backdropTransform;
+        public Vector3 backdropOriginalLocalPosition = Vector3.zero;
+        public Quaternion backdropOriginalLocalRotation = Quaternion.identity;
+        public Vector3 backdropOriginalLocalScale = Vector3.one;
+        public bool backdropTransformCaptured = false;
+        public Renderer[] backdropRenderers = new Renderer[0];
+        public bool[] backdropRendererStates = new bool[0];
     }
 
     private sealed class ProjectedMaterialCandidate
@@ -1586,6 +1593,7 @@ public partial class FASyncRuntime : MVRScript
         TryRestoreScreenSurfaceMaterials(binding.screenSurfaceRenderers, binding.originalSurfaceMaterials);
         DestroyAppliedScreenSurfaceMaterials(binding.appliedSurfaceMaterials);
         RestoreHiddenShellRenderers(binding);
+        RestoreHostedPlayerBackdropPresentation(binding);
         if (binding.runtimeMediaSurfaceObject != null)
         {
             try
@@ -1607,6 +1615,48 @@ public partial class FASyncRuntime : MVRScript
             DestroyRuntimeMediaSurface(slot);
         string errorMessage;
         TrySetInnerPieceDisconnectSurfaceVisible(binding.instanceId, binding.slotId, true, out errorMessage);
+    }
+
+    private void RestoreHostedPlayerBackdropPresentation(PlayerScreenBindingRecord binding)
+    {
+        if (binding == null)
+            return;
+
+        if (binding.backdropTransformCaptured && binding.backdropTransform != null)
+        {
+            try
+            {
+                binding.backdropTransform.localPosition = binding.backdropOriginalLocalPosition;
+                binding.backdropTransform.localRotation = binding.backdropOriginalLocalRotation;
+                binding.backdropTransform.localScale = binding.backdropOriginalLocalScale;
+            }
+            catch
+            {
+            }
+        }
+
+        Renderer[] renderers = binding.backdropRenderers ?? new Renderer[0];
+        bool[] states = binding.backdropRendererStates ?? new bool[0];
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            bool enabled = i < states.Length ? states[i] : true;
+            try
+            {
+                renderer.enabled = enabled;
+            }
+            catch
+            {
+            }
+        }
+
+        binding.backdropTransform = null;
+        binding.backdropTransformCaptured = false;
+        binding.backdropRenderers = new Renderer[0];
+        binding.backdropRendererStates = new bool[0];
     }
 
     private void CaptureAndHideScreenSurface(InnerPieceScreenSlotRuntimeRecord slot, PlayerScreenBindingRecord binding)

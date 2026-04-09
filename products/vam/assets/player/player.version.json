@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.1",
-    "notes":  "0.2.1 promotes the restored clean-room player seam to canon after operator runtime proof confirmed the core authored CUA screen plus plugin lane works, aspect is correct, native resizing is sufficient, and existing VaM buttons are enough for phase 1.",
+    "version":  "0.2.2",
+    "notes":  "0.2.2 is the screen-core presentation fix release. It keeps the restored core player lane intact while tightening the hosted CUA backing so the rear shell follows the presented front plane instead of reading as a detached oversized slab.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.1.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.2.json"
 }
