@@ -7263,15 +7263,20 @@ public partial class FASyncRuntime : MVRScript
                 basisRenderQueue = -1;
             }
 
-            if (basisRenderQueue >= 0)
+            try
             {
-                try
-                {
-                    backingMaterial.renderQueue = Math.Max(0, basisRenderQueue - 5);
-                }
-                catch
-                {
-                }
+                // Keep the attached black backing on an opaque queue even when the authored
+                // target slab uses a later transparent-style queue. If the backing rides that
+                // later queue, controls behind the screen can render first and remain visible
+                // through the media face despite the backing being the right shape.
+                int backingQueue = 2000;
+                if (basisRenderQueue >= 0)
+                    backingQueue = Math.Max(0, Math.Min(2000, basisRenderQueue - 5));
+
+                backingMaterial.renderQueue = backingQueue;
+            }
+            catch
+            {
             }
 
             return true;
@@ -7330,8 +7335,8 @@ public partial class FASyncRuntime : MVRScript
 
             Vector3 overlayScale = runtimeSurfaceObject.transform.localScale;
             float backingGap = Mathf.Max(
-                0.0002f,
-                Mathf.Max(Mathf.Abs(overlayScale.x), Mathf.Abs(overlayScale.y)) * 0.0005f);
+                0.00005f,
+                Mathf.Max(Mathf.Abs(overlayScale.x), Mathf.Abs(overlayScale.y)) * 0.0001f);
             backingObject.transform.localPosition = new Vector3(0f, 0f, -backingGap);
 
             Collider backingCollider = backingObject.GetComponent<Collider>();

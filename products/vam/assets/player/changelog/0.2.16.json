@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.16",
+  "title": "Keep the attached screen backing on an opaque queue and tighten the media gap",
+  "summary": "The screen core keeps its shape-matched attached black backing, but that backing now renders as an early opaque depth occluder instead of inheriting a possibly transparent target queue, and it sits closer to the visible media plane so behind-screen controls stop bleeding through and the backing gap is smaller.",
+  "reasoning": "Live operator proof showed the screen geometry itself was stable again, but behind-screen buttons could still show through the active media face and a small gap remained between the visible media plane and the attached black backing. The existing runtime backing was already the right conceptual fix: a same-shape black quad attached behind the media surface. The likely failure seam was render order, because if that backing follows a transparent authored slab queue it can render too late to occlude objects behind the screen. This version fixes only that narrow seam and tightens the backing gap so the screen lane can close cleanly before broader shipping and premium-feature work.",
+  "changes": [
+    {
+      "area": "runtime-backing-occlusion",
+      "summary": "Force the attached runtime black backing onto an opaque queue instead of letting it inherit a late transparent-style target render queue.",
+      "reasoning": "A same-shape backing only prevents bleed if it renders early enough to contribute depth before behind-screen controls are drawn. Clamping it to an opaque queue keeps it acting like a real attached rear blocker even when the authored target slab uses a later queue."
+    },
+    {
+      "area": "runtime-backing-gap",
+      "summary": "Reduce the local Z gap between the visible media quad and its attached black backing.",
+      "reasoning": "The backing should hug the visible media plane closely enough to avoid an obvious detached look during playback and resizing while still staying just far enough back to avoid z-fighting."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.16 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.16.dll and fa_player_asset.0.2.16.assetbundle.",
+    "Validate the 0.2.16 release packet, including versioned live outputs and generated changelog artifacts.",
+    "Retest with controls behind the screen to confirm they no longer bleed through the active media face."
+  ],
+  "knownIssues": [
+    "The full-size black rear slab that is only visible from the back remains a separate polish follow-up.",
+    "Image scrub on the shared scrub control remains a later feature slice.",
+    "Config-backed default settings and shipping/package automation are intentionally unchanged in this screen-only release."
+  ]
+}

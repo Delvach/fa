@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.15",
-    "notes":  "0.2.15 recenters the authored screen-core asset around a bottom-center root so the CUA anchor and native resize feel attached to the visible display, and hardens the live screen-core overlay path so behind-the-screen controls stop leaking through the visible media face.",
+    "version":  "0.2.16",
+    "notes":  "0.2.16 keeps the attached runtime black backing on an opaque depth-writing queue and tightens its gap to the visible media plane so behind-screen controls stop bleeding through and the backing hugs the displayed surface more closely during playback.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.15.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.16.json"
 }
