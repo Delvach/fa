@@ -7239,6 +7239,9 @@ public partial class FASyncRuntime : MVRScript
         }
     }
 
+    private const int ScreenCoreOverlayBackingRenderQueue = 4495;
+    private const int ScreenCoreOverlayRenderQueue = 4500;
+
     private bool TryCreateRuntimeBackingMaterial(Material targetMaterial, out Material backingMaterial)
     {
         backingMaterial = null;
@@ -7265,13 +7268,13 @@ public partial class FASyncRuntime : MVRScript
 
             try
             {
-                // Keep the attached black backing on an opaque queue even when the authored
-                // target slab uses a later transparent-style queue. If the backing rides that
-                // later queue, controls behind the screen can render first and remain visible
-                // through the media face despite the backing being the right shape.
-                int backingQueue = 2000;
-                if (basisRenderQueue >= 0)
-                    backingQueue = Math.Max(0, Math.Min(2000, basisRenderQueue - 5));
+                // VaM controls can render on late UI-style queues that do not respect the
+                // earlier opaque backing as a real blocker. Keep the attached rear backing on
+                // the same late screen-core occlusion band as the visible media face so behind-
+                // screen controls cannot paint over it from either side.
+                int backingQueue = ScreenCoreOverlayBackingRenderQueue;
+                if (basisRenderQueue >= ScreenCoreOverlayBackingRenderQueue)
+                    backingQueue = basisRenderQueue;
 
                 backingMaterial.renderQueue = backingQueue;
             }
@@ -8455,6 +8458,15 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             material.SetOverrideTag("RenderType", "Opaque");
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            if (material.renderQueue < ScreenCoreOverlayRenderQueue)
+                material.renderQueue = ScreenCoreOverlayRenderQueue;
         }
         catch
         {

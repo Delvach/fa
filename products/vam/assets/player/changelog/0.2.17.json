@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.17",
+  "title": "Move the screen-core media face and rear backing onto a late occlusion-safe render band",
+  "summary": "The screen geometry and resize behavior stay unchanged, but the live screen-core media face and its attached rear black backing now render on a later occlusion-safe band so buttons and controls behind the screen cannot paint over the visible video from the front or leak through the rear black face.",
+  "reasoning": "Live operator proof showed the screen was now stable enough in shape, aspect, resize, and playlist behavior, but behind-screen buttons could still be seen through both the visible media face and the rear black backing. That narrowed the failure seam away from geometry and toward render ordering: the button was winning the paint order even against the backing. This version keeps the successful screen geometry intact and fixes only that narrower live occlusion contract by moving the screen-core media/backing pair onto a later render band that can overpaint the behind-screen control surface.",
+  "changes": [
+    {
+      "area": "screen-core-overlay-occlusion",
+      "summary": "Force the active screen-core media face onto a later occlusion-safe render queue when the runtime overlay path is used.",
+      "reasoning": "Depth-only hardening was not enough because the behind-screen button could still paint over the visible media face. A later render band keeps the actual media surface winning the final draw order."
+    },
+    {
+      "area": "screen-core-rear-backing-occlusion",
+      "summary": "Keep the attached rear black backing on the same late occlusion-safe band instead of an early opaque queue.",
+      "reasoning": "The button was also visible through the rear black face, which means the backing itself was losing the draw order. Keeping it on the same late band as the media face makes the rear blocker behave like a real attached back."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.17 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.17.dll and fa_player_asset.0.2.17.assetbundle.",
+    "Validate the 0.2.17 release packet, including versioned live outputs and generated changelog artifacts.",
+    "Retest with one button behind the screen and confirm it no longer shows through the front media face or the rear black backing."
+  ],
+  "knownIssues": [
+    "The rear black slab remains larger than the visible media shape from some rear-only viewing angles.",
+    "Image scrub on the shared scrub control remains a later feature slice.",
+    "Config-backed default settings and packaging automation are intentionally unchanged in this render-order-only release."
+  ]
+}
