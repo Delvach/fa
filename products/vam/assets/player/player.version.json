@@ -1,0 +1,6 @@
+{
+    "version":  "0.1.1",
+    "notes":  "Clean-room fa repo version line. Every code-driven player asset/plugin iteration must bump the version and land in git with a verbose commit before the next release.",
+    "branch":  "main",
+    "baseBranch":  "main"
+}

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9D8ED808-4D6B-447F-A4F3-9FB3D6E3D0FE}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>frameangel.cua_player</RootNamespace>
+    <AssemblyName>fa_cua_player</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <VamManagedDir Condition="'$(VamManagedDir)' == ''">F:\sim\vam\VaM_Data\Managed</VamManagedDir>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;FRAMEANGEL_CUA_PLAYER</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;FRAMEANGEL_CUA_PLAYER</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(VamManagedDir)\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>$(VamManagedDir)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.JSONSerializeModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>$(VamManagedDir)\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(VamManagedDir)\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\src\innerpiece-core\FAInnerPieceCoreModels.cs" />
+    <Compile Include="..\..\src\innerpiece-core\FAInnerPiecePackageModels.cs" />
+    <Compile Include="..\..\src\innerpiece-core\FAInnerPiecePackageSupport.cs" />
+    <Compile Include="..\..\src\innerpiece-core\FAInnerPieceStorage.cs" />
+    <Compile Include="..\..\src\cua-runtime\FASyncRuntime.CuaTextInputBridge.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.InnerPiece.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.MetaHarness.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.PlayerPluginSurface.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.ControlSurface.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.PlayerHosted.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.StandaloneAudio.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.StandalonePlayback.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.StandaloneResize.cs" />
+    <Compile Include="..\..\src\shared-runtime\BuildRuntimeInfo.cs" />
+    <Compile Include="..\..\src\shared-runtime\FrameAngelPlayerMediaParity.cs" />
+    <Compile Include="..\..\src\shared-runtime\RuntimeMessageCatalog.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

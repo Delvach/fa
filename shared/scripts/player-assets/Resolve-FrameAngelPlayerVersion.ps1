@@ -1,0 +1,82 @@
+function Get-FrameAngelPlayerVersionManifestPath {
+    param(
+        [string]$RepoRoot
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+        throw "RepoRoot is required."
+    }
+
+    return Join-Path $RepoRoot "products\vam\assets\player\player.version.json"
+}
+
+function Read-FrameAngelPlayerVersionState {
+    param(
+        [string]$RepoRoot
+    )
+
+    $manifestPath = Get-FrameAngelPlayerVersionManifestPath -RepoRoot $RepoRoot
+    if (-not (Test-Path -LiteralPath $manifestPath)) {
+        throw "Player version manifest not found: $manifestPath"
+    }
+
+    $state = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $version = [string]$state.version
+    if ([string]::IsNullOrWhiteSpace($version)) {
+        throw "Player version manifest is missing version: $manifestPath"
+    }
+
+    return [pscustomobject]@{
+        ManifestPath = $manifestPath
+        Version = $version.Trim()
+        Notes = [string]$state.notes
+    }
+}
+
+function Test-FrameAngelPlayerVersionCollisions {
+    param(
+        [string]$RepoRoot,
+        [string]$Version,
+        [string[]]$ArtifactPaths
+    )
+
+    $paths = New-Object System.Collections.Generic.List[string]
+    foreach ($artifactPath in @($ArtifactPaths)) {
+        if ([string]::IsNullOrWhiteSpace($artifactPath)) {
+            continue
+        }
+
+        $paths.Add([System.IO.Path]::GetFullPath($artifactPath)) | Out-Null
+    }
+
+    $existing = New-Object System.Collections.Generic.List[string]
+    foreach ($pathValue in $paths) {
+        if (Test-Path -LiteralPath $pathValue) {
+            $existing.Add($pathValue) | Out-Null
+        }
+    }
+
+    return [pscustomobject]@{
+        Version = $Version
+        CheckedPaths = $paths.ToArray()
+        ExistingPaths = $existing.ToArray()
+        HasCollisions = ($existing.Count -gt 0)
+    }
+}
+
+function Assert-FrameAngelPlayerVersionAvailable {
+    param(
+        [string]$RepoRoot,
+        [string]$Version,
+        [string[]]$ArtifactPaths,
+        [string]$ContextLabel = "player build"
+    )
+
+    $result = Test-FrameAngelPlayerVersionCollisions -RepoRoot $RepoRoot -Version $Version -ArtifactPaths $ArtifactPaths
+    if (-not $result.HasCollisions) {
+        return $result
+    }
+
+    $existingList = ($result.ExistingPaths | ForEach-Object { " - $_" }) -join [Environment]::NewLine
+    throw "Version $Version is already present for $ContextLabel. Bump player.version.json or explicitly opt out before regenerating.`n$existingList"
+}

@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "description": "Forbidden namespaces/symbols for VaM plugin C# source. Update this list whenever VaM rejects a symbol or API at compile/load time.",
+  "rules": [
+    {
+      "id": "namespace_system_io",
+      "pattern": "\\busing\\s+System\\.IO\\s*;|\\bSystem\\.IO\\b",
+      "reason": "VaM compile sandbox rejects System.IO namespace references (NamespaceRestriction)."
+    },
+    {
+      "id": "namespace_system_reflection",
+      "pattern": "\\busing\\s+System\\.Reflection\\s*;|\\bSystem\\.Reflection\\b",
+      "reason": "VaM compile sandbox rejects System.Reflection namespace references (NamespaceRestriction)."
+    },
+    {
+      "id": "type_unityengine_playerprefs",
+      "pattern": "\\bPlayerPrefs\\b|\\bUnityEngine\\.PlayerPrefs\\b",
+      "reason": "VaM compile sandbox rejects UnityEngine.PlayerPrefs references (TypeRestriction)."
+    },
+    {
+      "id": "namespace_system_net",
+      "pattern": "\\busing\\s+System\\.Net\\s*;|\\bSystem\\.Net\\b",
+      "reason": "Offline-only licensing/distribution policy: block direct network APIs in runtime plugins."
+    },
+    {
+      "id": "type_system_environment",
+      "pattern": "\\bSystem\\.Environment\\b|\\bEnvironment\\.",
+      "reason": "VaM compile sandbox rejects System.Environment references (TypeRestriction)."
+    },
+    {
+      "id": "namespace_unityengine_networking",
+      "pattern": "\\busing\\s+UnityEngine\\.Networking\\s*;|\\bUnityEngine\\.Networking\\b|\\bUnityWebRequest\\b",
+      "reason": "Offline-only licensing/distribution policy: block Unity web request APIs in runtime plugins."
+    },
+    {
+      "id": "reflection_type_gettype",
+      "pattern": "\\bType\\.GetType\\s*\\(",
+      "reason": "Reflection pathway. Keep blocked unless explicitly proven safe in VaM."
+    },
+    {
+      "id": "reflection_object_gettype",
+      "pattern": "\\bGetType\\s*\\(",
+      "reason": "Runtime type inspection pathway. Keep blocked unless explicitly proven safe in VaM."
+    },
+    {
+      "id": "reflection_activator",
+      "pattern": "\\bActivator\\s*\\.",
+      "reason": "Reflection-based instance creation. Keep blocked unless explicitly proven safe in VaM."
+    },
+    {
+      "id": "reflection_assembly",
+      "pattern": "\\bAssembly\\s*\\.",
+      "reason": "Assembly reflection API surface. Keep blocked unless explicitly proven safe in VaM."
+    }
+  ],
+  "runtimeProfiles": {
+    "description": "Runtime/input behavior differences tracked by guard config so desktop/VR quirks stay explicit and extendable.",
+    "profiles": [
+      {
+        "id": "desktop",
+        "label": "Desktop (No HMD)",
+        "knownDifferences": [
+          "JoystickControl stick axes may be unavailable or noisy without active VR controllers.",
+          "SuperController menu/grab navigation can be keyboard-driven in desktop mode.",
+          "VR-only palette/spawn interactions should not be treated as active desktop input paths."
+        ],
+        "guidance": [
+          "Use explicit desktop key bindings for deterministic control testing.",
+          "Avoid relying on legacy Input.GetAxis fallback in normal runtime paths."
+        ]
+      },
+      {
+        "id": "vr_oculus",
+        "label": "VR (Oculus)",
+        "knownDifferences": [
+          "Primary interaction uses JoystickControl axes plus grab/menu button state.",
+          "Two-controller arbitration is required so an idle hand does not suppress the active hand.",
+          "Session spawn mode uses control-hand stick for depth/scale and select/trigger for placement."
+        ],
+        "guidance": [
+          "Treat joystick and grab navigation modes as independent, restorable state.",
+          "Keep trigger/panel-focus gates explicit when reading scrub input."
+        ]
+      }
+    ]
+  }
+}

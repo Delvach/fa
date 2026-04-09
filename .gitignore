@@ -1,0 +1,15 @@
+.vs/
+bin/
+obj/
+**/bin/
+**/obj/
+.recovery/
+deployed/
+products/vam/assets/player/build/assetbundle_exports/
+products/vam/assets/player/build/releases/
+products/vam/assets/player/build/scene_builds/
+products/vam/assets/player/build/unity2018_player_host_project/Library/
+products/vam/assets/player/build/unity2018_player_host_project/Logs/
+products/vam/assets/player/build/unity2018_player_host_project/Temp/
+products/vam/assets/player/build/unity2018_player_host_project/Obj/
+products/vam/assets/player/build/unity2018_player_host_project/UserSettings/
