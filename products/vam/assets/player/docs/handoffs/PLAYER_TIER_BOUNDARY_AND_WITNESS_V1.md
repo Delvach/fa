@@ -1,5 +1,19 @@
 # Player Tier Boundary And Witness
 
+## Current live canon milestone
+
+The current runtime-backed canon is recorded in:
+
+1. `PLAYER_CORE_CANON_0_2_1_V1.md`
+2. `PLAYER_MANUAL_TEST_CHECKPOINT_2026_04_09_0115_V1.md`
+
+Those files lock in the post-recovery answer that:
+
+1. the clean-room base player is restored
+2. aspect is correct in the current base-screen lane
+3. native resizing is sufficient for the base screen
+4. existing VaM buttons remain the correct phase-1 control surface
+
 ## Canon
 
 Operator-stated current product truth:
@@ -17,6 +31,7 @@ Base player authority is:
 2. one matching `fa_cua_player.<version>.dll`
 3. exposed player methods for in-game control
 4. deterministic VaM buttons and sliders that call those exposed methods
+5. native VaM resizing on the authored screen instead of a custom resize subsystem
 
 Future control approach:
 
@@ -46,6 +61,7 @@ Working rule:
 1. keep the player core separable from the authored surface family
 2. keep shell-specific behavior, like swipe on phone and tablet, out of the base screen authority seam
 3. do not treat Meta screen, laptop, phone, tablet, and TV as mere cosmetic skins of one identical resource
+4. do not treat the rear backing-object mismatch as proof that the base player is not restored; it is a bounded post-canon visual bug
 
 ## Upgrade and adjacent lanes
 

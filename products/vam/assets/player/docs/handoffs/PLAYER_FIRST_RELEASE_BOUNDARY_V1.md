@@ -1,5 +1,18 @@
 # Player First Release Boundary
 
+## Current live canon milestone
+
+The current file-backed answer after the `2026-04-09` runtime proof is:
+
+1. `PLAYER_CORE_CANON_0_2_1_V1.md`
+2. `PLAYER_MANUAL_TEST_CHECKPOINT_2026_04_09_0115_V1.md`
+
+That milestone promotes the restored clean-room player seam to canon and locks
+in two important answers:
+
+1. aspect is now good enough to treat as solved for the base screen
+2. native VaM resizing and existing VaM buttons are sufficient for phase 1
+
 ## Current answer
 
 The first usable release for this repo is:
@@ -18,6 +31,8 @@ Success for phase 1 is:
 2. the matching plugin attaches
 3. media can be loaded and controlled through the exposed player method surface
 4. the same method surface can be driven from a deterministic default-scene or Volodeck witness setup
+5. aspect remains correct under the current base-screen presentation seam
+6. native VaM resizing remains acceptable for the base player lane
 
 Future control approach, not phase 1:
 
@@ -66,8 +81,9 @@ Those may be real and previously working, but they are upgrade-tier or later-lan
 Resize needs special wording:
 
 1. resize existed historically in the player lane
-2. resize should remain in the recovery target
-3. fully-correct resize is not required before the first clean player release
+2. native resize now works well enough to treat it as canonical for the base screen
+3. the repo no longer needs a custom resize solution before the first clean player release
+4. deeper shell-specific resize behavior can remain outside the base milestone
 
 ## Phase ordering
 

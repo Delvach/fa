@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.1",
+  "title": "Promote the restored clean-room player seam to the 0.2.1 canon milestone",
+  "summary": "Cut the first clean-room milestone release after operator runtime proof confirmed the base player is back: aspect is correct, native resizing is sufficient, existing VaM controls are enough, and the authored CUA screen plus matching plugin split is now the canonical phase-1 player seam.",
+  "reasoning": "The repo needed an explicit line between recovery work and product canon. After the operator confirmed that the core hosted CUA lane now works as intended, keeping the version line in the 0.1.x recovery range would blur a solved baseline back into open triage. Version 0.2.1 intentionally does not widen the scope or hide remaining bugs. It stamps the current working seam as the new clean-room authority and records the still-open loop and backing-detachment issues as follow-on work instead of reasons to keep redefining first release.",
+  "changes": [
+    {
+      "area": "version-line",
+      "summary": "Bumped the clean-room player line from 0.1.6 to 0.2.1 without widening the compile surface.",
+      "reasoning": "The operator explicitly called for a new milestone version once core functionality was restored. A new minor line makes that baseline durable and separates it from the recovery-only 0.1.x series."
+    },
+    {
+      "area": "canon",
+      "summary": "Added a timestamped manual witness packet and a canon packet that define how the restored phase-1 player is meant to work.",
+      "reasoning": "This repo needs one file-backed answer for \"how it is meant to work\" so future threads do not have to reconstruct the baseline from screenshots, chat logs, or the old monorepo."
+    },
+    {
+      "area": "release-truth",
+      "summary": "Updated the first-release and tier-boundary docs so they point at the 0.2.1 runtime proof, preserve native-resize and existing-button truth, and carry the known post-milestone bugs forward explicitly.",
+      "reasoning": "The value of this version is truth consolidation. The current runtime behavior was already recovered; the repo needed its canon, witness, and known-issue line to match what the operator actually proved in VaM."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.1 into repo version state and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.1.dll and fa_player_asset.0.2.1.assetbundle.",
+    "Validate the 0.2.1 release packet, including changelog artifacts and versioned live outputs."
+  ],
+  "knownIssues": [
+    "Loop mode selection is not yet truthful; loop can behave like single regardless of the selected setting even though next works.",
+    "The front screen can detach and drift forward away from the rear backing, especially as next is triggered.",
+    "When detached, the rear backing still blocks from behind while front-facing view can show through artifacts.",
+    "The desired future presentation is a rear backing that matches the front display size instead of reading as oversized black bars."
+  ]
+}
