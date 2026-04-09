@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.14",
-    "notes":  "0.2.14 keeps Previous random even after the bounded random-history trail runs out, preserves path-based random history across hosted playlist rebuilds that only reorder the same entries, and hardens the hosted screen-core overlay so the authored front slab stays hidden while the front media surface writes depth instead of letting behind-the-screen controls leak through.",
+    "version":  "0.2.15",
+    "notes":  "0.2.15 recenters the authored screen-core asset around a bottom-center root so the CUA anchor and native resize feel attached to the visible display, and hardens the live screen-core overlay path so behind-the-screen controls stop leaking through the visible media face.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.14.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.15.json"
 }

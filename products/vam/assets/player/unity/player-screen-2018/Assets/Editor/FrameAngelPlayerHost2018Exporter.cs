@@ -206,17 +206,18 @@ public static class FrameAngelPlayerHost2018Exporter
         GameObject root = new GameObject("fa_player_screen_core");
 
         // The bare screen-core asset should read like content with a backing, not
-        // like a framed TV. Keep the backing plate aligned to the authored display
-        // rect so the raw direct-CUA screen does not visibly overhang its own rear.
+        // like a framed TV. Author the visible screen around a bottom-center root so
+        // the CUA pivot and resize anchor feel attached to the actual display instead
+        // of floating well below it.
         CreateCube(root.transform, "screen_body",
-            new Vector3(0f, 0.8f, -0.0012f), new Vector3(1.6f, 0.9f, 0.008f), bodyMaterial);
+            new Vector3(0f, 0.45f, -0.0012f), new Vector3(1.6f, 0.9f, 0.008f), bodyMaterial);
         CreateQuad(root.transform, "screen_surface",
-            new Vector3(0f, 0.8f, 0.0068f), new Vector2(1.6f, 0.9f), screenMaterial);
+            new Vector3(0f, 0.45f, 0.0068f), new Vector2(1.6f, 0.9f), screenMaterial);
         CreateQuad(root.transform, "disconnect_surface",
-            new Vector3(0f, 0.8f, 0.0060f), new Vector2(1.6f, 0.9f), disconnectMaterial);
+            new Vector3(0f, 0.45f, 0.0060f), new Vector2(1.6f, 0.9f), disconnectMaterial);
 
-        CreateAnchor(root.transform, "bottom_anchor", new Vector3(0f, 0.32f, 0.008f));
-        CreateAnchor(root.transform, "controls_anchor", new Vector3(0f, 0.22f, 0.01f));
+        CreateAnchor(root.transform, "bottom_anchor", new Vector3(0f, 0f, 0.008f));
+        CreateAnchor(root.transform, "controls_anchor", new Vector3(0f, -0.10f, 0.01f));
         return root;
     }
 

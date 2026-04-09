@@ -2122,6 +2122,11 @@ public partial class FASyncRuntime : MVRScript
 
             if (isScreenCoreSurface)
             {
+                // The hosted/runtime screen-core overlay still needs the same opaque depth
+                // behavior as the newer reload branch, otherwise behind-screen controls can
+                // leak through even though the visible front face looks correct.
+                TryEnableScreenCoreOverlayDepthOcclusion(projectedMaterial);
+
                 // Keep the bare direct-CUA screen-core runtime overlay front-only so
                 // front-view parity is unambiguous and rear-edge bleed is suppressed.
                 TryForceProjectedScreenFrontFaceOnly(projectedMaterial);

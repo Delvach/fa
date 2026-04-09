@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.15",
+  "title": "Recenter the authored screen pivot and harden screen-core front occlusion",
+  "summary": "The bare player screen asset is now authored around a bottom-center root so the CUA anchor and native resize behavior feel attached to the visible display, and the live screen-core overlay path now applies the missing opaque depth behavior that keeps behind-the-screen controls from leaking through the media face.",
+  "reasoning": "Live operator proof narrowed the remaining screen issues to two seams that should be fixed without widening into playlist, defaults, or joystick work. First, the exporter still authored the entire visible screen well above the prefab root, so the CUA anchor felt disconnected from the actual display and native resize behaved relative to a pivot far below the screen. Second, one active screen-core overlay branch was still missing the depth-occlusion hardening already applied on the parallel reload path, which left behind-the-screen controls able to show through the visible media face. This version fixes those two seams together because they both sit at the same screen export and presentation boundary.",
+  "changes": [
+    {
+      "area": "screen-pivot-geometry",
+      "summary": "Move the authored screen-core geometry down so the prefab root sits at the bottom center of the visible screen, and move the bottom/control anchors with it.",
+      "reasoning": "The runtime already uses bottom_anchor to keep resize pinned to the authored bottom edge. Re-authoring the asset around a bottom-center root changes the operator-facing CUA pivot without inventing a new resize system, so native VaM resizing can feel anchored to the bottom center of the actual display."
+    },
+    {
+      "area": "screen-core-occlusion",
+      "summary": "Apply the missing screen-core overlay depth-occlusion hardening on the active hosted overlay path before the runtime media quad is created.",
+      "reasoning": "The newer reload branch already treated the screen-core overlay as an opaque front-facing occluder, but the older active branch only forced front-face culling. That mismatch explains why behind-the-screen controls could still leak through even though the visible media face looked otherwise correct."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.15 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.15.dll and fa_player_asset.0.2.15.assetbundle.",
+    "Validate the 0.2.15 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Random-aware Previous and playlist continuity are intentionally unchanged in this slice.",
+    "Config-backed defaults for shuffle, loop mode, volume, and related player settings remain deferred to a later version.",
+    "Still-image scrub behavior remains a separate follow-up after the screen lane is fully stable."
+  ]
+}
