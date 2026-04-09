@@ -8,8 +8,8 @@ deployed/
 products/vam/assets/player/build/assetbundle_exports/
 products/vam/assets/player/build/releases/
 products/vam/assets/player/build/scene_builds/
-products/vam/assets/player/build/unity2018_player_host_project/Library/
-products/vam/assets/player/build/unity2018_player_host_project/Logs/
-products/vam/assets/player/build/unity2018_player_host_project/Temp/
-products/vam/assets/player/build/unity2018_player_host_project/Obj/
-products/vam/assets/player/build/unity2018_player_host_project/UserSettings/
+products/vam/assets/player/unity/player-screen-2018/Library/
+products/vam/assets/player/unity/player-screen-2018/Logs/
+products/vam/assets/player/unity/player-screen-2018/Temp/
+products/vam/assets/player/unity/player-screen-2018/Obj/
+products/vam/assets/player/unity/player-screen-2018/UserSettings/

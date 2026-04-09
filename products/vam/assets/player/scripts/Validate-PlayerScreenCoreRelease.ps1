@@ -4,6 +4,9 @@ param(
     [string]$ReleaseRoot = "",
     [string]$RepoAssetPath = "",
     [string]$RepoPluginPath = "",
+    [string]$ChangelogSourcePath = "",
+    [string]$ChangelogJsonPath = "",
+    [string]$ChangelogMarkdownPath = "",
     [string]$LiveAssetPath = "",
     [string]$LivePluginPath = "",
     [string]$ReceiptPath = "",
@@ -78,10 +81,17 @@ function Get-MatchingFiles {
     return @(Get-ChildItem -LiteralPath $DirectoryPath -Filter $Filter -File -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName)
 }
 
+function Read-JsonFile {
+    param([string]$PathValue)
+
+    return Get-Content -LiteralPath $PathValue -Raw | ConvertFrom-Json
+}
+
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
+$versionState = Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
-    (Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot).Version
+    $versionState.Version
 }
 else {
     $Version.Trim()
@@ -97,6 +107,23 @@ if ([string]::IsNullOrWhiteSpace($RepoAssetPath)) {
 
 if ([string]::IsNullOrWhiteSpace($RepoPluginPath)) {
     $RepoPluginPath = Join-Path $ReleaseRoot ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+}
+
+if ([string]::IsNullOrWhiteSpace($ChangelogSourcePath)) {
+    $ChangelogSourcePath = if (($resolvedVersion -eq $versionState.Version) -and -not [string]::IsNullOrWhiteSpace($versionState.ChangelogPath)) {
+        $versionState.ChangelogPath
+    }
+    else {
+        Resolve-FrameAngelPlayerVersionChangelogPath -RepoRoot $RepoRoot -Version $resolvedVersion
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($ChangelogJsonPath)) {
+    $ChangelogJsonPath = Join-Path $ReleaseRoot "foundation_release_changelog.json"
+}
+
+if ([string]::IsNullOrWhiteSpace($ChangelogMarkdownPath)) {
+    $ChangelogMarkdownPath = Join-Path $ReleaseRoot "foundation_release_changelog.md"
 }
 
 if ([string]::IsNullOrWhiteSpace($LiveAssetPath)) {
@@ -129,7 +156,10 @@ $warnings = New-Object System.Collections.Generic.List[string]
 
 $requiredPaths = @(
     $RepoAssetPath,
-    $RepoPluginPath
+    $RepoPluginPath,
+    $ChangelogSourcePath,
+    $ChangelogJsonPath,
+    $ChangelogMarkdownPath
 )
 
 if (-not $SkipLiveDeployChecks.IsPresent) {
@@ -145,6 +175,43 @@ foreach ($requiredPath in $requiredPaths) {
     }
     else {
         Add-Check -Checks $checks -Rule "required_path" -Message ("Found required artifact: " + $requiredPath)
+    }
+}
+
+$sourceChangelog = $null
+if (Test-Path -LiteralPath $ChangelogSourcePath) {
+    $sourceChangelog = Read-JsonFile -PathValue $ChangelogSourcePath
+    $sourceChangelogVersion = [string]$sourceChangelog.version
+    if ([string]::IsNullOrWhiteSpace($sourceChangelogVersion) -or $sourceChangelogVersion.Trim() -ne $resolvedVersion) {
+        Add-Failure -Failures $failures -Rule "changelog_source_version" -Message ("Changelog source version does not match release version at " + $ChangelogSourcePath)
+    }
+    else {
+        Add-Check -Checks $checks -Rule "changelog_source_version" -Message "Changelog source version matches the release version."
+    }
+}
+
+$releaseChangelog = $null
+if (Test-Path -LiteralPath $ChangelogJsonPath) {
+    $releaseChangelog = Read-JsonFile -PathValue $ChangelogJsonPath
+    $releaseChangelogVersion = [string]$releaseChangelog.version
+    if ([string]::IsNullOrWhiteSpace($releaseChangelogVersion) -or $releaseChangelogVersion.Trim() -ne $resolvedVersion) {
+        Add-Failure -Failures $failures -Rule "changelog_release_version" -Message ("Release changelog artifact version does not match release version at " + $ChangelogJsonPath)
+    }
+    else {
+        Add-Check -Checks $checks -Rule "changelog_release_version" -Message "Release changelog artifact version matches the release version."
+    }
+}
+
+if (($null -ne $sourceChangelog) -and ($null -ne $releaseChangelog)) {
+    if (
+        ([string]$sourceChangelog.title -ne [string]$releaseChangelog.title) -or
+        ([string]$sourceChangelog.summary -ne [string]$releaseChangelog.summary) -or
+        ([string]$sourceChangelog.reasoning -ne [string]$releaseChangelog.reasoning)
+    ) {
+        Add-Failure -Failures $failures -Rule "changelog_release_sync" -Message "Release changelog artifact does not match the tracked changelog source."
+    }
+    else {
+        Add-Check -Checks $checks -Rule "changelog_release_sync" -Message "Release changelog artifact matches the tracked changelog source."
     }
 }
 
@@ -210,11 +277,14 @@ $warnings.Add("Visual correctness still requires live VaM closure and Volodeck c
 $warnings.Add("If a future slice intentionally reintroduces asset.assetDllUrl or preset bootstrap, it should ship as a separate seam instead of silently mutating this one.") | Out-Null
 
 $receipt = [ordered]@{
-    schemaVersion = "frameangel_player_screen_core_release_validation_v3"
+    schemaVersion = "frameangel_player_screen_core_release_validation_v4"
     validatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     version = $resolvedVersion
     repoAssetPath = $RepoAssetPath
     repoPluginPath = $RepoPluginPath
+    changelogSourcePath = $ChangelogSourcePath
+    changelogJsonPath = $ChangelogJsonPath
+    changelogMarkdownPath = $ChangelogMarkdownPath
     liveAssetPath = $LiveAssetPath
     livePluginPath = $LivePluginPath
     releaseBoundary = [ordered]@{

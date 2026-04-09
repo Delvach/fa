@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.1",
+  "title": "Stand up the clean-room fa player repo",
+  "summary": "Created the replacement repo for the FrameAngel player lane and cut the first clean version line at 0.1.1.",
+  "reasoning": "The player lane had accumulated too much monorepo drift, recovery baggage, and cross-lane contamination to keep stabilizing it in place. This version established a bounded replacement repo with only the compile surface, asset/export lane, release wrapper, and documentation needed to keep shipping the player again.",
+  "changes": [
+    {
+      "area": "repo-structure",
+      "summary": "Imported the bounded player runtime, minimal asset lane, and shared release helpers into the new fa repo.",
+      "reasoning": "The goal was a replacement repo for the player, not another partial mirror of the monorepo."
+    },
+    {
+      "area": "versioning",
+      "summary": "Reset the clean-room repo version line to 0.1.1 and made versioned filenames the authority seam.",
+      "reasoning": "The old 0.0.x line belonged to the previous repo history. The replacement repo needed its own deterministic version line."
+    },
+    {
+      "area": "release-process",
+      "summary": "Established the minimal screen-core release wrapper and validation receipts for the versioned assetbundle plus matching plugin pair.",
+      "reasoning": "The new repo needed one bounded build/deploy path that could be trusted before any more feature recovery work."
+    }
+  ],
+  "verification": [
+    "Built and deployed fa_cua_player.0.1.1.dll and fa_player_asset.0.1.1.assetbundle.",
+    "Recorded release manifest and validation receipts for 0.1.1 in the local build lane."
+  ],
+  "knownIssues": [
+    "Aspect and presentation correctness still required follow-up live testing.",
+    "Transport parity and screen-core presentation still needed recovery against historical witnesses."
+  ]
+}

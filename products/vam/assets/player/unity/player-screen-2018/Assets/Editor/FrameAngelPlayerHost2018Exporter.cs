@@ -11,11 +11,11 @@ public static class FrameAngelPlayerHost2018Exporter
     private const string MaterialsRoot = AssetRoot + "/Materials";
     private const string TexturesRoot = AssetRoot + "/Textures";
     private const string DefaultBundleFileName = "fa_player_screen_core_current.assetbundle";
-    private const string DefaultOutputRoot = "C:/projects/fa/products/vam/assets/player/build/direct_cua_screen_core_current";
+    private const string DefaultOutputRoot = "C:/projects/fa/products/vam/assets/player/build/player_screen_current";
     private const string DefaultDeployAssetsRoot = "F:/sim/vam/Custom/Assets/FrameAngel/Player";
     private const string DefaultDeployPresetRoot = "F:/sim/vam/Custom/Atom/CustomUnityAsset";
     private const string DefaultPresetFileName = "Preset_FA Player Screen Core Current.vap";
-    private const string SummaryFileName = "player_screen_core_2018_summary.json";
+    private const string SummaryFileName = "player_screen_summary.json";
 
     private sealed class ExportOptions
     {

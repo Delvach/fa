@@ -13,8 +13,9 @@ This lane owns:
 1. the minimal player assetbundle build wrapper
 2. the minimal versioned release wrapper
 3. forbidden-term validation for the player runtime
-4. the local Unity exporter project for the bare player screen core
+4. the local Unity authoring/exporter project for the bare player screen core under `unity/player-screen-2018`
 5. the first-release boundary for the in-VaM screen plus VaM control seam
+6. the tracked per-version changelog source under `changelog/<version>.json`
 
 It does **not** own the wider toolkit, probe ladder, recovery ladder, or
 general player debugging surface.
@@ -62,10 +63,22 @@ Keep build outputs local to:
 
 1. `C:\projects\fa\products\vam\assets\player\build`
 
+Keep tracked Unity source local to:
+
+1. `C:\projects\fa\products\vam\assets\player\unity\player-screen-2018`
+
 ## Documentation rule
 
 Do not treat generated `build/` receipts as a replacement for code truth, but
 this repo does not need the old handoff/doc sprawl imported just to build.
+
+## Version changelog rule
+
+Every versioned player build in this repo must have:
+
+1. a tracked changelog source file at `C:\projects\fa\products\vam\assets\player\changelog\<version>.json`
+2. release-root emitted copies at `foundation_release_changelog.json` and `foundation_release_changelog.md`
+3. reasoning for why the version exists, not just what changed
 
 ## Player truth lock
 

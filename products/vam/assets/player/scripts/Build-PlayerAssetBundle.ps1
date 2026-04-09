@@ -72,13 +72,13 @@ else {
     $Version.Trim()
 }
 
-$unityProjectPath = Join-Path $laneRoots.AssetsPlayerBuildRoot "unity2018_player_host_project"
+$unityProjectPath = $laneRoots.PlayerScreenUnityProjectRoot
 $exportMethod = "FrameAngelPlayerHost2018Exporter.BuildAndDeployBatch"
 $bundleFileName = "fa_player_asset.{0}.assetbundle" -f $resolvedVersion
 $presetFileName = "Preset_FA Player Asset {0}.vap" -f $resolvedVersion
 $exportRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "assetbundle_exports" $resolvedVersion)
 $logPath = Join-Path $exportRoot "unity_batch.log"
-$summaryPath = Join-Path $exportRoot "player_screen_core_2018_summary.json"
+$summaryPath = Join-Path $exportRoot "player_screen_summary.json"
 $builtBundlePath = Join-Path $exportRoot (Join-Path "assetbundles" $bundleFileName)
 $releaseRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "releases" $resolvedVersion)
 $repoArtifactPath = Join-Path $releaseRoot $bundleFileName

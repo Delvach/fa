@@ -10,6 +10,32 @@ function Get-FrameAngelPlayerVersionManifestPath {
     return Join-Path $RepoRoot "products\vam\assets\player\player.version.json"
 }
 
+function Resolve-FrameAngelPlayerVersionChangelogPath {
+    param(
+        [string]$RepoRoot,
+        [string]$Version,
+        [string]$ManifestRelativePath = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+        throw "RepoRoot is required."
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ManifestRelativePath)) {
+        if ([System.IO.Path]::IsPathRooted($ManifestRelativePath)) {
+            return [System.IO.Path]::GetFullPath($ManifestRelativePath)
+        }
+
+        return [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $ManifestRelativePath))
+    }
+
+    if ([string]::IsNullOrWhiteSpace($Version)) {
+        throw "Version is required when changelogPath is not present in player.version.json."
+    }
+
+    return Join-Path $RepoRoot ("products\vam\assets\player\changelog\{0}.json" -f $Version.Trim())
+}
+
 function Read-FrameAngelPlayerVersionState {
     param(
         [string]$RepoRoot
@@ -26,10 +52,17 @@ function Read-FrameAngelPlayerVersionState {
         throw "Player version manifest is missing version: $manifestPath"
     }
 
+    $resolvedVersion = $version.Trim()
+    $changelogPath = Resolve-FrameAngelPlayerVersionChangelogPath `
+        -RepoRoot $RepoRoot `
+        -Version $resolvedVersion `
+        -ManifestRelativePath ([string]$state.changelogPath)
+
     return [pscustomobject]@{
         ManifestPath = $manifestPath
-        Version = $version.Trim()
+        Version = $resolvedVersion
         Notes = [string]$state.notes
+        ChangelogPath = $changelogPath
     }
 }
 

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.2",
+  "title": "Shorten the authored asset dropdown label",
+  "summary": "Renamed the authored screen asset path so the CommunityUnityAsset dropdown no longer shows the inherited long PlayerScreenCore2018 path.",
+  "reasoning": "The old authored asset path was too long and too legacy-shaped in the VaM asset picker. This version cleaned the label without changing the phase-1 contract of loading the versioned assetbundle and attaching the matching plugin.",
+  "changes": [
+    {
+      "area": "unity-authoring",
+      "summary": "Renamed the authored screen asset folder to Assets/FrameAngel/PlayerScreen and the prefab to fa_player_screen.prefab.",
+      "reasoning": "The dropdown label comes from the authored asset name inside the assetbundle, so the Unity source path had to be simplified at the source."
+    },
+    {
+      "area": "scene-builder",
+      "summary": "Updated the demo-scene fallback asset name to assets/frameangel/playerscreen/fa_player_screen.prefab.",
+      "reasoning": "The deterministic witness scene must target the same authored asset name that ships in the bundle."
+    },
+    {
+      "area": "release",
+      "summary": "Rebuilt and redeployed the matching 0.1.2 assetbundle and plugin pair.",
+      "reasoning": "A deployment-worthy user-facing change needed its own versioned artifact pair and commit."
+    }
+  ],
+  "verification": [
+    "Built and deployed fa_cua_player.0.1.2.dll and fa_player_asset.0.1.2.assetbundle.",
+    "Confirmed the exported asset name resolved to assets/frameangel/playerscreen/fa_player_screen.prefab."
+  ],
+  "knownIssues": [
+    "Screen-core presentation still showed aspect and extra-surface issues in live testing.",
+    "Transport recovery work remained in progress."
+  ]
+}

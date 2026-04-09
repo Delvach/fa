@@ -502,8 +502,7 @@ function Resolve-PlayerAssetName {
     )
 
     $candidateSummaryPaths = @(
-        (Join-Path $LaneRoots.AssetsPlayerBuildRoot (Join-Path ("assetbundle_exports\{0}" -f $ResolvedVersion) "player_screen_core_2018_summary.json")),
-        (Join-Path $LaneRoots.AssetsPlayerBuildRoot "direct_cua_screen_core_probe_2018\player_screen_core_2018_summary.json")
+        (Join-Path $LaneRoots.AssetsPlayerBuildRoot (Join-Path ("assetbundle_exports\{0}" -f $ResolvedVersion) "player_screen_summary.json"))
     )
 
     foreach ($summaryPath in $candidateSummaryPaths) {

@@ -54,14 +54,19 @@ function Get-FrameAngelPlayerLaneRoots {
     $pluginPlayerRoot = Join-Path $resolvedRepoRoot "products\vam\plugins\player"
     $assetsDocsRoot = Join-Path $assetsPlayerRoot "docs"
     $assetsHandoffsRoot = Join-Path $assetsDocsRoot "handoffs"
+    $assetsChangelogRoot = Join-Path $assetsPlayerRoot "changelog"
     $assetsBuildRoot = Join-Path $assetsPlayerRoot "build"
+    $assetsUnityRoot = Join-Path $assetsPlayerRoot "unity"
+    $playerScreenUnityProjectRoot = Join-Path $assetsUnityRoot "player-screen-2018"
     $vamRoot = Join-Path $resolvedRepoRoot "products\vam"
 
     if ($EnsureAssetLaneScaffold.IsPresent) {
         Ensure-FrameAngelDirectory -PathValue $assetsPlayerRoot
         Ensure-FrameAngelDirectory -PathValue $assetsDocsRoot
         Ensure-FrameAngelDirectory -PathValue $assetsHandoffsRoot
+        Ensure-FrameAngelDirectory -PathValue $assetsChangelogRoot
         Ensure-FrameAngelDirectory -PathValue $assetsBuildRoot
+        Ensure-FrameAngelDirectory -PathValue $assetsUnityRoot
     }
 
     $compileProjectRoot = if (Test-Path -LiteralPath (Join-Path $assetsPlayerRoot "vs")) {
@@ -104,7 +109,10 @@ function Get-FrameAngelPlayerLaneRoots {
         DocsSourceRoot = $docsSourceRoot
         AssetsPlayerDocsRoot = $assetsDocsRoot
         AssetsPlayerHandoffsRoot = $assetsHandoffsRoot
+        AssetsPlayerChangelogRoot = $assetsChangelogRoot
         AssetsPlayerBuildRoot = $assetsBuildRoot
+        AssetsPlayerUnityRoot = $assetsUnityRoot
+        PlayerScreenUnityProjectRoot = $playerScreenUnityProjectRoot
         SharedScriptsRoot = Join-Path $resolvedRepoRoot "shared\scripts"
     }
 }

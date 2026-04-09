@@ -8,6 +8,8 @@ Current imported foundation:
 - `products/vam/plugins/player/vs/fa_cua_player`
 - `products/vam/plugins/player/src`
 - `products/vam/assets/player`
+- `products/vam/assets/player/unity/player-screen-2018`
+- `products/vam/assets/player/changelog`
 - `shared/scripts/player-assets`
 
 Current scope is intentionally narrow:
@@ -32,11 +34,17 @@ Version and commit discipline:
 
 - the clean-room repo version line starts at `0.1.1`
 - every versioned player change that is built for testing or release gets its own git commit
+- every versioned player change that is built for testing or release gets a matching `products/vam/assets/player/changelog/<version>.json`
 - commit messages should be verbose enough to capture the version, changed seam, and visible outcome
+- the release wrapper emits a copy of that changelog into the release packet as both JSON and Markdown
 
 Core release entrypoint:
 
 - `products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1`
+
+Tracked Unity authoring source:
+
+- `products/vam/assets/player/unity/player-screen-2018`
 
 Minimal scripts kept in this repo:
 
@@ -66,10 +74,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 Deterministic phase-1 witness scene using VaM buttons and sliders:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerDemoScene.ps1 -RepoRoot C:\projects\fa -Version 0.1.1 -AllowExistingVersion
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerDemoScene.ps1 -RepoRoot C:\projects\fa -Version 0.1.3 -AllowExistingVersion
 ```
 
 Current witness output pattern:
 
-- `F:\sim\vam\Saves\scene\fa_scene.0.1.1.json`
-- `C:\projects\fa\products\vam\assets\player\build\scene_builds\0.1.1\player_demo_scene_build_receipt.md`
+- `F:\sim\vam\Saves\scene\fa_scene.0.1.3.json`
+- `C:\projects\fa\products\vam\assets\player\build\scene_builds\0.1.3\player_demo_scene_build_receipt.md`

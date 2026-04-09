@@ -33,6 +33,17 @@ function Write-JsonFile {
     [System.IO.File]::WriteAllText($Path, $json, (New-Object System.Text.UTF8Encoding($false)))
 }
 
+function Write-TextFile {
+    param(
+        [string]$Path,
+        [string]$Value
+    )
+
+    $directory = Split-Path -Parent $Path
+    Ensure-Directory -PathValue $directory
+    [System.IO.File]::WriteAllText($Path, $Value, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 function Remove-FilesByPattern {
     param(
         [string]$DirectoryPath,
@@ -48,10 +59,117 @@ function Remove-FilesByPattern {
     }
 }
 
+function Read-PlayerReleaseChangelog {
+    param(
+        [string]$Path,
+        [string]$ExpectedVersion
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        throw "Release changelog source not found: $Path"
+    }
+
+    $changelog = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
+    if ($null -eq $changelog) {
+        throw "Release changelog could not be read: $Path"
+    }
+
+    $resolvedChangelogVersion = [string]$changelog.version
+    if ([string]::IsNullOrWhiteSpace($resolvedChangelogVersion)) {
+        throw "Release changelog is missing version: $Path"
+    }
+
+    if ($resolvedChangelogVersion.Trim() -ne $ExpectedVersion) {
+        throw "Release changelog version mismatch. Expected $ExpectedVersion but found $resolvedChangelogVersion in $Path"
+    }
+
+    return $changelog
+}
+
+function Convert-PlayerReleaseChangelogToMarkdown {
+    param([object]$Changelog)
+
+    $title = [string]$Changelog.title
+    if ([string]::IsNullOrWhiteSpace($title)) {
+        $title = "FrameAngel Player Release $($Changelog.version)"
+    }
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("# $title") | Out-Null
+    $lines.Add("") | Out-Null
+    $lines.Add(("Version: ``{0}``" -f $Changelog.version)) | Out-Null
+    $lines.Add("") | Out-Null
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Changelog.summary)) {
+        $lines.Add("## Summary") | Out-Null
+        $lines.Add([string]$Changelog.summary) | Out-Null
+        $lines.Add("") | Out-Null
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Changelog.reasoning)) {
+        $lines.Add("## Reasoning") | Out-Null
+        $lines.Add([string]$Changelog.reasoning) | Out-Null
+        $lines.Add("") | Out-Null
+    }
+
+    $lines.Add("## Changes") | Out-Null
+    if (@($Changelog.changes).Count -eq 0) {
+        $lines.Add("- none") | Out-Null
+    }
+    else {
+        foreach ($change in @($Changelog.changes)) {
+            $area = [string]$change.area
+            if ([string]::IsNullOrWhiteSpace($area)) {
+                $area = "general"
+            }
+
+            $summary = [string]$change.summary
+            if ([string]::IsNullOrWhiteSpace($summary)) {
+                $summary = "No summary provided."
+            }
+
+            $lines.Add(("### {0}" -f $area)) | Out-Null
+            $lines.Add($summary) | Out-Null
+
+            $changeReasoning = [string]$change.reasoning
+            if (-not [string]::IsNullOrWhiteSpace($changeReasoning)) {
+                $lines.Add("") | Out-Null
+                $lines.Add(("Reasoning: {0}" -f $changeReasoning)) | Out-Null
+            }
+
+            $lines.Add("") | Out-Null
+        }
+    }
+
+    $lines.Add("## Verification") | Out-Null
+    if (@($Changelog.verification).Count -eq 0) {
+        $lines.Add("- none") | Out-Null
+    }
+    else {
+        foreach ($item in @($Changelog.verification)) {
+            $lines.Add("- " + [string]$item) | Out-Null
+        }
+    }
+
+    $lines.Add("") | Out-Null
+    $lines.Add("## Known Issues") | Out-Null
+    if (@($Changelog.knownIssues).Count -eq 0) {
+        $lines.Add("- none") | Out-Null
+    }
+    else {
+        foreach ($item in @($Changelog.knownIssues)) {
+            $lines.Add("- " + [string]$item) | Out-Null
+        }
+    }
+
+    return ($lines -join [Environment]::NewLine)
+}
+
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
+$versionState = Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
-    (Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot).Version
+    $versionState.Version
 }
 else {
     $Version.Trim()
@@ -67,6 +185,15 @@ $manifestPath = Join-Path $releaseRoot "foundation_release_manifest.json"
 $validatorScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Validate-PlayerScreenCoreRelease.ps1"
 $pluginBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerResource.ps1"
 $assetBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerAssetBundle.ps1"
+$changelogSourcePath = if (($resolvedVersion -eq $versionState.Version) -and -not [string]::IsNullOrWhiteSpace($versionState.ChangelogPath)) {
+    $versionState.ChangelogPath
+}
+else {
+    Resolve-FrameAngelPlayerVersionChangelogPath -RepoRoot $RepoRoot -Version $resolvedVersion
+}
+$changelog = Read-PlayerReleaseChangelog -Path $changelogSourcePath -ExpectedVersion $resolvedVersion
+$releaseChangelogJsonPath = Join-Path $releaseRoot "foundation_release_changelog.json"
+$releaseChangelogMarkdownPath = Join-Path $releaseRoot "foundation_release_changelog.md"
 
 if (-not $AllowExistingVersion.IsPresent) {
     $collisionPaths = @($repoAssetPath, $repoPluginPath)
@@ -139,6 +266,21 @@ if (-not (Test-Path -LiteralPath $repoBuiltPluginPath)) {
 Ensure-Directory -PathValue $releaseRoot
 Copy-Item -LiteralPath $repoBuiltPluginPath -Destination $repoPluginPath -Force
 
+$releaseChangelog = [ordered]@{
+    schemaVersion = "frameangel_player_release_changelog_v1"
+    generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
+    version = $resolvedVersion
+    sourcePath = $changelogSourcePath
+    title = [string]$changelog.title
+    summary = [string]$changelog.summary
+    reasoning = [string]$changelog.reasoning
+    changes = @($changelog.changes)
+    verification = @($changelog.verification)
+    knownIssues = @($changelog.knownIssues)
+}
+Write-JsonFile -Path $releaseChangelogJsonPath -Value $releaseChangelog
+Write-TextFile -Path $releaseChangelogMarkdownPath -Value (Convert-PlayerReleaseChangelogToMarkdown -Changelog $releaseChangelog)
+
 if (-not $SkipLiveDeploy.IsPresent) {
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Atom\CustomUnityAsset" -Filter "Preset_FA Player Asset *.vap"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_cua_player.*.dll"
@@ -161,6 +303,12 @@ $validationArgs = @(
     $repoAssetPath,
     "-RepoPluginPath",
     $repoPluginPath,
+    "-ChangelogSourcePath",
+    $changelogSourcePath,
+    "-ChangelogJsonPath",
+    $releaseChangelogJsonPath,
+    "-ChangelogMarkdownPath",
+    $releaseChangelogMarkdownPath,
     "-LiveAssetPath",
     $liveAssetPath,
     "-LivePluginPath",
@@ -176,7 +324,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $manifest = [ordered]@{
-    schemaVersion = "frameangel_player_screen_core_release_v3"
+    schemaVersion = "frameangel_player_screen_core_release_v4"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     version = $resolvedVersion
     repoAssetPath = $repoAssetPath
@@ -199,6 +347,14 @@ $manifest = [ordered]@{
         removesLegacyPresetDrift = $true
         removesAssetSideDllDrift = $true
     }
+    changelog = [ordered]@{
+        sourcePath = $changelogSourcePath
+        releaseJsonPath = $releaseChangelogJsonPath
+        releaseMarkdownPath = $releaseChangelogMarkdownPath
+        title = [string]$releaseChangelog.title
+        summary = [string]$releaseChangelog.summary
+        reasoning = [string]$releaseChangelog.reasoning
+    }
 }
 Write-JsonFile -Path $manifestPath -Value $manifest
 Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
@@ -207,6 +363,8 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     version = $resolvedVersion
     releaseRoot = $releaseRoot
     manifestPath = $manifestPath
+    changelogJsonPath = $releaseChangelogJsonPath
+    changelogMarkdownPath = $releaseChangelogMarkdownPath
     repoAssetPath = $repoAssetPath
     repoPluginPath = $repoPluginPath
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
@@ -221,5 +379,7 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
     livePluginPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $livePluginPath }
     manifestPath = $manifestPath
+    changelogJsonPath = $releaseChangelogJsonPath
+    changelogMarkdownPath = $releaseChangelogMarkdownPath
     latestManifestPath = $latestManifestPath
 }

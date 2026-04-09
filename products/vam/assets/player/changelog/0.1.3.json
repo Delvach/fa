@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.1.3",
+  "title": "Separate Unity source from build output and require release changelogs",
+  "summary": "Moved the player-screen Unity authoring project out of build/, added tracked per-version changelog source files, and made the release wrapper emit and validate changelog artifacts for every version.",
+  "reasoning": "The clean-room repo should read like a product repo, not a recovery site. Leaving the Unity authoring project under build/ blurred source and output, and relying on commit text alone was too weak for preserving version reasoning. This version makes the Unity source boundary explicit and turns release reasoning into tracked source that ships with each release packet.",
+  "changes": [
+    {
+      "area": "repo-structure",
+      "summary": "Moved the tracked Unity authoring project to products/vam/assets/player/unity/player-screen-2018.",
+      "reasoning": "The Unity project is source, not generated output, so it should live outside build/."
+    },
+    {
+      "area": "asset-build",
+      "summary": "Updated the assetbundle build wrapper and exporter to use the new Unity source path and a cleaner player_screen_summary.json export summary.",
+      "reasoning": "The build lane needed to follow the new source boundary and stop carrying 2018/probe-era summary naming forward."
+    },
+    {
+      "area": "release-changelog",
+      "summary": "Added tracked changelog source files for 0.1.1, 0.1.2, and 0.1.3, and taught the release wrapper to emit release-root JSON and Markdown changelog artifacts.",
+      "reasoning": "Every versioned release needs durable reasoning in repo source, not just manifests, receipts, or commit history."
+    },
+    {
+      "area": "validation",
+      "summary": "Extended release validation to require changelog source and release artifacts with matching versions.",
+      "reasoning": "The changelog contract only matters if the release lane fails when the reasoning packet is missing or out of sync."
+    },
+    {
+      "area": "demo-scene",
+      "summary": "Removed the old probe summary fallback from the demo-scene builder so it only reads the current asset export summary.",
+      "reasoning": "The scene witness should target the current release seam, not silently hydrate from older probe drift."
+    }
+  ],
+  "verification": [
+    "Built and deployed fa_cua_player.0.1.3.dll and fa_player_asset.0.1.3.assetbundle.",
+    "Generated foundation_release_changelog.json and foundation_release_changelog.md beside the 0.1.3 manifest and validation receipt.",
+    "Validated that the release changelog artifacts match the tracked changelog source for 0.1.3."
+  ],
+  "knownIssues": [
+    "Live testing still shows screen aspect/presentation issues on the screen-core overlay path.",
+    "Next and previous still need phase-1 transport recovery.",
+    "Media-load failure handling still needs clearer operator feedback."
+  ]
+}
