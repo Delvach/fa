@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.8",
+  "title": "Close the screen-core overlay drift that reappears after repeated next/rebind events",
+  "summary": "Stabilize the direct-CUA screen-core overlay by deriving local bounds from renderer-local mesh bounds instead of reconstructing them from Unity's world-space AABB, which was inflating the apparent depth of rotated flat screens and pushing the media plane forward away from the backing slab.",
+  "reasoning": "The operator proof for 0.2.7 showed the screen still detaching after a few next events even though orientation was correct again. The debug parity values reported a large runtimeTargetLocalSize.z and runtimeOverlayLocalPosition.z on a flat authored screen surface, which should not happen. That traced back to TryBuildInnerPieceSurfaceLocalBounds using renderer.bounds, a world-space axis-aligned bounding box. When the flat screen is rotated in the scene, transforming that AABB back into local space fabricates depth that does not exist, so the runtime overlay helper keeps placing the media quad too far forward. Version 0.2.8 keeps the fix narrow by using renderer-local mesh bounds when available and only falling back to the older world-bounds path when necessary.",
+  "changes": [
+    {
+      "area": "screen-core-runtime-overlay",
+      "summary": "Changed the local-bounds helper to project renderer-local mesh bounds into the target surface space instead of reconstructing local bounds from world-space renderer.bounds.",
+      "reasoning": "A rotated flat screen should stay effectively flat in its own local space. Using the world AABB was inflating the local z depth and driving the overlay quad forward."
+    },
+    {
+      "area": "hosted-rebind-stability",
+      "summary": "Kept the previous backdrop-follow behavior intact while fixing the underlying target depth calculation that was destabilizing rebinds after repeated next events.",
+      "reasoning": "The operator report showed the detachment reappearing after one of several next transitions, so the real seam was repeated overlay reconstruction rather than a one-time rear-backing choice."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.8 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.8.dll and fa_player_asset.0.2.8.assetbundle.",
+    "Validate the 0.2.8 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Loop behavior still needs a dedicated follow-up if the operator continues to see single-style continuation under some loop settings.",
+    "Joystick and gaze focus remain intentionally deferred until the screen lane is fully stable."
+  ]
+}

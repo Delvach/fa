@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.7",
-    "notes":  "0.2.7 closes the current screen detachment regression by using the thinner authored disconnect_surface as the rear backing for the screen-core overlay path and hiding the thicker screen_body slab in the phase-1 presentation seam.",
+    "version":  "0.2.8",
+    "notes":  "0.2.8 closes the runtime overlay detachment regression by deriving screen-core bounds from renderer-local mesh bounds instead of the inflated world AABB, so repeated next/rebind events stop pushing the front media plane forward away from the rear backing.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.7.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.8.json"
 }

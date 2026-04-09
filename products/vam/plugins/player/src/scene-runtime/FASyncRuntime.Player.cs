@@ -3074,31 +3074,18 @@ public partial class FASyncRuntime : MVRScript
                 continue;
             }
 
-            Bounds worldBounds = renderer.bounds;
-            Vector3 worldMin = worldBounds.min;
-            Vector3 worldMax = worldBounds.max;
-            for (int corner = 0; corner < 8; corner++)
+            if (!TryAccumulateRendererBoundsInSurfaceSpace(
+                renderer,
+                space,
+                ref hasProjection,
+                ref minX,
+                ref maxX,
+                ref minY,
+                ref maxY,
+                ref minZ,
+                ref maxZ))
             {
-                Vector3 worldCorner = new Vector3(
-                    (corner & 1) == 0 ? worldMin.x : worldMax.x,
-                    (corner & 2) == 0 ? worldMin.y : worldMax.y,
-                    (corner & 4) == 0 ? worldMin.z : worldMax.z);
-                Vector3 localCorner = space.InverseTransformPoint(worldCorner);
-                if (!hasProjection)
-                {
-                    minX = maxX = localCorner.x;
-                    minY = maxY = localCorner.y;
-                    minZ = maxZ = localCorner.z;
-                    hasProjection = true;
-                    continue;
-                }
-
-                minX = Mathf.Min(minX, localCorner.x);
-                maxX = Mathf.Max(maxX, localCorner.x);
-                minY = Mathf.Min(minY, localCorner.y);
-                maxY = Mathf.Max(maxY, localCorner.y);
-                minZ = Mathf.Min(minZ, localCorner.z);
-                maxZ = Mathf.Max(maxZ, localCorner.z);
+                continue;
             }
         }
 
@@ -3114,6 +3101,122 @@ public partial class FASyncRuntime : MVRScript
             Mathf.Max(0.001f, maxY - minY),
             Mathf.Max(0.001f, maxZ - minZ));
         return true;
+    }
+
+    private bool TryAccumulateRendererBoundsInSurfaceSpace(
+        Renderer renderer,
+        Transform surfaceSpace,
+        ref bool hasProjection,
+        ref float minX,
+        ref float maxX,
+        ref float minY,
+        ref float maxY,
+        ref float minZ,
+        ref float maxZ)
+    {
+        if (renderer == null || surfaceSpace == null)
+            return false;
+
+        Bounds localBounds;
+        if (TryGetRendererLocalBounds(renderer, out localBounds))
+        {
+            Transform rendererTransform = renderer.transform;
+            Vector3 localMin = localBounds.min;
+            Vector3 localMax = localBounds.max;
+            for (int corner = 0; corner < 8; corner++)
+            {
+                Vector3 rendererLocalCorner = new Vector3(
+                    (corner & 1) == 0 ? localMin.x : localMax.x,
+                    (corner & 2) == 0 ? localMin.y : localMax.y,
+                    (corner & 4) == 0 ? localMin.z : localMax.z);
+                Vector3 worldCorner = rendererTransform.TransformPoint(rendererLocalCorner);
+                Vector3 surfaceLocalCorner = surfaceSpace.InverseTransformPoint(worldCorner);
+                UpdateSurfaceLocalBounds(
+                    surfaceLocalCorner,
+                    ref hasProjection,
+                    ref minX,
+                    ref maxX,
+                    ref minY,
+                    ref maxY,
+                    ref minZ,
+                    ref maxZ);
+            }
+
+            return true;
+        }
+
+        Bounds worldBounds = renderer.bounds;
+        Vector3 worldMin = worldBounds.min;
+        Vector3 worldMax = worldBounds.max;
+        for (int corner = 0; corner < 8; corner++)
+        {
+            Vector3 worldCorner = new Vector3(
+                (corner & 1) == 0 ? worldMin.x : worldMax.x,
+                (corner & 2) == 0 ? worldMin.y : worldMax.y,
+                (corner & 4) == 0 ? worldMin.z : worldMax.z);
+            Vector3 surfaceLocalCorner = surfaceSpace.InverseTransformPoint(worldCorner);
+            UpdateSurfaceLocalBounds(
+                surfaceLocalCorner,
+                ref hasProjection,
+                ref minX,
+                ref maxX,
+                ref minY,
+                ref maxY,
+                ref minZ,
+                ref maxZ);
+        }
+
+        return true;
+    }
+
+    private bool TryGetRendererLocalBounds(Renderer renderer, out Bounds localBounds)
+    {
+        localBounds = new Bounds();
+        if (renderer == null)
+            return false;
+
+        MeshFilter meshFilter = renderer.GetComponent<MeshFilter>();
+        if (meshFilter != null && meshFilter.sharedMesh != null)
+        {
+            localBounds = meshFilter.sharedMesh.bounds;
+            return true;
+        }
+
+        SkinnedMeshRenderer skinnedRenderer = renderer as SkinnedMeshRenderer;
+        if (skinnedRenderer != null)
+        {
+            localBounds = skinnedRenderer.localBounds;
+            return true;
+        }
+
+        return false;
+    }
+
+    private void UpdateSurfaceLocalBounds(
+        Vector3 surfaceLocalCorner,
+        ref bool hasProjection,
+        ref float minX,
+        ref float maxX,
+        ref float minY,
+        ref float maxY,
+        ref float minZ,
+        ref float maxZ)
+    {
+        if (!hasProjection)
+        {
+            minX = maxX = surfaceLocalCorner.x;
+            minY = maxY = surfaceLocalCorner.y;
+            minZ = maxZ = surfaceLocalCorner.z;
+            hasProjection = true;
+            return;
+        }
+
+        minX = Mathf.Min(minX, surfaceLocalCorner.x);
+        maxX = Mathf.Max(maxX, surfaceLocalCorner.x);
+        minY = Mathf.Min(minY, surfaceLocalCorner.y);
+        maxY = Mathf.Max(maxY, surfaceLocalCorner.y);
+        minZ = Mathf.Min(minZ, surfaceLocalCorner.z);
+        maxZ = Mathf.Max(maxZ, surfaceLocalCorner.z);
     }
 
     private bool TryResolveDisplayedSurfaceAspect(GameObject surfaceObject, float localWidth, float localHeight, out float aspect)
