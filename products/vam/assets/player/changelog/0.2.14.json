@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.2.14",
+  "title": "Keep Previous random and harden screen-core front-face occlusion",
+  "summary": "Random-enabled Previous no longer falls back to ordered reverse stepping when the stored random trail runs out, and the hosted screen-core front overlay now behaves like a real occluding front surface while the old full-size authored front slab stays hidden on the runtime overlay path.",
+  "reasoning": "The screen lane is stable enough that the remaining operator-visible bugs are narrow and recurring. Live runtime proof showed two separate problems: random-aware Previous could behave correctly only while bounded history was available, then silently revert to ordered index stepping, and controls placed behind the screen could still show through because the current front media overlay was not asserting depth as a real visible screen. This version keeps the fix bounded to those seams instead of widening into image scrub, defaults/config, or other control-surface work.",
+  "changes": [
+    {
+      "area": "playlist-random-previous",
+      "summary": "When random history is exhausted, Previous now chooses another random item instead of silently falling back to ordered reverse stepping, and hosted reloads stop discarding valid random history just because the same playlist was rebuilt in a different order.",
+      "reasoning": "The bounded history path is still the first truth source for walking back through the actual random trail, but once that trail ends the player should remain in random semantics rather than pretending the playlist is ordered again. Hosted reload continuity also needs to judge playlist sameness by membership rather than strict order so path-based random history survives benign rebuilds."
+    },
+    {
+      "area": "screen-core-occlusion",
+      "summary": "The hosted screen-core front overlay now writes depth as an opaque front-facing screen, and the authored full-size front slab is hidden for the runtime overlay path.",
+      "reasoning": "Behind-the-screen controls leaking through the visible media face pointed at the runtime quad not behaving like a true occluder, while the rear-only full-size black face came from the authored front slab still being left alive on the hosted path."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.2.13 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy fa_cua_player.0.2.13.dll and fa_player_asset.0.2.13.assetbundle.",
+    "Validate the 0.2.13 release packet, including versioned live outputs and generated changelog artifacts."
+  ],
+  "knownIssues": [
+    "Still-image scrub behavior remains a separate follow-up; this version does not add image timeline semantics.",
+    "Config-backed defaults for shuffle, loop mode, volume, and related player settings remain deferred to a later version.",
+    "Any remaining rear-face visual polish beyond the attached same-shape backing should be treated as a separate presentation refinement slice."
+  ]
+}

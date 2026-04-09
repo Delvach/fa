@@ -6222,6 +6222,16 @@ public partial class FASyncRuntime : MVRScript
 
             if (TryPopStandalonePlayerRandomHistoryIndex(record, currentIndex, out targetIndex))
                 return targetIndex != currentIndex;
+
+            int fallbackRandomIndex = currentIndex;
+            for (int i = 0; i < 8 && fallbackRandomIndex == currentIndex; i++)
+                fallbackRandomIndex = UnityEngine.Random.Range(0, count);
+
+            if (fallbackRandomIndex == currentIndex)
+                fallbackRandomIndex = (currentIndex + count - 1) % count;
+
+            targetIndex = fallbackRandomIndex;
+            return targetIndex != currentIndex;
         }
 
         if (forward)
@@ -6600,6 +6610,41 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return true;
+    }
+
+    private bool DoStandalonePlayerPlaylistsContainSameEntries(IList<string> left, IList<string> right)
+    {
+        int leftCount = left != null ? left.Count : 0;
+        int rightCount = right != null ? right.Count : 0;
+        if (leftCount != rightCount)
+            return false;
+
+        if (leftCount <= 0)
+            return true;
+
+        Dictionary<string, int> counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int i = 0; i < leftCount; i++)
+        {
+            string normalizedPath = NormalizeStandalonePlayerPathForMatch(left[i]);
+            int existingCount;
+            counts.TryGetValue(normalizedPath, out existingCount);
+            counts[normalizedPath] = existingCount + 1;
+        }
+
+        for (int i = 0; i < rightCount; i++)
+        {
+            string normalizedPath = NormalizeStandalonePlayerPathForMatch(right[i]);
+            int existingCount;
+            if (!counts.TryGetValue(normalizedPath, out existingCount) || existingCount <= 0)
+                return false;
+
+            if (existingCount == 1)
+                counts.Remove(normalizedPath);
+            else
+                counts[normalizedPath] = existingCount - 1;
+        }
+
+        return counts.Count <= 0;
     }
 
     private int FindStandalonePlayerPlaylistIndex(List<string> playlistPaths, string mediaPath)
@@ -8195,6 +8240,7 @@ public partial class FASyncRuntime : MVRScript
             // The direct-CUA screen-core overlay should behave like a real front
             // screen, not a double-sided floating helper. Keep the rear black so
             // we can diagnose true aspect/alignment issues without back-face bleed.
+            TryEnableScreenCoreOverlayDepthOcclusion(projectedMaterial);
             TryForceProjectedScreenFrontFaceOnly(projectedMaterial);
         }
 
@@ -8349,6 +8395,60 @@ public partial class FASyncRuntime : MVRScript
             return;
 
         TrySetMaterialFloat(material, "_Cull", 2f);
+    }
+
+    private void TryEnableScreenCoreOverlayDepthOcclusion(Material material)
+    {
+        if (material == null)
+            return;
+
+        TrySetMaterialFloat(material, "_ZWrite", 1f);
+        TrySetMaterialFloat(material, "_Mode", 0f);
+        TrySetMaterialFloat(material, "_Surface", 0f);
+        TrySetMaterialFloat(material, "_SrcBlend", 1f);
+        TrySetMaterialFloat(material, "_DstBlend", 0f);
+        TrySetMaterialFloat(material, "_Blend", 0f);
+        TrySetMaterialFloat(material, "_AlphaClip", 0f);
+
+        try
+        {
+            material.DisableKeyword("_ALPHATEST_ON");
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            material.DisableKeyword("_ALPHABLEND_ON");
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            material.DisableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            material.SetOverrideTag("RenderType", "Opaque");
+        }
+        catch
+        {
+        }
     }
 
     private void DestroyStandalonePlayerRecord(StandalonePlayerRecord record)

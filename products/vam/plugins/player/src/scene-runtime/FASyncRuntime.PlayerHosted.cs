@@ -1506,7 +1506,7 @@ public partial class FASyncRuntime : MVRScript
         for (int i = 0; i < resolvedPlaylistPaths.Count; i++)
             record.playlistPaths.Add(resolvedPlaylistPaths[i]);
 
-        if (!AreStandalonePlayerPlaylistsEquivalent(existingPlaylistPaths, record.playlistPaths))
+        if (!DoStandalonePlayerPlaylistsContainSameEntries(existingPlaylistPaths, record.playlistPaths))
             ClearStandalonePlayerRandomHistory(record);
 
         if (record.playlistPaths.Count <= 0)
@@ -1858,11 +1858,58 @@ public partial class FASyncRuntime : MVRScript
             binding.backdropRendererStates = capturedStates.ToArray();
         }
 
+        CaptureAndHideHostedScreenSurface(contract, binding);
+
         // The runtime overlay now owns its own rear backing quad. Leave the authored
         // disconnect/body slabs out of the live presentation path so repeated next/rebind
         // events cannot drag a stale helper slab back into view behind the media plane.
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
+    }
+
+    private void CaptureAndHideHostedScreenSurface(
+        HostedPlayerSurfaceContract contract,
+        PlayerScreenBindingRecord binding)
+    {
+        if (contract == null
+            || binding == null
+            || contract.screenSurfaceObject == null
+            || (binding.hiddenShellRenderers != null && binding.hiddenShellRenderers.Length > 0))
+        {
+            return;
+        }
+
+        Renderer[] renderers = contract.screenSurfaceObject.GetComponentsInChildren<Renderer>(true);
+        if (renderers == null || renderers.Length <= 0)
+            return;
+
+        Transform runtimeSurfaceTransform = binding.runtimeMediaSurfaceObject != null
+            ? binding.runtimeMediaSurfaceObject.transform
+            : null;
+
+        List<Renderer> capturedRenderers = new List<Renderer>(renderers.Length);
+        List<bool> capturedStates = new List<bool>(renderers.Length);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            Renderer renderer = renderers[i];
+            if (renderer == null)
+                continue;
+
+            if (runtimeSurfaceTransform != null
+                && renderer.transform != null
+                && (renderer.transform == runtimeSurfaceTransform
+                    || renderer.transform.IsChildOf(runtimeSurfaceTransform)))
+            {
+                continue;
+            }
+
+            capturedRenderers.Add(renderer);
+            capturedStates.Add(renderer.enabled);
+            renderer.enabled = false;
+        }
+
+        binding.hiddenShellRenderers = capturedRenderers.ToArray();
+        binding.hiddenShellRendererStates = capturedStates.ToArray();
     }
 
     private void CaptureHostedBackdropRendererStates(

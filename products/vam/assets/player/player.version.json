@@ -1,7 +1,7 @@
 {
-    "version":  "0.2.12",
-    "notes":  "0.2.12 restores random-aware Previous by keeping a bounded random playback history, and it adds a short user-scrub holdoff so the exposed scrub slider can keep tracking playback without snapping back while someone is actively dragging it.",
+    "version":  "0.2.14",
+    "notes":  "0.2.14 keeps Previous random even after the bounded random-history trail runs out, preserves path-based random history across hosted playlist rebuilds that only reorder the same entries, and hardens the hosted screen-core overlay so the authored front slab stays hidden while the front media surface writes depth instead of letting behind-the-screen controls leak through.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.2.12.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.2.14.json"
 }
