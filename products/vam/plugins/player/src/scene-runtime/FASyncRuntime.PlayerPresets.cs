@@ -15,7 +15,7 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerPresetRootPath = "Custom\\PluginData\\FrameAngel\\Player\\presets";
     private const string PlayerPresetNoneChoice = "none";
     private const float PlayerPresetDeferredSeekTimeoutSeconds = 10f;
-    private const float PlayerPresetPopupLabelWidth = 112f;
+    private const float PlayerPresetPopupLabelWidth = 80f;
     private const float PlayerPresetPopupPanelHeight = 260f;
     private const string PlayerPresetSeekToSecondsActionId = "Player.SeekToSeconds";
 
@@ -85,10 +85,10 @@ public partial class FASyncRuntime : MVRScript
         };
 
         playerFavoritePresetChooser = new JSONStorableStringChooser(
-            "Favorite Selection",
+            "Favorites",
             new List<string> { PlayerPresetNoneChoice },
             PlayerPresetNoneChoice,
-            "Favorite Selection");
+            "Favorites");
         playerFavoritePresetChooser.displayChoices = new List<string> { "(none)" };
         playerFavoritePresetChooser.setCallbackFunction = delegate(string value)
         {
@@ -572,16 +572,8 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        string rootPath = ResolvePlayerPresetRootPath();
-        try
+        if (!TryWritePlayerPresetFile(presetPath, BuildPlayerPresetJson(preset), out errorMessage))
         {
-            if (!FileManagerSecure.DirectoryExists(rootPath, false))
-                FileManagerSecure.CreateDirectory(rootPath);
-            FileManagerSecure.WriteAllText(presetPath, BuildPlayerPresetJson(preset));
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "preset save failed: " + ex.Message;
             SetLastError(errorMessage);
             SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
             UpdatePlayerPresetStatusField("error");
@@ -595,6 +587,49 @@ public partial class FASyncRuntime : MVRScript
             "{\"presetId\":\"" + EscapeJsonString(preset.presetId) + "\"}"));
         RefreshPlayerPresetCatalog(false, preset.presetId, true);
         UpdatePlayerPresetStatusField("saved");
+    }
+
+    private bool TryWritePlayerPresetFile(string presetPath, string presetJson, out string errorMessage)
+    {
+        errorMessage = "";
+
+        string rootPath = ResolvePlayerPresetRootPath();
+        if (TryWritePlayerPresetFileAtPath(rootPath, presetPath, presetJson, out errorMessage))
+            return true;
+
+        string absoluteRootPath = ResolveStandalonePlayerAbsolutePath(rootPath);
+        string absolutePresetPath = ResolveStandalonePlayerAbsolutePath(presetPath);
+        if (!string.Equals(rootPath, absoluteRootPath, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(presetPath, absolutePresetPath, StringComparison.OrdinalIgnoreCase))
+        {
+            if (TryWritePlayerPresetFileAtPath(absoluteRootPath, absolutePresetPath, presetJson, out errorMessage))
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool TryWritePlayerPresetFileAtPath(string rootPath, string presetPath, string presetJson, out string errorMessage)
+    {
+        errorMessage = "";
+        if (string.IsNullOrEmpty(rootPath) || string.IsNullOrEmpty(presetPath))
+        {
+            errorMessage = "preset path could not be resolved";
+            return false;
+        }
+
+        try
+        {
+            if (!FileManagerSecure.DirectoryExists(rootPath, false))
+                FileManagerSecure.CreateDirectory(rootPath);
+            FileManagerSecure.WriteAllText(presetPath, presetJson);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "preset save failed: " + ex.Message;
+            return false;
+        }
     }
 
     private bool TryBuildCurrentPlayerPreset(out PlayerPresetRecord preset, out string errorMessage)
@@ -635,22 +670,15 @@ public partial class FASyncRuntime : MVRScript
 
         StandalonePlayerRecord record = null;
         Atom hostAtom = null;
-        bool needsRecord = storeMedia || storeTime || storeLoop || storeRandom;
-        if (needsRecord)
+        bool hasAttachedRecord = TryResolveAttachedHostedStandalonePlayerRecord(out record, out hostAtom) && record != null;
+        if (!hasAttachedRecord)
+            record = null;
+
+        if (hostAtom == null)
         {
-            if (!TryResolveAttachedHostedStandalonePlayerRecord(out record, out hostAtom) || record == null)
-            {
-                errorMessage = "attached player record not resolved";
-                return false;
-            }
-        }
-        else if (storeScale)
-        {
-            if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null)
-            {
-                errorMessage = "attached player host atom not resolved";
-                return false;
-            }
+            Atom resolvedHostAtom;
+            if (TryResolveHostedPlayerAtom(out resolvedHostAtom) && resolvedHostAtom != null)
+                hostAtom = resolvedHostAtom;
         }
 
         preset = new PlayerPresetRecord();
@@ -661,15 +689,12 @@ public partial class FASyncRuntime : MVRScript
         if (storeMedia)
         {
             string currentPath = ResolveCurrentStandalonePlayerMediaPath(record);
-            if (string.IsNullOrEmpty(currentPath))
+            if (!string.IsNullOrEmpty(currentPath))
             {
-                errorMessage = "current player media path is unavailable";
-                return false;
+                preset.hasMediaPath = true;
+                preset.mediaPath = currentPath;
+                preset.playWhenLoaded = ResolveCurrentStandalonePlayerDesiredPlaying(record);
             }
-
-            preset.hasMediaPath = true;
-            preset.mediaPath = currentPath;
-            preset.playWhenLoaded = ResolveCurrentStandalonePlayerDesiredPlaying(record);
         }
 
         if (storeTime && record != null && !record.mediaIsStillImage)
@@ -703,11 +728,15 @@ public partial class FASyncRuntime : MVRScript
 
         if (storeScale)
         {
-            if (!TryReadPlayerPresetHostScale(hostAtom, out float hostScale, out errorMessage))
-                return false;
-
-            preset.hasHostScale = true;
-            preset.hostScale = hostScale;
+            if (TryReadPlayerPresetHostScale(hostAtom, out float hostScale, out string scaleError))
+            {
+                preset.hasHostScale = true;
+                preset.hostScale = hostScale;
+            }
+            else if (!string.IsNullOrEmpty(scaleError))
+            {
+                FrameAngelLog.Quiet("fa player preset scale skipped: " + scaleError);
+            }
         }
 
         if (!preset.hasMediaPath
@@ -1083,9 +1112,13 @@ public partial class FASyncRuntime : MVRScript
                     : "Loading preset " + selectedPresetName + "...";
                 break;
             case "error":
-                message = string.IsNullOrEmpty(selectedPresetName)
-                    ? "Preset action failed"
-                    : "Preset action failed for " + selectedPresetName;
+                string lastError = syncLastErrorField != null ? syncLastErrorField.val : "";
+                lastError = string.IsNullOrEmpty(lastError) ? "" : lastError.Trim();
+                message = !string.IsNullOrEmpty(lastError)
+                    ? lastError
+                    : (string.IsNullOrEmpty(selectedPresetName)
+                        ? "Preset action failed"
+                        : "Preset action failed for " + selectedPresetName);
                 break;
             default:
                 if (!string.IsNullOrEmpty(selectedPresetName))

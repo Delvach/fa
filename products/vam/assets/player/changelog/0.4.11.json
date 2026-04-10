@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.11",
+  "title": "Repair the live preset save seam",
+  "summary": "0.4.11 fixes the live player preset workflow instead of just the intended one. Preset save no longer fails outright when optional capture state is missing, the write path retries through the resolved absolute preset folder, the status field surfaces the real error when save still fails, and the favorites popup uses a compact label that fits the plugin's right column more sanely.",
+  "reasoning": "The current 0.4.10 live build still leaves the upper-right preset controls visibly crushed and still reports only a generic preset failure after typing a valid name. This slice stops treating the inline-name clone as the only problem and fixes the live preset experience end-to-end: compact the favorites popup, keep save from failing on optional state capture, and surface the real save error if anything still goes wrong.",
+  "changes": [
+    {
+      "area": "favorites-popup-layout",
+      "summary": "Compacts the right-column favorites chooser label so the upper-right preset controls stop wrapping and overlapping themselves in the plugin panel.",
+      "reasoning": "The native-width label assumption from the earlier clone work does not fit the plugin's half-width right column."
+    },
+    {
+      "area": "preset-save-resilience",
+      "summary": "Makes preset save skip optional capture seams when they are unavailable instead of aborting the whole save attempt.",
+      "reasoning": "A typed preset should still save useful state even if a non-essential capture seam like host scale is temporarily unavailable."
+    },
+    {
+      "area": "preset-write-path",
+      "summary": "Retries preset writes through the resolved absolute preset folder and shows the real error text in the preset status field when save still fails.",
+      "reasoning": "The live panel needs a deterministic save target and operator-visible failure detail instead of the generic `Preset action failed` message."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.11 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.11.dll` and `fa_player_asset.0.4.11.assetbundle` through the player foundation script.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Run foundation release validation for 0.4.11 and keep the generated receipt beside the release shelf.",
+    "In live VaM, verify the favorites popup no longer crushes itself in the upper-right preset area and that creating a preset from a typed name either succeeds or shows the real failure text."
+  ],
+  "knownIssues": [
+    "This slice keeps the existing plugin-column preset surface rather than replacing it with a full native preset-manager shell.",
+    "Defaults-management and broader preset maintenance actions remain separate work."
+  ]
+}

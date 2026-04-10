@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.10",
-    "notes":  "0.4.10 deploys the updated player screen prefab from the concurrent authoring thread, carrying the refreshed root and child ordering plus the current screen-surface, disconnect-surface, and anchor material/mesh assignments into the versioned assetbundle release.",
+    "version":  "0.4.11",
+    "notes":  "0.4.11 repairs the live player preset seam by making preset save tolerate missing optional capture state, retrying writes through the resolved absolute preset folder, surfacing the actual save error in the status field, and compacting the favorites popup so the upper-right preset controls stop crushing themselves in the plugin column.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.10.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.11.json"
 }
