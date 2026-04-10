@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.4",
+  "title": "Remove focus lag, stabilize joystick scrub, and make loop completion explicit",
+  "summary": "The 0.3.x player baseline was already usable, but live VaM testing still showed three operator-facing defects in the optional CUA interaction lane: a small delay before gaze focus engaged, right-stick scrub could eventually desync or freeze playback, and loop mode could appear set without reliably restarting or advancing media at the end. This release keeps the same modular architecture while tightening those seams directly: focus now retries the hosted screen surface immediately instead of waiting behind a pending gate, joystick scrub pauses into a preview session and resumes cleanly on release instead of repeatedly restarting active playback, and loop completion now runs through the clean-room runtime's own end-of-media handler rather than trusting Unity's raw loop flag.",
+  "reasoning": "The current complaints are not broad product-direction issues. They are narrow runtime seams. The gaze lag came from the input layer caching a missing hosted screen surface and returning a pending state before trying again, which turns first-look focus into an avoidable wait. The scrub freeze came from treating every held-stick update as another live seek on a playing VideoPlayer, which is exactly the kind of repeated decoder churn that can leave audio and visible playback in a half-dead state even after the timer keeps moving. The loop failure came from splitting responsibility between the clean-room runtime and Unity's built-in loop flag. The stable fix is to let the runtime own these transitions explicitly: eager surface reacquire for focus, a pause-preview-resume scrub session for held-stick seeking, and one deterministic loop completion path for both single and playlist modes.",
+  "changes": [
+    {
+      "area": "gaze-focus-acquisition",
+      "summary": "The CUA gaze layer now retries hosted screen-surface resolution immediately instead of waiting behind a pending throttle after a miss.",
+      "reasoning": "This removes the small but noticeable delay between looking at the player and gaining focus when the hosted surface is in the middle of becoming ready."
+    },
+    {
+      "area": "joystick-scrub-session",
+      "summary": "Right-stick scrub now pauses once on engagement, seeks in a paused preview state while the stick is held, applies a final seek on release, and only then resumes playback if the player had been playing before the scrub started.",
+      "reasoning": "Repeated active restarts while a held stick keeps issuing new seek targets are much more likely to wedge Unity's video playback than a bounded pause-preview-resume interaction."
+    },
+    {
+      "area": "explicit-loop-completion",
+      "summary": "Single and playlist loop modes now complete through the runtime's own end-of-media handler, with Unity's raw VideoPlayer looping left disabled.",
+      "reasoning": "Owning restart and playlist advancement in one explicit runtime seam keeps loop behavior honest and consistent across end-of-media cases instead of mixing built-in looping with custom playlist rules."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.4 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.4.dll and fa_player_asset.0.3.4.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.4 and keep the generated receipt beside the versioned release shelf.",
+    "In VaM, confirm gaze focus engages immediately on first look, repeated right-stick scrubs no longer leave playback frozen or audio out of sync, and loop single plus loop playlist both complete correctly from the plugin UI."
+  ],
+  "knownIssues": [
+    "This slice keeps the current right-stick ownership and does not yet introduce the separate left-stick depth and zoom lane planned for Fork B.",
+    "The shell-family rounded-surface and aperture authoring work remains a separate Fork A seam.",
+    "This release still relies on Unity VideoPlayer timeline and motion observation rather than decoded-frame truth for deeper playback health diagnosis."
+  ]
+}

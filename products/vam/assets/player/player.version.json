@@ -1,7 +1,7 @@
 {
-    "version":  "0.3.3",
-    "notes":  "0.3.3 keeps the optional CUA input seam modular, but hardens active joystick scrub by treating live seeks as mini playback restarts and restores the quieter low-end player volume taper by applying a curved gain only at the final audio-output boundary.",
+    "version":  "0.3.4",
+    "notes":  "0.3.4 removes the small gaze-to-focus acquisition lag, moves right-stick scrub onto a pause-preview-resume session so repeated seeks do not poison playback, and takes loop completion back under explicit runtime control instead of trusting Unity's raw VideoPlayer loop behavior.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.3.3.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.3.4.json"
 }

@@ -18,7 +18,6 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
     private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
-    private const float CuaPlayerSurfaceResolveIntervalSeconds = 0.15f;
 
     private struct CuaPlayerNavigationSnapshot
     {
@@ -53,11 +52,13 @@ public partial class FASyncRuntime : MVRScript
     private float cuaPlayerVideoScrubTargetNormalized = 0f;
     private float cuaPlayerLastAppliedVideoScrubNormalized = -1f;
     private float cuaPlayerNextVideoSeekApplyAt = 0f;
+    private bool cuaPlayerVideoScrubSessionActive = false;
+    private bool cuaPlayerVideoScrubResumeAfterRelease = false;
+    private string cuaPlayerVideoScrubPlaybackKey = "";
     private float cuaPlayerNextInputStateUpdateAt = 0f;
     private string cuaPlayerLastInputState = "";
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
-    private float cuaPlayerNextSurfaceResolveAt = 0f;
 
     private void BuildCuaPlayerInputStorables()
     {
@@ -152,6 +153,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.mediaIsStillImage)
         {
+            EndCuaPlayerVideoScrubSession(false);
             if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
                 horizontal = 0f;
             cuaPlayerVideoScrubTargetKnown = false;
@@ -239,14 +241,11 @@ public partial class FASyncRuntime : MVRScript
     private void ReleaseCuaPlayerInputFocus(string reason)
     {
         bool wasOwner = ReferenceEquals(cuaPlayerInputOwner, this);
+        EndCuaPlayerVideoScrubSession(true);
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
         cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
-        cuaPlayerVideoScrubTargetKnown = false;
-        cuaPlayerVideoScrubTargetNormalized = 0f;
-        cuaPlayerLastAppliedVideoScrubNormalized = -1f;
-        cuaPlayerNextVideoSeekApplyAt = 0f;
         if (wasOwner || cuaPlayerNavigationCaptureActive)
             SetInputCaptureState(false);
 
@@ -321,20 +320,11 @@ public partial class FASyncRuntime : MVRScript
         }
 
         string hostAtomUid = string.IsNullOrEmpty(hostAtom.uid) ? "" : hostAtom.uid.Trim();
-        float now = Time.unscaledTime;
         if (!string.IsNullOrEmpty(hostAtomUid)
             && string.Equals(cuaPlayerCachedSurfaceHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase)
             && cuaPlayerCachedScreenSurfaceObject != null)
         {
             return cuaPlayerCachedScreenSurfaceObject;
-        }
-
-        if (now < cuaPlayerNextSurfaceResolveAt
-            && !string.IsNullOrEmpty(hostAtomUid)
-            && string.Equals(cuaPlayerCachedSurfaceHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase))
-        {
-            errorMessage = "screen_surface_pending";
-            return null;
         }
 
         HostedPlayerSurfaceContract contract;
@@ -345,14 +335,12 @@ public partial class FASyncRuntime : MVRScript
         {
             cuaPlayerCachedSurfaceHostAtomUid = hostAtomUid;
             cuaPlayerCachedScreenSurfaceObject = null;
-            cuaPlayerNextSurfaceResolveAt = now + CuaPlayerSurfaceResolveIntervalSeconds;
             errorMessage = string.IsNullOrEmpty(contractErrorMessage) ? "screen_surface_missing" : contractErrorMessage;
             return null;
         }
 
         cuaPlayerCachedSurfaceHostAtomUid = hostAtomUid;
         cuaPlayerCachedScreenSurfaceObject = contract.screenSurfaceObject;
-        cuaPlayerNextSurfaceResolveAt = now + CuaPlayerSurfaceResolveIntervalSeconds;
         return cuaPlayerCachedScreenSurfaceObject;
     }
 
@@ -477,13 +465,14 @@ public partial class FASyncRuntime : MVRScript
     private void TickCuaPlayerVideoScrubInput(StandalonePlayerRecord record, float horizontal)
     {
         if (record == null || record.mediaIsStillImage)
+        {
+            EndCuaPlayerVideoScrubSession(false);
             return;
+        }
 
         if (Mathf.Abs(horizontal) <= 0f)
         {
-            cuaPlayerVideoScrubTargetKnown = false;
-            cuaPlayerLastAppliedVideoScrubNormalized = -1f;
-            cuaPlayerNextVideoSeekApplyAt = 0f;
+            EndCuaPlayerVideoScrubSession(true);
             return;
         }
 
@@ -501,6 +490,8 @@ public partial class FASyncRuntime : MVRScript
             cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01((float)(currentTimeSeconds / durationSeconds));
             cuaPlayerVideoScrubTargetKnown = true;
         }
+
+        BeginCuaPlayerVideoScrubSession(record);
 
         cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
             cuaPlayerVideoScrubTargetNormalized
@@ -526,6 +517,73 @@ public partial class FASyncRuntime : MVRScript
             cuaPlayerLastAppliedVideoScrubNormalized = cuaPlayerVideoScrubTargetNormalized;
             cuaPlayerNextVideoSeekApplyAt = Time.unscaledTime + CuaPlayerVideoSeekApplyIntervalSeconds;
         }
+    }
+
+    private void BeginCuaPlayerVideoScrubSession(StandalonePlayerRecord record)
+    {
+        if (record == null || record.mediaIsStillImage || string.IsNullOrEmpty(record.playbackKey))
+            return;
+
+        if (cuaPlayerVideoScrubSessionActive
+            && string.Equals(cuaPlayerVideoScrubPlaybackKey, record.playbackKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        EndCuaPlayerVideoScrubSession(false);
+        cuaPlayerVideoScrubSessionActive = true;
+        cuaPlayerVideoScrubPlaybackKey = record.playbackKey;
+        cuaPlayerVideoScrubResumeAfterRelease = record.desiredPlaying;
+        if (!cuaPlayerVideoScrubResumeAfterRelease)
+            return;
+
+        string argsJson = "{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}";
+        string ignoredResult;
+        string errorMessage;
+        if (!TryPauseStandalonePlayer("Player.InputScrubBegin", argsJson, out ignoredResult, out errorMessage))
+            cuaPlayerVideoScrubResumeAfterRelease = false;
+    }
+
+    private void EndCuaPlayerVideoScrubSession(bool resumePlayback)
+    {
+        string playbackKey = cuaPlayerVideoScrubPlaybackKey;
+        bool targetKnown = cuaPlayerVideoScrubTargetKnown;
+        float targetNormalized = cuaPlayerVideoScrubTargetNormalized;
+        float lastAppliedNormalized = cuaPlayerLastAppliedVideoScrubNormalized;
+        bool shouldResumePlayback = resumePlayback && cuaPlayerVideoScrubResumeAfterRelease;
+
+        cuaPlayerVideoScrubSessionActive = false;
+        cuaPlayerVideoScrubResumeAfterRelease = false;
+        cuaPlayerVideoScrubPlaybackKey = "";
+        cuaPlayerVideoScrubTargetKnown = false;
+        cuaPlayerVideoScrubTargetNormalized = 0f;
+        cuaPlayerLastAppliedVideoScrubNormalized = -1f;
+        cuaPlayerNextVideoSeekApplyAt = 0f;
+
+        if (string.IsNullOrEmpty(playbackKey))
+            return;
+
+        if (targetKnown
+            && (lastAppliedNormalized < 0f
+                || Mathf.Abs(targetNormalized - lastAppliedNormalized) >= CuaPlayerVideoSeekApplyMinDeltaNormalized))
+        {
+            string seekArgsJson = "{\"playbackKey\":\""
+                + EscapeJsonString(playbackKey)
+                + "\",\"normalized\":"
+                + FormatFloat(targetNormalized)
+                + "}";
+            string ignoredSeekResult;
+            string seekErrorMessage;
+            TrySeekStandalonePlayerNormalized("Player.InputScrubFinalize", seekArgsJson, out ignoredSeekResult, out seekErrorMessage);
+        }
+
+        if (!shouldResumePlayback)
+            return;
+
+        string playArgsJson = "{\"playbackKey\":\"" + EscapeJsonString(playbackKey) + "\"}";
+        string ignoredPlayResult;
+        string playErrorMessage;
+        TryPlayStandalonePlayer("Player.InputScrubResume", playArgsJson, out ignoredPlayResult, out playErrorMessage);
     }
 
     private void TickCuaPlayerImageStepInput(StandalonePlayerRecord record, float horizontal)

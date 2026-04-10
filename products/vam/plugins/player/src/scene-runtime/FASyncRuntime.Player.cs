@@ -170,6 +170,7 @@ public partial class FASyncRuntime : MVRScript
         public float lastPlaybackMotionObservedAt = 0f;
         public bool naturalEndHandled = false;
         public bool runtimeErrorHooked = false;
+        public bool runtimeLoopPointHooked = false;
         public GameObject runtimeObject;
         public AudioSource audioSource;
         public VideoPlayer videoPlayer;
@@ -7226,6 +7227,15 @@ public partial class FASyncRuntime : MVRScript
         if (!IsStandalonePlayerStalledAtEnd(record, isPlayingNow))
             return false;
 
+        return TryHandleStandalonePlayerCompletedPlayback(record, out errorMessage);
+    }
+
+    private bool TryHandleStandalonePlayerCompletedPlayback(StandalonePlayerRecord record, out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null || record.videoPlayer == null || !record.desiredPlaying)
+            return false;
+
         if (record.naturalEndHandled)
             return true;
 
@@ -7486,7 +7496,10 @@ public partial class FASyncRuntime : MVRScript
 
         try
         {
-            record.videoPlayer.isLooping = record.looping;
+            // Keep Unity's raw looping disabled and let the clean-room runtime own
+            // restart and playlist advancement explicitly so single and playlist loop
+            // modes stay on one deterministic end-of-media path.
+            record.videoPlayer.isLooping = false;
         }
         catch (Exception ex)
         {
@@ -7559,7 +7572,7 @@ public partial class FASyncRuntime : MVRScript
         record.videoPlayer.EnableAudioTrack(0, true);
         record.videoPlayer.SetTargetAudioSource(0, record.audioSource);
         record.videoPlayer.renderMode = VideoRenderMode.RenderTexture;
-        record.videoPlayer.isLooping = record.looping;
+        record.videoPlayer.isLooping = false;
         record.videoPlayer.aspectRatio = VideoAspectRatio.NoScaling;
 
         if (!record.runtimeErrorHooked)
@@ -7578,6 +7591,27 @@ public partial class FASyncRuntime : MVRScript
                     : "player media error: " + message;
             };
             record.runtimeErrorHooked = true;
+        }
+
+        if (!record.runtimeLoopPointHooked)
+        {
+            record.videoPlayer.loopPointReached += delegate(VideoPlayer source)
+            {
+                if (record == null)
+                    return;
+
+                record.hasObservedPlaybackTime = false;
+                record.lastObservedPlaybackTimeSeconds = 0d;
+                record.lastPlaybackMotionObservedAt = Time.unscaledTime;
+
+                string completionError;
+                bool handled = TryHandleStandalonePlayerCompletedPlayback(record, out completionError);
+                if (!string.IsNullOrEmpty(completionError))
+                    record.lastError = completionError;
+                else if (handled)
+                    record.lastError = "";
+            };
+            record.runtimeLoopPointHooked = true;
         }
 
         // For the first hosted bind we still need a tiny eager RT, but once a
