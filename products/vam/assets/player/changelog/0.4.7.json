@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.7",
+  "title": "Make preset naming deterministic and keep preset browsing on one folder",
+  "summary": "0.4.7 replaces the failed inline preset-name field with a deterministic preset-name dialog backed by VaM's file browser and rooted to the player preset folder. The same folder now drives `Select Existing...`, favorites, and save/load behavior, so the player preset surface stops splitting naming and selection across different seams.",
+  "reasoning": "The 0.4.6 direction was correct about matching the VaM preset-manager pattern, but the live plugin panel still did not render a usable inline name field. Instead of stacking more fragile cloned-input work on top, this slice switches to a stronger operator seam: one obvious preset-name control that opens a text-entry dialog, plus one browse dialog rooted to the exact same preset directory the favorites list is reading.",
+  "changes": [
+    {
+      "area": "preset-name-flow",
+      "summary": "Replaced the invisible inline preset-name attempt with an explicit `Preset Name...` control that opens VaM's text-entry file browser and seeds it with the current or selected preset name.",
+      "reasoning": "This restores a deterministic way to name presets in the live plugin panel without depending on a fragile cloned input row that never rendered correctly."
+    },
+    {
+      "area": "preset-folder-alignment",
+      "summary": "Locked both `Select Existing...` and the preset-name dialog to the same player preset root folder used by the favorites catalog.",
+      "reasoning": "Browse, favorites, save, and load should all operate on one preset set instead of making the operator hop between mismatched locations."
+    },
+    {
+      "area": "save-button-behavior",
+      "summary": "Kept `Create New Preset` interactive even before a name exists so it can launch the naming dialog rather than dead-ending in a disabled state.",
+      "reasoning": "The save button is now the correct entry point for creating a new preset from scratch."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.7 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the deterministic preset browse and naming dialogs.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.7.dll` and `fa_player_asset.0.4.7.assetbundle` through the player foundation script.",
+    "Run foundation release validation for 0.4.7 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice intentionally stabilizes core preset creation and selection first; it does not yet add defaults-management buttons or delete and rename workflows.",
+    "The player preset section still lives within the standard plugin two-column panel rather than a fully custom full-width preset-manager surface."
+  ]
+}
