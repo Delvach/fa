@@ -142,9 +142,11 @@ public partial class FASyncRuntime : MVRScript
         public string aspectMode = GhostScreenAspectModeFit;
         public readonly List<string> playlistPaths = new List<string>();
         public readonly List<string> randomHistoryPaths = new List<string>();
+        public readonly List<int> randomOrderIndices = new List<int>();
+        public int randomOrderCursor = -1;
         public int currentIndex = -1;
-        public string loopMode = PlayerLoopModeNone;
-        public bool randomEnabled = false;
+        public string loopMode = PlayerLoopModePlaylist;
+        public bool randomEnabled = true;
         public bool looping = false;
         public bool prepared = false;
         public bool preparePending = false;
@@ -5789,9 +5791,10 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        bool changed = record.randomEnabled != enabled;
         record.randomEnabled = enabled;
-        if (changed)
+        if (enabled)
+            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, true);
+        else
             ClearStandalonePlayerRandomHistory(record);
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
@@ -6235,32 +6238,39 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.randomEnabled && count > 1)
         {
-            if (forward)
+            EnsureStandalonePlayerRandomOrder(record, currentIndex, false);
+            int randomCursor = FindStandalonePlayerRandomOrderCursor(record, currentIndex);
+            if (randomCursor < 0)
             {
-                PushStandalonePlayerRandomHistoryPath(record, record.playlistPaths[currentIndex]);
-
-                int randomIndex = currentIndex;
-                for (int i = 0; i < 8 && randomIndex == currentIndex; i++)
-                    randomIndex = UnityEngine.Random.Range(0, count);
-
-                if (randomIndex == currentIndex)
-                    randomIndex = (currentIndex + 1) % count;
-
-                targetIndex = randomIndex;
-                return targetIndex != currentIndex;
+                EnsureStandalonePlayerRandomOrder(record, currentIndex, true);
+                randomCursor = FindStandalonePlayerRandomOrderCursor(record, currentIndex);
             }
 
-            if (TryPopStandalonePlayerRandomHistoryIndex(record, currentIndex, out targetIndex))
-                return targetIndex != currentIndex;
+            if (randomCursor < 0)
+                randomCursor = 0;
 
-            int fallbackRandomIndex = currentIndex;
-            for (int i = 0; i < 8 && fallbackRandomIndex == currentIndex; i++)
-                fallbackRandomIndex = UnityEngine.Random.Range(0, count);
+            record.randomOrderCursor = randomCursor;
+            int targetCursor = randomCursor;
+            if (forward)
+            {
+                if (randomCursor < count - 1)
+                    targetCursor = randomCursor + 1;
+                else if (string.Equals(record.loopMode, PlayerLoopModePlaylist, StringComparison.OrdinalIgnoreCase))
+                    targetCursor = 0;
+            }
+            else
+            {
+                if (randomCursor > 0)
+                    targetCursor = randomCursor - 1;
+                else if (string.Equals(record.loopMode, PlayerLoopModePlaylist, StringComparison.OrdinalIgnoreCase))
+                    targetCursor = count - 1;
+            }
 
-            if (fallbackRandomIndex == currentIndex)
-                fallbackRandomIndex = (currentIndex + count - 1) % count;
+            if (targetCursor < 0 || targetCursor >= record.randomOrderIndices.Count)
+                targetCursor = randomCursor;
 
-            targetIndex = fallbackRandomIndex;
+            record.randomOrderCursor = targetCursor;
+            targetIndex = record.randomOrderIndices[targetCursor];
             return targetIndex != currentIndex;
         }
 
@@ -6559,6 +6569,9 @@ public partial class FASyncRuntime : MVRScript
         record.currentIndex = matchedIndex >= 0 ? matchedIndex : 0;
         if (!AreStandalonePlayerPlaylistsEquivalent(previousPlaylistPaths, record.playlistPaths))
             ClearStandalonePlayerRandomHistory(record);
+
+        if (record.randomEnabled)
+            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
     }
 
     private void EnsureStandalonePlayerPathPresentInPlaylist(StandalonePlayerRecord record, string mediaPath)
@@ -6577,14 +6590,104 @@ public partial class FASyncRuntime : MVRScript
         record.playlistPaths.Clear();
         record.playlistPaths.Add(mediaPath);
         record.currentIndex = 0;
+        if (record.randomEnabled)
+            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
     }
 
     private void ClearStandalonePlayerRandomHistory(StandalonePlayerRecord record)
     {
-        if (record == null || record.randomHistoryPaths == null)
+        if (record == null)
             return;
 
-        record.randomHistoryPaths.Clear();
+        if (record.randomHistoryPaths != null)
+            record.randomHistoryPaths.Clear();
+        if (record.randomOrderIndices != null)
+            record.randomOrderIndices.Clear();
+        record.randomOrderCursor = -1;
+    }
+
+    private void EnsureStandalonePlayerRandomOrder(StandalonePlayerRecord record, int anchorIndex, bool rebuild)
+    {
+        if (record == null)
+            return;
+
+        int count = record.playlistPaths != null ? record.playlistPaths.Count : 0;
+        if (!record.randomEnabled || count <= 1)
+        {
+            if (record.randomOrderIndices != null)
+                record.randomOrderIndices.Clear();
+            record.randomOrderCursor = count > 0 ? Mathf.Clamp(anchorIndex, 0, count - 1) : -1;
+            return;
+        }
+
+        int clampedAnchorIndex = Mathf.Clamp(anchorIndex, 0, count - 1);
+        if (!rebuild && HasValidStandalonePlayerRandomOrder(record, count))
+        {
+            int existingCursor = FindStandalonePlayerRandomOrderCursor(record, clampedAnchorIndex);
+            if (existingCursor >= 0)
+            {
+                record.randomOrderCursor = existingCursor;
+                return;
+            }
+        }
+
+        record.randomOrderIndices.Clear();
+        record.randomOrderIndices.Add(clampedAnchorIndex);
+
+        List<int> remainingIndices = new List<int>(Math.Max(0, count - 1));
+        for (int i = 0; i < count; i++)
+        {
+            if (i != clampedAnchorIndex)
+                remainingIndices.Add(i);
+        }
+
+        for (int i = remainingIndices.Count - 1; i > 0; i--)
+        {
+            int swapIndex = UnityEngine.Random.Range(0, i + 1);
+            int temp = remainingIndices[i];
+            remainingIndices[i] = remainingIndices[swapIndex];
+            remainingIndices[swapIndex] = temp;
+        }
+
+        for (int i = 0; i < remainingIndices.Count; i++)
+            record.randomOrderIndices.Add(remainingIndices[i]);
+
+        record.randomOrderCursor = 0;
+    }
+
+    private bool HasValidStandalonePlayerRandomOrder(StandalonePlayerRecord record, int playlistCount)
+    {
+        if (record == null || record.randomOrderIndices == null || playlistCount <= 0)
+            return false;
+
+        if (record.randomOrderIndices.Count != playlistCount)
+            return false;
+
+        bool[] seen = new bool[playlistCount];
+        for (int i = 0; i < record.randomOrderIndices.Count; i++)
+        {
+            int candidateIndex = record.randomOrderIndices[i];
+            if (candidateIndex < 0 || candidateIndex >= playlistCount || seen[candidateIndex])
+                return false;
+
+            seen[candidateIndex] = true;
+        }
+
+        return true;
+    }
+
+    private int FindStandalonePlayerRandomOrderCursor(StandalonePlayerRecord record, int playlistIndex)
+    {
+        if (record == null || record.randomOrderIndices == null || record.randomOrderIndices.Count <= 0)
+            return -1;
+
+        for (int i = 0; i < record.randomOrderIndices.Count; i++)
+        {
+            if (record.randomOrderIndices[i] == playlistIndex)
+                return i;
+        }
+
+        return -1;
     }
 
     private void PushStandalonePlayerRandomHistoryPath(StandalonePlayerRecord record, string mediaPath)
@@ -8940,9 +9043,9 @@ public partial class FASyncRuntime : MVRScript
     {
         string directoryName = TryGetPathParentLeafName(playerMediaPath);
         if (string.IsNullOrEmpty(directoryName))
-            return "playlist=idle loop=none random=off";
+            return "playlist=idle loop=playlist random=on";
 
-        return "playlist=selected dir=" + directoryName + " loop=none random=off";
+        return "playlist=selected dir=" + directoryName + " loop=playlist random=on";
     }
 
     private string TryGetPathParentLeafName(string rawPath)

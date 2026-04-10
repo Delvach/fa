@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.0",
-    "notes":  "0.4.0 promotes the repaired CUA scrub seam and extends it into the first intentional multi-screen and left-stick interaction release. Looking at a different hosted screen now preempts the old focus owner immediately so scrub and navigation retarget on gaze, and left-stick vertical now drives a smooth host-atom Control.Scale tween with a slow-small taper below 0.1. This keeps the player in the same simple multiple-instance model while making target switching and first-pass CUA scaling explicit behaviors instead of accidental ones.",
+    "version":  "0.4.1",
+    "notes":  "0.4.1 keeps the new multi-screen gaze targeting from 0.4.0 but simplifies the control split so only the right stick can scrub or navigate and the left stick is free to drive host-atom scale. It also replaces the old history-only random stepping with a stored unique random order so next and previous can walk a full shuffled playlist without duplicates until the list has been traversed, and it promotes playlist loop plus random-on as the default player stance.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.0.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.1.json"
 }

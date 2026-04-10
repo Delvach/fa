@@ -490,12 +490,6 @@ public partial class FASyncRuntime : MVRScript
             return Vector2.zero;
         }
 
-        CuaPlayerStickRead leftRead = ReadCuaPlayerStick(
-            "left",
-            CuaPlayerLeftStickXCandidates,
-            CuaPlayerLeftStickYCandidates,
-            JoystickControl.Axis.LeftStickX,
-            JoystickControl.Axis.LeftStickY);
         CuaPlayerStickRead rightRead = ReadCuaPlayerStick(
             "right",
             CuaPlayerRightStickXCandidates,
@@ -503,10 +497,15 @@ public partial class FASyncRuntime : MVRScript
             JoystickControl.Axis.RightStickX,
             JoystickControl.Axis.RightStickY);
 
-        CuaPlayerStickRead selectedRead = SelectCuaPlayerStickRead(leftRead, rightRead);
-        cuaPlayerLastNavigationStick = string.IsNullOrEmpty(selectedRead.slot) ? "none" : selectedRead.slot;
-        cuaPlayerLastNavigationSource = string.IsNullOrEmpty(selectedRead.source) ? "none" : selectedRead.source;
-        return ApplyCuaPlayerNavigationAxisLock(selectedRead.navigation);
+        cuaPlayerLastNavigationStick = string.IsNullOrEmpty(rightRead.slot) ? "none" : rightRead.slot;
+        cuaPlayerLastNavigationSource = string.IsNullOrEmpty(rightRead.source) ? "none" : rightRead.source;
+        if (rightRead.active)
+        {
+            cuaPlayerLastActiveDirectStick = rightRead.slot;
+            cuaPlayerLastActiveDirectStickAt = Time.unscaledTime;
+        }
+
+        return ApplyCuaPlayerNavigationAxisLock(rightRead.navigation);
     }
 
     private float ReadCuaPlayerLeftScaleAxis()

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.1",
+  "title": "Separate left-stick scale from scrub and make random playlists uniquely traversable",
+  "summary": "0.4.1 keeps the intentional multi-screen gaze retargeting from 0.4.0, but it simplifies the stick model so scrub and transport navigation read only the right stick while left-stick vertical is reserved for host-atom scaling. This release also replaces the old random-history stepping with a stored shuffled playlist order, so choosing random or loading into a random player establishes one unique traversal order that next and previous can walk without duplicates until the list has been exhausted. The default player stance is now random on with playlist loop.",
+  "reasoning": "The resize prototype does not need a more complex hand-arbitration system yet; it just needs to stop competing with scrub. The simplest safe fix is to keep the repaired direct right-stick scrub seam intact and remove the left stick from navigation entirely. For random playback, the old model only remembered where the user had been, which could not guarantee duplicate-free traversal. A stable shuffled order with a cursor is the right foundation because it makes forward and backward navigation deterministic after the order is established while still allowing explicit random-on actions to refresh that order later.",
+  "changes": [
+    {
+      "area": "right-stick-only-scrub",
+      "summary": "CUA scrub and navigation now read only the right stick, leaving left-stick vertical free for resizing.",
+      "reasoning": "The 0.4.0 resize seam was colliding with the shared stick selector, so left-stick motion was still being interpreted as scrub input."
+    },
+    {
+      "area": "host-scale-prototype",
+      "summary": "Left-stick vertical continues to drive the focused host atom's `Control.Scale` tween, but it no longer competes with transport input.",
+      "reasoning": "This keeps the resize prototype simple and operator-friendly without reopening the scrub rescue seam."
+    },
+    {
+      "area": "unique-random-playlist-order",
+      "summary": "Random playback now stores a full shuffled playlist order plus cursor so next and previous do not repeat items until the entire list has been traversed.",
+      "reasoning": "A history stack alone can go backward, but it cannot guarantee duplicate-free traversal across the whole playlist."
+    },
+    {
+      "area": "stable-random-order-on-load",
+      "summary": "Hosted and standalone playlist loads preserve the existing random order when the playlist entries have not changed, and only rebuild it when the playlist changes or random is explicitly set on again.",
+      "reasoning": "The user wanted the established random order to stay stable instead of silently reshuffling on ordinary loads."
+    },
+    {
+      "area": "default-player-stance",
+      "summary": "New player records and pending playlist summaries now default to `random=on` and `loop=playlist`.",
+      "reasoning": "That default matches the operator's current preferred behavior and the new unique-random traversal model."
+    }
+  ],
+  "verification": [
+    "Compile the CUA player in Release after separating left-stick scale from right-stick scrub and replacing history-only random stepping with a stored random order cursor.",
+    "Compile the no-input seam with EnablePlayerInputFeatures=false to bin\\ReleaseNoInput\\fa_cua_player.dll.",
+    "Stamp version 0.4.1 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.4.1.dll and fa_player_asset.0.4.1.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.4.1 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This release intentionally keeps the left-stick resize prototype gaze-targeted; it does not add independent left-hand targeting or lasso movement.",
+    "Spatial audio controls remain a separate follow-up seam because the player runtime still initializes the underlying audio source as 2D.",
+    "The subscene-save and VaM slider serialization issues are not part of this release."
+  ]
+}

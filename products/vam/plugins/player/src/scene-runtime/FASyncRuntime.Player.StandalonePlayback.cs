@@ -97,18 +97,27 @@ public partial class FASyncRuntime : MVRScript
 
                 mediaPath = ResolvePrimaryPlayerRuntimeMediaPath(mediaPath, hostedMediaPaths);
                 SetPendingPlayerSelection(mediaPath);
-                ClearStandalonePlayerRandomHistory(record);
-                record.playlistPaths.Clear();
+                List<string> previousHostedPlaylistPaths = new List<string>(record.playlistPaths);
+                List<string> nextHostedPlaylistPaths = new List<string>(hostedMediaPaths.Count);
                 for (int playlistIndex = 0; playlistIndex < hostedMediaPaths.Count; playlistIndex++)
                 {
                     string hostedCandidate = hostedMediaPaths[playlistIndex];
                     if (!string.IsNullOrEmpty(hostedCandidate))
-                        record.playlistPaths.Add(hostedCandidate);
+                        nextHostedPlaylistPaths.Add(hostedCandidate);
                 }
+
+                if (!AreStandalonePlayerPlaylistsEquivalent(previousHostedPlaylistPaths, nextHostedPlaylistPaths))
+                    ClearStandalonePlayerRandomHistory(record);
+
+                record.playlistPaths.Clear();
+                for (int playlistIndex = 0; playlistIndex < nextHostedPlaylistPaths.Count; playlistIndex++)
+                    record.playlistPaths.Add(nextHostedPlaylistPaths[playlistIndex]);
 
                 int hostedCurrentIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, mediaPath);
                 record.currentIndex = hostedCurrentIndex >= 0 ? hostedCurrentIndex : 0;
                 record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
+                if (record.randomEnabled)
+                    EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
 
                 float hostedParsedVolume;
                 if (TryExtractJsonFloatField(argsJson, "volume", out hostedParsedVolume))
@@ -193,6 +202,8 @@ public partial class FASyncRuntime : MVRScript
         record.desiredPlaying = TryReadStandalonePlayerDesiredPlaying(argsJson, true);
         ApplyStandalonePlayerPlaylistArgs(record, argsJson, mediaPath);
         record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
+        if (record.randomEnabled)
+            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
 
         float parsedVolume;
         if (TryExtractJsonFloatField(argsJson, "volume", out parsedVolume))
