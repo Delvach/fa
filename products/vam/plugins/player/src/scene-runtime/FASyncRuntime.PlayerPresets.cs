@@ -1154,6 +1154,7 @@ public partial class FASyncRuntime : MVRScript
         if (clone == null)
             return false;
 
+        CopyTemplateLayoutHierarchy(templateRoot, clone);
         ActivateUiBranch(clone);
 
         InputField inputField = clone.GetComponent<InputField>();
@@ -1179,7 +1180,7 @@ public partial class FASyncRuntime : MVRScript
 
         inputField.lineType = InputField.LineType.SingleLine;
         inputField.interactable = true;
-        EnsurePlayerPresetNameInputLayout(clone, inputField);
+        EnsurePlayerPresetNameInputLayout(templateRoot, clone, inputField);
 
         playerPresetNameField.RegisterInputField(inputField);
         if (inputFieldAction != null)
@@ -1195,16 +1196,37 @@ public partial class FASyncRuntime : MVRScript
         if (providers == null)
             return null;
 
+        PresetManagerControlUI bestProvider = null;
+        int bestScore = int.MinValue;
         for (int providerIndex = 0; providerIndex < providers.Length; providerIndex++)
         {
             PresetManagerControlUI provider = providers[providerIndex];
             if (provider == null || provider.presetNameField == null)
                 continue;
 
-            return provider.presetNameField;
+            int score = 0;
+            if (provider.gameObject.activeInHierarchy)
+                score += 1000;
+            if (provider.completeProvider)
+                score += 100;
+            if (!provider.isAltUI)
+                score += 10;
+
+            RectTransform providerRect = provider.transform as RectTransform;
+            if (providerRect != null)
+            {
+                score += Mathf.RoundToInt(Mathf.Max(providerRect.rect.width, providerRect.sizeDelta.x));
+                score += Mathf.RoundToInt(Mathf.Max(providerRect.rect.height, providerRect.sizeDelta.y));
+            }
+
+            if (bestProvider == null || score > bestScore)
+            {
+                bestProvider = provider;
+                bestScore = score;
+            }
         }
 
-        return null;
+        return bestProvider != null ? bestProvider.presetNameField : null;
     }
 
     private static Transform ResolvePlayerPresetNameInputTemplateRoot(InputField template)
@@ -1221,18 +1243,30 @@ public partial class FASyncRuntime : MVRScript
 
             InputField[] inputFields = current.GetComponentsInChildren<InputField>(true);
             Text[] texts = current.GetComponentsInChildren<Text>(true);
+            Toggle[] toggles = current.GetComponentsInChildren<Toggle>(true);
+            Button[] buttons = current.GetComponentsInChildren<Button>(true);
             if (inputFields != null
                 && inputFields.Length == 1
+                && toggles != null
+                && toggles.Length <= 0
+                && buttons != null
+                && buttons.Length <= 0
                 && texts != null
-                && texts.Length >= 3)
+                && texts.Length >= 2)
             {
                 best = current;
             }
             else if (current.GetComponent<LayoutElement>() != null
                 && inputFields != null
-                && inputFields.Length == 1)
+                && inputFields.Length == 1
+                && (toggles == null || toggles.Length <= 0)
+                && (buttons == null || buttons.Length <= 0))
             {
                 best = current;
+            }
+            else if (best != template.transform)
+            {
+                break;
             }
 
             current = current.parent;
@@ -1274,35 +1308,107 @@ public partial class FASyncRuntime : MVRScript
             ActivateUiBranch(root.GetChild(childIndex));
     }
 
-    private static void EnsurePlayerPresetNameInputLayout(Transform root, InputField inputField)
+    private static void CopyTemplateLayoutHierarchy(Transform template, Transform clone)
     {
-        if (root == null)
+        if (template == null || clone == null)
             return;
 
-        const float rowHeight = 88f;
-        LayoutElement layout = root.GetComponent<LayoutElement>();
-        if (layout == null)
-            layout = root.gameObject.AddComponent<LayoutElement>();
-        layout.minHeight = Mathf.Max(layout.minHeight, rowHeight);
-        layout.preferredHeight = Mathf.Max(layout.preferredHeight, rowHeight);
+        CopyTemplateLayoutNode(template, clone);
 
-        RectTransform rootRect = root as RectTransform;
-        if (rootRect != null && rootRect.sizeDelta.y < rowHeight)
-            rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, rowHeight);
+        int childCount = Mathf.Min(template.childCount, clone.childCount);
+        for (int childIndex = 0; childIndex < childCount; childIndex++)
+            CopyTemplateLayoutHierarchy(template.GetChild(childIndex), clone.GetChild(childIndex));
+    }
+
+    private static void CopyTemplateLayoutNode(Transform template, Transform clone)
+    {
+        RectTransform templateRect = template as RectTransform;
+        RectTransform cloneRect = clone as RectTransform;
+        if (templateRect != null && cloneRect != null)
+        {
+            cloneRect.anchorMin = templateRect.anchorMin;
+            cloneRect.anchorMax = templateRect.anchorMax;
+            cloneRect.pivot = templateRect.pivot;
+            cloneRect.anchoredPosition = templateRect.anchoredPosition;
+            cloneRect.sizeDelta = templateRect.sizeDelta;
+            cloneRect.offsetMin = templateRect.offsetMin;
+            cloneRect.offsetMax = templateRect.offsetMax;
+            cloneRect.localScale = templateRect.localScale;
+        }
+
+        LayoutElement templateLayout = template.GetComponent<LayoutElement>();
+        if (templateLayout == null)
+            return;
+
+        LayoutElement cloneLayout = clone.GetComponent<LayoutElement>();
+        if (cloneLayout == null)
+            cloneLayout = clone.gameObject.AddComponent<LayoutElement>();
+        cloneLayout.ignoreLayout = templateLayout.ignoreLayout;
+        cloneLayout.layoutPriority = templateLayout.layoutPriority;
+        cloneLayout.minWidth = templateLayout.minWidth;
+        cloneLayout.minHeight = templateLayout.minHeight;
+        cloneLayout.preferredWidth = templateLayout.preferredWidth;
+        cloneLayout.preferredHeight = templateLayout.preferredHeight;
+        cloneLayout.flexibleWidth = templateLayout.flexibleWidth;
+        cloneLayout.flexibleHeight = templateLayout.flexibleHeight;
+    }
+
+    private static void EnsurePlayerPresetNameInputLayout(Transform templateRoot, Transform cloneRoot, InputField inputField)
+    {
+        if (cloneRoot == null)
+            return;
+
+        RectTransform templateRootRect = templateRoot as RectTransform;
+        RectTransform cloneRootRect = cloneRoot as RectTransform;
+        if (templateRootRect != null && cloneRootRect != null)
+        {
+            float templateWidth = Mathf.Max(templateRootRect.rect.width, templateRootRect.sizeDelta.x);
+            float templateHeight = Mathf.Max(templateRootRect.rect.height, templateRootRect.sizeDelta.y);
+            if (templateWidth > 0f || templateHeight > 0f)
+                cloneRootRect.sizeDelta = new Vector2(templateWidth, templateHeight);
+        }
+
+        LayoutElement cloneRootLayout = cloneRoot.GetComponent<LayoutElement>();
+        LayoutElement templateRootLayout = templateRoot != null ? templateRoot.GetComponent<LayoutElement>() : null;
+        if (cloneRootLayout == null)
+            cloneRootLayout = cloneRoot.gameObject.AddComponent<LayoutElement>();
+        if (templateRootLayout != null)
+        {
+            cloneRootLayout.minWidth = templateRootLayout.minWidth;
+            cloneRootLayout.preferredWidth = templateRootLayout.preferredWidth;
+            cloneRootLayout.minHeight = templateRootLayout.minHeight;
+            cloneRootLayout.preferredHeight = templateRootLayout.preferredHeight;
+        }
+        else if (cloneRootRect != null)
+        {
+            float width = Mathf.Max(cloneRootRect.rect.width, cloneRootRect.sizeDelta.x, 220f);
+            float height = Mathf.Max(cloneRootRect.rect.height, cloneRootRect.sizeDelta.y, 56f);
+            cloneRootLayout.minWidth = Mathf.Max(cloneRootLayout.minWidth, width);
+            cloneRootLayout.preferredWidth = Mathf.Max(cloneRootLayout.preferredWidth, width);
+            cloneRootLayout.minHeight = Mathf.Max(cloneRootLayout.minHeight, height);
+            cloneRootLayout.preferredHeight = Mathf.Max(cloneRootLayout.preferredHeight, height);
+        }
 
         if (inputField == null)
             return;
 
         inputField.gameObject.SetActive(true);
+        RectTransform templateInputRect = inputField.transform as RectTransform;
         LayoutElement inputLayout = inputField.GetComponent<LayoutElement>();
         if (inputLayout == null)
             inputLayout = inputField.gameObject.AddComponent<LayoutElement>();
-        inputLayout.minHeight = Mathf.Max(inputLayout.minHeight, 48f);
-        inputLayout.preferredHeight = Mathf.Max(inputLayout.preferredHeight, 48f);
 
         RectTransform inputRect = inputField.transform as RectTransform;
-        if (inputRect != null && inputRect.sizeDelta.y < 48f)
-            inputRect.sizeDelta = new Vector2(inputRect.sizeDelta.x, 48f);
+        if (inputRect != null)
+        {
+            float width = Mathf.Max(inputRect.rect.width, inputRect.sizeDelta.x, 160f);
+            float height = Mathf.Max(inputRect.rect.height, inputRect.sizeDelta.y, 42f);
+            inputRect.sizeDelta = new Vector2(width, height);
+            inputLayout.minWidth = Mathf.Max(inputLayout.minWidth, width);
+            inputLayout.preferredWidth = Mathf.Max(inputLayout.preferredWidth, width);
+            inputLayout.minHeight = Mathf.Max(inputLayout.minHeight, height);
+            inputLayout.preferredHeight = Mathf.Max(inputLayout.preferredHeight, height);
+        }
     }
 
     private string ResolveSuggestedPlayerPresetName()

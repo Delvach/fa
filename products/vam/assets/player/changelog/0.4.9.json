@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.9",
+  "title": "Repair the native preset-name clone layout",
+  "summary": "0.4.9 keeps the native inline preset-name approach from 0.4.8, but repairs the actual live rendering seam by choosing a more deterministic native preset-manager source and copying native width and layout values instead of forcing a tiny generic input shape.",
+  "reasoning": "The 0.4.8 direction was right about using the native preset-manager input seam, but the live panel still showed a collapsed unusable preset-name field. The blocker was not preset concept drift; it was the clone path itself. This slice stays on the same native seam and fixes the source selection and layout copy rules that were leaving the cloned row visually broken.",
+  "changes": [
+    {
+      "area": "native-source-selection",
+      "summary": "Scores native `PresetManagerControlUI` providers and prefers active, complete, non-alt instances instead of taking the first preset manager found in resources.",
+      "reasoning": "The old source choice was non-deterministic and could pick a poor template for cloning."
+    },
+    {
+      "area": "clone-root-selection",
+      "summary": "Narrows the cloned preset-name root toward the actual input container and avoids climbing into wider mixed-control groups when toggles or buttons appear.",
+      "reasoning": "The old climb could pull in the wrong native row scope and then distort it inside the plugin panel."
+    },
+    {
+      "area": "layout-copy",
+      "summary": "Copies native `RectTransform` and `LayoutElement` width and height values through the cloned preset-name hierarchy before binding the input field.",
+      "reasoning": "The prior helper only repaired height with hardcoded numbers, which matched the live collapsed-field failure."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.9 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the repaired native preset-name clone layout seam.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.9.dll` and `fa_player_asset.0.4.9.assetbundle` through the player foundation script.",
+    "Run foundation release validation for 0.4.9 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice repairs the current native inline-name clone seam only; it does not expand into defaults-management or a full native preset-manager panel clone.",
+    "If the live panel still proves the native clone unusable after this fix, the next step should replace the row with a fuller native preset-manager section rather than adding new preset concepts."
+  ]
+}

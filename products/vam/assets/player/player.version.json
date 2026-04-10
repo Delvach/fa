@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.8",
-    "notes":  "0.4.8 removes the preset-name browser workaround and restores a real inline preset-name input by cloning the native VaM preset-manager input row, while keeping `Select Existing...` rooted to the same player preset folder as favorites.",
+    "version":  "0.4.9",
+    "notes":  "0.4.9 keeps the native inline preset-name clone seam from 0.4.8, but fixes the actual live blocker by choosing a more deterministic native source and copying native width and layout values instead of forcing a tiny generic input shape.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.8.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.9.json"
 }
