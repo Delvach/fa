@@ -971,7 +971,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        if (!TryResolveHostedPlayerAuthoredControlSurface(out controlSurface, out errorMessage) || controlSurface == null)
+        if (!TryResolveHostedPlayerAuthoredControlSurface(contract, out controlSurface, out errorMessage) || controlSurface == null)
             return false;
 
         if (!innerPieceInstances.TryGetValue(record.instanceId, out instance) || instance == null)
@@ -1035,11 +1035,18 @@ public partial class FASyncRuntime : MVRScript
     }
 
     private bool TryResolveHostedPlayerAuthoredControlSurface(
+        HostedPlayerSurfaceContract contract,
         out FAInnerPieceControlSurfaceData controlSurface,
         out string errorMessage)
     {
         controlSurface = null;
         errorMessage = "";
+
+        if (ShouldUseHostedPlayerScreenCoreControlSurfaceContract(contract))
+        {
+            controlSurface = BuildHostedPlayerScreenCoreControlSurfaceContract();
+            return true;
+        }
 
         FAInnerPieceStoredResource storedResource = FAInnerPieceStorage.LoadResource(HostedPlayerAuthoredPackageFallbackResourceId);
         if (storedResource != null && storedResource.controlSurface != null)
@@ -1052,6 +1059,122 @@ public partial class FASyncRuntime : MVRScript
         // to the authored control contract in code instead of importing package JSON at runtime.
         controlSurface = BuildHostedPlayerAuthoredControlSurfaceContract();
         return true;
+    }
+
+    private bool ShouldUseHostedPlayerScreenCoreControlSurfaceContract(HostedPlayerSurfaceContract contract)
+    {
+        if (contract == null || contract.hostAtom == null)
+            return false;
+
+        return FindHostedPlayerDirectCuaScreenCoreNode(contract.hostAtom, HostedPlayerScreenCoreRootNodeId) != null;
+    }
+
+    private FAInnerPieceControlSurfaceData BuildHostedPlayerScreenCoreControlSurfaceContract()
+    {
+        FAInnerPieceControlSurfaceData controlSurface = new FAInnerPieceControlSurfaceData();
+        controlSurface.controlSurfaceId = "fa_player_screen_core_controls_v1";
+        controlSurface.controlSurfaceLabel = "FA Player Screen Core Controls";
+        controlSurface.controlFamilyId = "meta_ui_video_player";
+        controlSurface.layoutSource = "screen_core_authored_controls_v1";
+        controlSurface.targetDisplayIds = new[] { "player_main" };
+        controlSurface.defaultTargetDisplayId = "player_main";
+        controlSurface.surfaceNodeId = HostedPlayerControlSurfaceNodeId;
+        controlSurface.colliderNodeId = HostedPlayerControlSurfaceNodeId;
+        controlSurface.surfaceWidthMeters = 0.460800022f;
+        controlSurface.surfaceHeightMeters = 0.309600025f;
+        controlSurface.elements = new[]
+        {
+            BuildHostedPlayerAuthoredControlElement(
+                "control_scrub_normalized",
+                "Scrub",
+                "scrub_normalized",
+                "control_scrub_normalized",
+                "slider",
+                "normalized_float",
+                0.16f,
+                0.68f,
+                0.78f,
+                0.06f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_volume_normalized",
+                "Volume",
+                "volume_normalized",
+                "control_volume_normalized",
+                "slider",
+                "normalized_float",
+                0.05f,
+                0.24f,
+                0.05f,
+                0.48f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_mute_toggle",
+                "Mute",
+                "mute_toggle",
+                "control_mute_toggle",
+                "toggle",
+                "bool",
+                0.03f,
+                0.08f,
+                0.09f,
+                0.10f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_skip_backward",
+                "Skip Backward",
+                "skip_backward",
+                "control_skip_backward",
+                "button",
+                "bool",
+                0.20f,
+                0.20f,
+                0.09f,
+                0.14f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_previous",
+                "Previous",
+                "previous",
+                "control_previous",
+                "button",
+                "bool",
+                0.32f,
+                0.20f,
+                0.09f,
+                0.14f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_play_pause",
+                "Play Pause",
+                "play_pause",
+                "control_play_pause",
+                "button",
+                "bool",
+                0.44f,
+                0.18f,
+                0.12f,
+                0.18f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_next",
+                "Next",
+                "next",
+                "control_next",
+                "button",
+                "bool",
+                0.59f,
+                0.20f,
+                0.09f,
+                0.14f),
+            BuildHostedPlayerAuthoredControlElement(
+                "control_skip_forward",
+                "Skip Forward",
+                "skip_forward",
+                "control_skip_forward",
+                "button",
+                "bool",
+                0.71f,
+                0.20f,
+                0.09f,
+                0.14f)
+        };
+
+        return controlSurface;
     }
 
     private FAInnerPieceControlSurfaceData BuildHostedPlayerAuthoredControlSurfaceContract()
@@ -1821,7 +1944,7 @@ public partial class FASyncRuntime : MVRScript
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
-        SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
+        SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, contract.controlSurfaceObject != null);
 #else
         SetHostedPlayerNodeRendererEnabled(contract.screenSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);

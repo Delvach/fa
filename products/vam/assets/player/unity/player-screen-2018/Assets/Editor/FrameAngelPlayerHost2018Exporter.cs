@@ -89,11 +89,27 @@ public static class FrameAngelPlayerHost2018Exporter
         Material screenMaterial = CreateUnlitTextureMaterial(
             MaterialsRoot + "/g007.player_host.screen.style.mat",
             TexturesRoot + "/g007.player_host.screen.idle.png");
+        Material controlPanelMaterial = CreateTransparentStandardMaterial(
+            MaterialsRoot + "/g007.player_host.control_panel.style.mat",
+            new Color(0.08235294f, 0.101960786f, 0.13333334f, 0.94f));
+        Material controlRailMaterial = CreateOpaqueStandardMaterial(
+            MaterialsRoot + "/g007.player_host.control_rail.style.mat",
+            new Color(0.18039216f, 0.21176471f, 0.25882354f, 1f));
+        Material controlButtonMaterial = CreateOpaqueStandardMaterial(
+            MaterialsRoot + "/g007.player_host.control_button.style.mat",
+            new Color(0.72156864f, 0.75686276f, 0.8117647f, 1f));
+        Material controlAccentMaterial = CreateOpaqueStandardMaterial(
+            MaterialsRoot + "/g007.player_host.control_accent.style.mat",
+            new Color(0.12156863f, 0.78039217f, 0.40784314f, 1f));
 
         GameObject root = BuildHierarchy(
             bodyMaterial,
             disconnectMaterial,
-            screenMaterial);
+            screenMaterial,
+            controlPanelMaterial,
+            controlRailMaterial,
+            controlButtonMaterial,
+            controlAccentMaterial);
 
         try
         {
@@ -201,7 +217,11 @@ public static class FrameAngelPlayerHost2018Exporter
     private static GameObject BuildHierarchy(
         Material bodyMaterial,
         Material disconnectMaterial,
-        Material screenMaterial)
+        Material screenMaterial,
+        Material controlPanelMaterial,
+        Material controlRailMaterial,
+        Material controlButtonMaterial,
+        Material controlAccentMaterial)
     {
         GameObject root = new GameObject("fa_player_screen_core");
 
@@ -215,10 +235,64 @@ public static class FrameAngelPlayerHost2018Exporter
             new Vector3(0f, 0.45f, 0.0068f), new Vector2(1.6f, 0.9f), screenMaterial);
         CreateQuad(root.transform, "disconnect_surface",
             new Vector3(0f, 0.45f, 0.0060f), new Vector2(1.6f, 0.9f), disconnectMaterial);
+        CreatePlayerControlSurface(
+            root.transform,
+            new Vector3(0f, -0.205f, 0.0105f),
+            controlPanelMaterial,
+            controlRailMaterial,
+            controlButtonMaterial,
+            controlAccentMaterial);
 
         CreateAnchor(root.transform, "bottom_anchor", new Vector3(0f, 0f, 0.008f));
-        CreateAnchor(root.transform, "controls_anchor", new Vector3(0f, -0.10f, 0.01f));
+        CreateAnchor(root.transform, "controls_anchor", new Vector3(0f, -0.205f, 0.0105f));
         return root;
+    }
+
+    private static void CreatePlayerControlSurface(
+        Transform parent,
+        Vector3 localPosition,
+        Material panelMaterial,
+        Material railMaterial,
+        Material buttonMaterial,
+        Material accentMaterial)
+    {
+        const float panelWidth = 0.460800022f;
+        const float panelHeight = 0.309600025f;
+        const float surfaceDepth = 0.0006f;
+        Vector2 panelSize = new Vector2(panelWidth, panelHeight);
+
+        GameObject controlSurfaceRoot = CreateGroup(parent, "control_surface", localPosition);
+        CreateQuad(controlSurfaceRoot.transform, "control_panel_background", Vector3.zero, panelSize, panelMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_scrub_normalized", BuildRectLocalPosition(panelSize, 0.16f, 0.68f, 0.78f, 0.06f, surfaceDepth), BuildRectLocalSize(panelSize, 0.78f, 0.06f), railMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_volume_normalized", BuildRectLocalPosition(panelSize, 0.05f, 0.24f, 0.05f, 0.48f, surfaceDepth), BuildRectLocalSize(panelSize, 0.05f, 0.48f), railMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_mute_toggle", BuildRectLocalPosition(panelSize, 0.03f, 0.08f, 0.09f, 0.10f, surfaceDepth), BuildRectLocalSize(panelSize, 0.09f, 0.10f), buttonMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_skip_backward", BuildRectLocalPosition(panelSize, 0.20f, 0.20f, 0.09f, 0.14f, surfaceDepth), BuildRectLocalSize(panelSize, 0.09f, 0.14f), buttonMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_previous", BuildRectLocalPosition(panelSize, 0.32f, 0.20f, 0.09f, 0.14f, surfaceDepth), BuildRectLocalSize(panelSize, 0.09f, 0.14f), buttonMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_play_pause", BuildRectLocalPosition(panelSize, 0.44f, 0.18f, 0.12f, 0.18f, surfaceDepth), BuildRectLocalSize(panelSize, 0.12f, 0.18f), accentMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_next", BuildRectLocalPosition(panelSize, 0.59f, 0.20f, 0.09f, 0.14f, surfaceDepth), BuildRectLocalSize(panelSize, 0.09f, 0.14f), buttonMaterial);
+        CreateQuad(controlSurfaceRoot.transform, "control_skip_forward", BuildRectLocalPosition(panelSize, 0.71f, 0.20f, 0.09f, 0.14f, surfaceDepth), BuildRectLocalSize(panelSize, 0.09f, 0.14f), buttonMaterial);
+    }
+
+    private static GameObject CreateGroup(Transform parent, string name, Vector3 localPosition)
+    {
+        GameObject group = new GameObject(name);
+        group.transform.SetParent(parent, false);
+        group.transform.localPosition = localPosition;
+        group.transform.localRotation = Quaternion.identity;
+        group.transform.localScale = Vector3.one;
+        return group;
+    }
+
+    private static Vector3 BuildRectLocalPosition(Vector2 panelSize, float x, float y, float width, float height, float z)
+    {
+        float centerX = ((x + (width * 0.5f)) - 0.5f) * panelSize.x;
+        float centerY = ((y + (height * 0.5f)) - 0.5f) * panelSize.y;
+        return new Vector3(centerX, centerY, z);
+    }
+
+    private static Vector2 BuildRectLocalSize(Vector2 panelSize, float width, float height)
+    {
+        return new Vector2(panelSize.x * width, panelSize.y * height);
     }
 
     private static void CreateCube(Transform parent, string name, Vector3 localPosition, Vector3 localScale, Material material)

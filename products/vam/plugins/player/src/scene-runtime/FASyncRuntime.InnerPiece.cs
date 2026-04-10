@@ -12,6 +12,7 @@ internal sealed class FAInnerPieceControlSurfacePointerRelay : MonoBehaviour
 
     private Collider cachedCollider;
     private int lastDispatchFrame = -1;
+    private int lastHoverFrame = -1;
 
     private void Awake()
     {
@@ -29,9 +30,19 @@ internal sealed class FAInnerPieceControlSurfacePointerRelay : MonoBehaviour
         TryDispatchPointer(false);
     }
 
+    private void OnMouseEnter()
+    {
+        TryDispatchHover();
+    }
+
     private void OnMouseDrag()
     {
         TryDispatchPointer(true);
+    }
+
+    private void OnMouseOver()
+    {
+        TryDispatchHover();
     }
 
     private void OnMouseUp()
@@ -40,6 +51,14 @@ internal sealed class FAInnerPieceControlSurfacePointerRelay : MonoBehaviour
             return;
 
         runtime.HandleInnerPieceControlSurfacePointerUp(controlSurfaceInstanceId, colliderNodeId);
+    }
+
+    private void OnMouseExit()
+    {
+        if (runtime == null || string.IsNullOrEmpty(controlSurfaceInstanceId))
+            return;
+
+        runtime.HandleInnerPieceControlSurfaceHoverExit(controlSurfaceInstanceId);
     }
 
     private void TryDispatchPointer(bool continuous)
@@ -62,6 +81,27 @@ internal sealed class FAInnerPieceControlSurfacePointerRelay : MonoBehaviour
             cachedCollider,
             colliderNodeId,
             continuous);
+    }
+
+    private void TryDispatchHover()
+    {
+        if (runtime == null || string.IsNullOrEmpty(controlSurfaceInstanceId))
+            return;
+
+        if (lastHoverFrame == Time.frameCount)
+            return;
+
+        if (cachedCollider == null)
+            cachedCollider = GetComponent<Collider>();
+
+        if (cachedCollider == null)
+            return;
+
+        lastHoverFrame = Time.frameCount;
+        runtime.HandleInnerPieceControlSurfaceHover(
+            controlSurfaceInstanceId,
+            cachedCollider,
+            colliderNodeId);
     }
 }
 
@@ -183,6 +223,7 @@ public partial class FASyncRuntime : MVRScript
         public bool hasStringValue = false;
         public string stringValue = "";
         public bool focused = false;
+        public bool hovered = false;
         public int submitCount = 0;
         public string lastSubmittedText = "";
         public string lastSubmittedAtUtc = "";
@@ -204,6 +245,7 @@ public partial class FASyncRuntime : MVRScript
         public string selectedElementId = "";
         public string selectedElementLabel = "";
         public int selectedElementIndex = -1;
+        public string hoveredElementId = "";
         public int submitCount = 0;
         public string lastSubmittedText = "";
         public string lastSubmittedAtUtc = "";
@@ -1313,9 +1355,12 @@ public partial class FASyncRuntime : MVRScript
                 out normalizedValue,
                 out includeNormalizedValue))
         {
+            UpdateControlSurfaceHoverState(instance, controlSurface, null, "pointer_hover");
             TryHandleControlSurfaceBackgroundDrag(controlSurfaceInstanceId, hit.point, continuous);
             return;
         }
+
+        UpdateControlSurfaceHoverState(instance, controlSurface, element, "pointer_hover");
 
         if (TryHandleControlSurfaceDragElement(controlSurfaceInstanceId, element, hit.point, continuous))
             return;
@@ -1342,12 +1387,118 @@ public partial class FASyncRuntime : MVRScript
             out errorMessage);
     }
 
+    internal void HandleInnerPieceControlSurfaceHover(
+        string controlSurfaceInstanceId,
+        Collider targetCollider,
+        string colliderNodeId)
+    {
+        if (string.IsNullOrEmpty(controlSurfaceInstanceId) || targetCollider == null)
+            return;
+
+        InnerPieceInstanceRecord instance;
+        FAInnerPieceControlSurfaceData controlSurface;
+        string errorMessage;
+        if (!TryResolveInnerPieceControlSurfaceInstance(
+                "{\"controlSurfaceInstanceId\":\"" + EscapeJsonString(controlSurfaceInstanceId) + "\"}",
+                out instance,
+                out controlSurface,
+                out errorMessage)
+            || controlSurface == null)
+        {
+            return;
+        }
+
+        Camera camera = Camera.main;
+        if (camera == null)
+            return;
+
+        Ray ray = camera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (!targetCollider.Raycast(ray, out hit, 100f))
+        {
+            UpdateControlSurfaceHoverState(instance, controlSurface, null, "pointer_hover");
+            return;
+        }
+
+        Vector2 uv = hit.textureCoord;
+        if (TryResolveControlSurfaceElementByPointer(
+                instance,
+                controlSurface,
+                colliderNodeId,
+                uv,
+                false,
+                out FAInnerPieceControlElementData element,
+                out float _,
+                out bool _))
+        {
+            UpdateControlSurfaceHoverState(instance, controlSurface, element, "pointer_hover");
+            return;
+        }
+
+        UpdateControlSurfaceHoverState(instance, controlSurface, null, "pointer_hover");
+    }
+
+    internal void HandleInnerPieceControlSurfaceHoverExit(string controlSurfaceInstanceId)
+    {
+        if (string.IsNullOrEmpty(controlSurfaceInstanceId))
+            return;
+
+        if (!innerPieceInstances.TryGetValue(controlSurfaceInstanceId, out InnerPieceInstanceRecord instance)
+            || instance == null
+            || instance.controlSurface == null)
+        {
+            return;
+        }
+
+        UpdateControlSurfaceHoverState(instance, instance.controlSurface, null, "pointer_hover");
+    }
+
     internal void HandleInnerPieceControlSurfacePointerUp(string controlSurfaceInstanceId, string colliderNodeId)
     {
         if (string.IsNullOrEmpty(controlSurfaceInstanceId))
             return;
 
         activeControlSurfaceDrags.Remove(controlSurfaceInstanceId);
+    }
+
+    private void UpdateControlSurfaceHoverState(
+        InnerPieceInstanceRecord instance,
+        FAInnerPieceControlSurfaceData controlSurface,
+        FAInnerPieceControlElementData hoveredElement,
+        string interactionSource)
+    {
+        if (instance == null || controlSurface == null)
+            return;
+
+        LocalControlSurfaceStateRecord surfaceState = EnsureLocalControlSurfaceState(instance, controlSurface);
+        if (surfaceState == null)
+            return;
+
+        string nowUtc = DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture);
+        string hoveredElementId = hoveredElement != null ? (hoveredElement.elementId ?? "") : "";
+        surfaceState.hoveredElementId = hoveredElementId;
+
+        FAInnerPieceControlElementData[] elements = controlSurface.elements ?? new FAInnerPieceControlElementData[0];
+        for (int i = 0; i < elements.Length; i++)
+        {
+            FAInnerPieceControlElementData candidate = elements[i];
+            if (candidate == null)
+                continue;
+
+            LocalControlSurfaceElementStateRecord elementState = EnsureLocalControlSurfaceElementState(surfaceState, candidate);
+            if (elementState == null)
+                continue;
+
+            bool isHovered =
+                !string.IsNullOrEmpty(hoveredElementId)
+                && string.Equals(candidate.elementId ?? "", hoveredElementId, StringComparison.OrdinalIgnoreCase);
+            elementState.hovered = isHovered;
+            if (isHovered)
+            {
+                elementState.lastInteractionAtUtc = nowUtc;
+                elementState.lastInteractionSource = interactionSource ?? "";
+            }
+        }
     }
 
     private bool TryHandleControlSurfaceBackgroundDrag(
@@ -2365,6 +2516,7 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"toolkitCategory\":\"").Append(EscapeJsonString(controlSurface.toolkitCategory ?? "")).Append("\",");
         sb.Append("\"lastInteractionAtUtc\":\"").Append(EscapeJsonString(surfaceState != null ? (surfaceState.lastInteractionAtUtc ?? "") : "")).Append("\",");
         sb.Append("\"lastElementId\":\"").Append(EscapeJsonString(surfaceState != null ? (surfaceState.lastElementId ?? "") : "")).Append("\",");
+        sb.Append("\"hoveredElementId\":\"").Append(EscapeJsonString(surfaceState != null ? (surfaceState.hoveredElementId ?? "") : "")).Append("\",");
         sb.Append("\"capabilities\":{");
         sb.Append("\"transform\":true,");
         sb.Append("\"tween\":true,");
@@ -2443,6 +2595,7 @@ public partial class FASyncRuntime : MVRScript
             sb.Append("\"readOnly\":").Append(element.readOnly ? "true" : "false").Append(',');
             sb.Append("\"activationCount\":").Append(elementState != null ? elementState.activationCount.ToString(CultureInfo.InvariantCulture) : "0").Append(',');
             sb.Append("\"focused\":").Append(elementState != null && elementState.focused ? "true" : "false").Append(',');
+            sb.Append("\"hovered\":").Append(elementState != null && elementState.hovered ? "true" : "false").Append(',');
             sb.Append("\"lastInteractionAtUtc\":\"").Append(EscapeJsonString(elementState != null ? (elementState.lastInteractionAtUtc ?? "") : "")).Append("\",");
             sb.Append("\"lastInteractionSource\":\"").Append(EscapeJsonString(elementState != null ? (elementState.lastInteractionSource ?? "") : "")).Append("\"");
             if (isSelectorSurface)

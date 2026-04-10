@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.11",
-    "notes":  "0.4.11 repairs the live player preset seam by making preset save tolerate missing optional capture state, retrying writes through the resolved absolute preset folder, surfacing the actual save error in the status field, and compacting the favorites popup so the upper-right preset controls stop crushing themselves in the plugin column.",
+    "version":  "0.4.12",
+    "notes":  "0.4.12 promotes the hosted control slab into the current screen-core asset by authoring a real local control panel under the exported CUA screen, binding it to a repo-local screen-core control contract instead of the legacy external Meta layout, surfacing hover state in the hosted control model, and unhiding the authored panel in the live hosted runtime.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.11.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.12.json"
 }

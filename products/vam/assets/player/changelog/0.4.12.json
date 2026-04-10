@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.12",
+  "title": "Promote the hosted control slab into the screen-core asset",
+  "summary": "0.4.12 gives the current screen-core player asset its own authored hosted control slab instead of leaving the hosted runtime dependent on the older external Meta layout. The exported CUA screen now carries a real local panel with scrub, volume, mute, skip, previous, play-pause, and next controls; the hosted runtime binds that screen-core panel to a repo-local control contract; and the control-surface state now includes hover so rollover can become a first-class visual seam instead of an implicit one.",
+  "reasoning": "The runtime-side interaction, follow, drag, and player-binding seams were already solid. What kept the Meta-style hosted surface from becoming product was that the current live asset lane still exported only a bare screen core and the hosted runtime kept hiding the authored control surface. This slice promotes a minimal, self-contained control panel directly into the current CUA screen so the hosted player can finally use a local authored panel that matches the asset you actually deploy and test.",
+  "changes": [
+    {
+      "area": "screen-core-authoring",
+      "summary": "Extends the current `player-screen-2018` exporter so the versioned screen-core asset now authors a real hosted control slab beneath the screen and moves the `controls_anchor` onto that panel.",
+      "reasoning": "The current release lane needed a true authored surface in the shipped asset, not another proof-only control package or a hidden placeholder."
+    },
+    {
+      "area": "hosted-player-binding",
+      "summary": "Makes direct screen-core CUA hosts bind against a local screen-core control contract with simple stable action ids instead of inheriting the older external Meta snapshot contract.",
+      "reasoning": "The new screen-core panel has its own authored layout, so the hosted runtime must target that local panel deterministically instead of relying on mismatched historical node maps."
+    },
+    {
+      "area": "control-surface-state",
+      "summary": "Adds hover tracking to the local control-surface state model and exposes the hovered element in state payloads.",
+      "reasoning": "Interaction and update were already present; hover was the remaining missing state seam needed for complete hosted panel behavior and future rollover feedback."
+    },
+    {
+      "area": "hosted-panel-visibility",
+      "summary": "Stops hiding the authored hosted control surface in the direct CUA runtime path so the live panel can actually render and receive interaction on the deployed asset.",
+      "reasoning": "The old placeholder behavior made sense before the panel was promoted, but it blocks the current authored panel from becoming a visible product surface."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.12 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.12.dll` and `fa_player_asset.0.4.12.assetbundle` through the player foundation script.",
+    "Run player screen-core release validation for 0.4.12 and keep the generated receipt beside the release shelf.",
+    "In live VaM, attach the 0.4.12 screen-core asset to a `CustomUnityAsset`, confirm the hosted control slab renders beneath the screen, and verify play-pause, scrub, volume, mute, previous, next, and skip respond on the authored panel."
+  ],
+  "knownIssues": [
+    "This first promoted panel is intentionally minimal and does not yet recreate the full legacy Meta video-player visual language inside the screen-core asset.",
+    "Hover is now tracked in the hosted control-surface state model, but this slice does not yet add dedicated rollover art per control element.",
+    "Shell-family-wide control-panel authoring and shell-specific layout polish remain separate follow-on work."
+  ]
+}
