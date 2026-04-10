@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.7",
+  "title": "Break the hidden left-controller dependency in CUA scrub input",
+  "summary": "Operator testing exposed a subtle but important CUA input bug: right-stick scrub could appear to work only while the left controller remained active or moving, and would stop responding when the left hand became still or the controller was set down. The cause was in the input seam, not the scrub math. The CUA input path claimed to be reading the right stick, but it was still sourcing navigation through VaM's broader free-navigation vector wrapper and then extracting the right-hand components from that combined payload. This release fixes the seam by reading the right-hand action axis directly first, and only falling back to the older wrapper path if the direct read is unavailable.",
+  "reasoning": "This bug fits the reported symptom precisely: right-stick scrub was inconsistently responsive and seemed to depend on left-hand activity. The current code path in `FASyncRuntime.CuaPlayerInputModule.cs` was not actually right-hand-authoritative. It used `GetFreeNavigateVector(moveAction, true)` and then pulled the right-hand lane out of the returned `Vector4`, which leaves the player dependent on whatever assumptions VaM's wrapper makes about controller state and navigation ownership. The clean fix is to ask the underlying right-hand action for its axis directly. That keeps the rest of the player behavior intact while removing the accidental left-hand dependency from the current CUA interaction lane.",
+  "changes": [
+    {
+      "area": "cua-right-stick-input",
+      "summary": "The CUA input module now tries to read the right-hand `freeMoveAction` axis directly before falling back to the older VaM free-navigation wrapper.",
+      "reasoning": "This makes right-stick scrub depend on the right controller itself instead of the combined navigation wrapper staying happy while the left controller is active."
+    },
+    {
+      "area": "fallback-compatibility",
+      "summary": "If the direct SteamVR right-hand read fails for any reason, the older `GetFreeNavigateVector` path remains as a fallback.",
+      "reasoning": "That preserves compatibility with the existing lane while still preferring the cleaner hand-specific read on working rigs."
+    },
+    {
+      "area": "release-boundary",
+      "summary": "This release does not change the current scene/subscene slider bindings or attempt to solve the reported subscene-save errors.",
+      "reasoning": "The left-controller dependency is a confirmed runtime bug with a narrow code fix, while the save-error seam still needs concrete VaM log evidence before it can be fixed honestly."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.7 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.7.dll and fa_player_asset.0.3.7.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.7 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VR, stop moving or set down the left controller and confirm the right controller can still scrub the player on its own."
+  ],
+  "knownIssues": [
+    "The current subscene-save error is still unverified from logs, so this release does not claim to fix any scene serialization problem yet.",
+    "The VaM scene/plugin scrub slider still uses the same control names and bindings; 0.3.6 already reduced that path to a settled queued seek instead of a per-drag-sample seek burst.",
+    "Spatial audio remains a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}

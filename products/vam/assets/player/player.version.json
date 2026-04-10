@@ -1,7 +1,7 @@
 {
-    "version":  "0.3.6",
-    "notes":  "0.3.6 keeps the 0.3.5 release-committed joystick scrub model and extends the same idea to the current VaM plugin scrub slider, which now queues one settled seek instead of dispatching a live seek on every intermediate slider change.",
+    "version":  "0.3.7",
+    "notes":  "0.3.7 keeps the safer scrub paths from 0.3.6 and fixes the CUA right-stick input seam so scrub reads the right controller axis directly instead of depending on VaM's broader free-navigation vector behaving as if the left controller is active.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.3.6.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.3.7.json"
 }

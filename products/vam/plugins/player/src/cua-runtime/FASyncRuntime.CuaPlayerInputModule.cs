@@ -381,8 +381,11 @@ public partial class FASyncRuntime : MVRScript
             SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
             if (moveAction != null)
             {
-                Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
-                rightNavigation = new Vector2(raw.z, raw.w);
+                if (!TryReadCuaPlayerDirectNavigation(moveAction, SteamVR_Input_Sources.RightHand, out rightNavigation))
+                {
+                    Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
+                    rightNavigation = new Vector2(raw.z, raw.w);
+                }
             }
         }
         catch
@@ -391,6 +394,27 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return ApplyCuaPlayerNavigationAxisLock(rightNavigation);
+    }
+
+    private static bool TryReadCuaPlayerDirectNavigation(
+        SteamVR_Action_Vector2 moveAction,
+        SteamVR_Input_Sources inputSource,
+        out Vector2 navigation)
+    {
+        navigation = Vector2.zero;
+        if (moveAction == null)
+            return false;
+
+        try
+        {
+            navigation = moveAction.GetAxis(inputSource);
+            return true;
+        }
+        catch
+        {
+            navigation = Vector2.zero;
+            return false;
+        }
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)
