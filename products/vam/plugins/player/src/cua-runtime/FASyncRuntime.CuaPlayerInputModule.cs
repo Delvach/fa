@@ -68,6 +68,13 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
     private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
+    private const float CuaPlayerScaleInputDeadzone = 0.24f;
+    private const float CuaPlayerScaleUnitsPerSecond = 0.75f;
+    private const float CuaPlayerScaleTweenSmoothTime = 0.10f;
+    private const float CuaPlayerScaleMin = 0.02f;
+    private const float CuaPlayerScaleMax = 3.00f;
+    private const float CuaPlayerScaleSlowThreshold = 0.10f;
+    private const float CuaPlayerScaleSlowMinFactor = 0.20f;
 
     private struct CuaPlayerNavigationSnapshot
     {
@@ -118,6 +125,10 @@ public partial class FASyncRuntime : MVRScript
     private string cuaPlayerLastNavigationStick = "none";
     private string cuaPlayerLastActiveDirectStick = "none";
     private float cuaPlayerLastActiveDirectStickAt = -1000f;
+    private string cuaPlayerScaleHostAtomUid = "";
+    private bool cuaPlayerScaleTargetKnown = false;
+    private float cuaPlayerScaleTarget = 1f;
+    private float cuaPlayerScaleVelocity = 0f;
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
 
@@ -160,10 +171,15 @@ public partial class FASyncRuntime : MVRScript
             cuaPlayerLastGazeSeenAt = now;
 
         Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
+        float leftScaleAxis = ReadCuaPlayerLeftScaleAxis();
         float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
         float vertical = Mathf.Abs(navigation.y) >= CuaPlayerNavigationDeadzone ? navigation.y : 0f;
-        if (Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f)
+        bool scaleActive = Mathf.Abs(leftScaleAxis) >= CuaPlayerScaleInputDeadzone;
+        if (Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f || scaleActive)
             cuaPlayerLastInputActiveAt = now;
+
+        if (gazeActive)
+            TryPreemptCuaPlayerInputOwnerForGazeTarget(ResolveCuaPlayerCurrentHostAtomUid());
 
         bool inputActiveRecently = (now - cuaPlayerLastInputActiveAt) <= CuaPlayerFocusInputGraceSeconds;
         bool wantsFocus = gazeActive
@@ -197,6 +213,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (!ownsFocus)
         {
+            TickCuaPlayerHostScaleTween(0f);
             UpdateCuaPlayerInputState(
                 cuaPlayerFocusActive,
                 gazeActive,
@@ -208,6 +225,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (!TryResolveAttachedHostedStandalonePlayerRecord(out StandalonePlayerRecord record, out Atom hostAtom) || record == null || hostAtom == null)
         {
+            TickCuaPlayerHostScaleTween(0f);
             ReleaseCuaPlayerInputFocus("player_unresolved");
             return;
         }
@@ -219,10 +237,11 @@ public partial class FASyncRuntime : MVRScript
                 horizontal = 0f;
             cuaPlayerVideoScrubTargetKnown = false;
             TickCuaPlayerImageStepInput(record, horizontal);
+            TickCuaPlayerHostScaleTween(leftScaleAxis);
             UpdateCuaPlayerInputState(
                 true,
                 gazeActive,
-                Mathf.Abs(horizontal) > 0f ? "image_step" : "focused",
+                Mathf.Abs(horizontal) > 0f ? "image_step" : (scaleActive ? "scale" : "focused"),
                 navigation,
                 gazeReason);
             return;
@@ -232,10 +251,11 @@ public partial class FASyncRuntime : MVRScript
             horizontal = 0f;
 
         TickCuaPlayerVideoScrubInput(record, horizontal);
+        TickCuaPlayerHostScaleTween(leftScaleAxis);
         UpdateCuaPlayerInputState(
             true,
             gazeActive,
-            Mathf.Abs(horizontal) > 0f ? "video_scrub" : "focused",
+            Mathf.Abs(horizontal) > 0f ? "video_scrub" : (scaleActive ? "scale" : "focused"),
             navigation,
             gazeReason);
     }
@@ -436,6 +456,31 @@ public partial class FASyncRuntime : MVRScript
             && localHit.y <= localCenter.y + extents.y;
     }
 
+    private string ResolveCuaPlayerCurrentHostAtomUid()
+    {
+        Atom hostAtom;
+        if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null)
+            return "";
+
+        return string.IsNullOrEmpty(hostAtom.uid) ? "" : hostAtom.uid.Trim();
+    }
+
+    private void TryPreemptCuaPlayerInputOwnerForGazeTarget(string targetHostAtomUid)
+    {
+        if (string.IsNullOrEmpty(targetHostAtomUid))
+            return;
+
+        FASyncRuntime owner = cuaPlayerInputOwner;
+        if (owner == null || ReferenceEquals(owner, this))
+            return;
+
+        string ownerHostAtomUid = owner.ResolveCuaPlayerCurrentHostAtomUid();
+        if (string.Equals(targetHostAtomUid, ownerHostAtomUid, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        owner.ReleaseCuaPlayerInputFocus("gaze_preempted");
+    }
+
     private Vector2 ReadCuaPlayerNavigationVector(SuperController sc)
     {
         if (sc == null)
@@ -462,6 +507,17 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerLastNavigationStick = string.IsNullOrEmpty(selectedRead.slot) ? "none" : selectedRead.slot;
         cuaPlayerLastNavigationSource = string.IsNullOrEmpty(selectedRead.source) ? "none" : selectedRead.source;
         return ApplyCuaPlayerNavigationAxisLock(selectedRead.navigation);
+    }
+
+    private float ReadCuaPlayerLeftScaleAxis()
+    {
+        CuaPlayerStickRead leftRead = ReadCuaPlayerStick(
+            "left",
+            CuaPlayerLeftStickXCandidates,
+            CuaPlayerLeftStickYCandidates,
+            JoystickControl.Axis.LeftStickX,
+            JoystickControl.Axis.LeftStickY);
+        return leftRead.valid ? leftRead.navigation.y : 0f;
     }
 
     private CuaPlayerStickRead ReadCuaPlayerStick(
@@ -676,6 +732,96 @@ public partial class FASyncRuntime : MVRScript
     {
         return Mathf.Abs(navigation.x) >= CuaPlayerNavigationSourceActiveThreshold
             || Mathf.Abs(navigation.y) >= CuaPlayerNavigationSourceActiveThreshold;
+    }
+
+    private void TickCuaPlayerHostScaleTween(float inputAxis)
+    {
+        if (!TryResolveCuaPlayerHostScaleParam(out JSONStorableFloat scaleParam, out string hostAtomUid, out float currentScale))
+        {
+            cuaPlayerScaleHostAtomUid = "";
+            cuaPlayerScaleTargetKnown = false;
+            cuaPlayerScaleVelocity = 0f;
+            return;
+        }
+
+        if (!string.Equals(cuaPlayerScaleHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase))
+        {
+            cuaPlayerScaleHostAtomUid = hostAtomUid;
+            cuaPlayerScaleTarget = currentScale;
+            cuaPlayerScaleTargetKnown = true;
+            cuaPlayerScaleVelocity = 0f;
+        }
+        else if (!cuaPlayerScaleTargetKnown)
+        {
+            cuaPlayerScaleTarget = currentScale;
+            cuaPlayerScaleTargetKnown = true;
+            cuaPlayerScaleVelocity = 0f;
+        }
+
+        float clampedInput = Mathf.Abs(inputAxis) >= CuaPlayerScaleInputDeadzone ? inputAxis : 0f;
+        if (Mathf.Abs(clampedInput) > 0f)
+        {
+            float referenceScale = Mathf.Max(CuaPlayerScaleMin, cuaPlayerScaleTarget);
+            float speedFactor = BuildCuaPlayerScaleSpeedFactor(referenceScale);
+            float delta = clampedInput * CuaPlayerScaleUnitsPerSecond * speedFactor * Time.unscaledDeltaTime;
+            cuaPlayerScaleTarget = Mathf.Clamp(cuaPlayerScaleTarget + delta, CuaPlayerScaleMin, CuaPlayerScaleMax);
+        }
+
+        if (Mathf.Abs(cuaPlayerScaleTarget - currentScale) <= 0.0001f)
+        {
+            cuaPlayerScaleVelocity = 0f;
+            return;
+        }
+
+        float newScale = Mathf.SmoothDamp(
+            currentScale,
+            cuaPlayerScaleTarget,
+            ref cuaPlayerScaleVelocity,
+            CuaPlayerScaleTweenSmoothTime,
+            Mathf.Infinity,
+            Time.unscaledDeltaTime);
+        if (Mathf.Abs(cuaPlayerScaleTarget - newScale) <= 0.0005f)
+        {
+            newScale = cuaPlayerScaleTarget;
+            cuaPlayerScaleVelocity = 0f;
+        }
+
+        if (Mathf.Abs(newScale - currentScale) > 0.00005f)
+            scaleParam.val = Mathf.Clamp(newScale, CuaPlayerScaleMin, CuaPlayerScaleMax);
+    }
+
+    private bool TryResolveCuaPlayerHostScaleParam(out JSONStorableFloat scaleParam, out string hostAtomUid, out float currentScale)
+    {
+        scaleParam = null;
+        hostAtomUid = "";
+        currentScale = 1f;
+
+        Atom hostAtom;
+        if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null)
+            return false;
+
+        hostAtomUid = string.IsNullOrEmpty(hostAtom.uid) ? "" : hostAtom.uid.Trim();
+        JSONStorable control = hostAtom.GetStorableByID("Control");
+        if (control == null)
+            control = hostAtom.GetStorableByID("control");
+        if (control == null)
+            return false;
+
+        scaleParam = control.GetFloatJSONParam("Scale");
+        if (scaleParam == null)
+            return false;
+
+        currentScale = Mathf.Clamp(scaleParam.val, CuaPlayerScaleMin, CuaPlayerScaleMax);
+        return true;
+    }
+
+    private float BuildCuaPlayerScaleSpeedFactor(float scaleValue)
+    {
+        if (scaleValue >= CuaPlayerScaleSlowThreshold)
+            return 1f;
+
+        float t = Mathf.InverseLerp(CuaPlayerScaleMin, CuaPlayerScaleSlowThreshold, Mathf.Clamp(scaleValue, CuaPlayerScaleMin, CuaPlayerScaleSlowThreshold));
+        return Mathf.Lerp(CuaPlayerScaleSlowMinFactor, 1f, t);
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)

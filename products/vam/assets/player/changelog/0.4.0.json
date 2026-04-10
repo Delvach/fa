@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.0",
+  "title": "Promote repaired CUA scrub into intentional multi-screen focus and first-pass left-stick scale",
+  "summary": "0.4.0 is the first release that treats the repaired CUA scrub seam as a foundation instead of a one-off rescue. The direct-stick scrub path from 0.3.12 stays in place, but gaze on a different hosted screen now preempts the previous focus owner immediately so scrub and navigation retarget intentionally across multiple independent screen instances. This release also adds the first left-controller prototype: left-stick vertical drives the host CUA's `Control.Scale` through a smooth deterministic tween, with scaling slowed only once the host gets down near 0.1 so tiny screens do not jump around.",
+  "reasoning": "The user-facing model is deliberately simple: each hosted screen instance stays independent, and gaze chooses which one receives transport input right now. That means the right next step after fixing scrub was not a shared multi-screen manager, but an explicit gaze-preemption rule on the existing static input owner. For scaling, the current host atom already supports a clean `Control.Scale` seam, so the first left-stick prototype should use that instead of reopening authored screen-size changes. The taper below 0.1 keeps very small screens controllable without making normal resizing sluggish.",
+  "changes": [
+    {
+      "area": "scrub-foundation-promotion",
+      "summary": "The repaired direct-stick CUA scrub seam from 0.3.12 is carried forward as the `0.4.0` baseline.",
+      "reasoning": "This keeps the operator-visible scrub fix while widening the interaction model around it."
+    },
+    {
+      "area": "intentional-multi-screen-focus",
+      "summary": "When gaze lands on a different hosted screen, that plugin instance now preempts the old shared CUA input owner immediately instead of waiting for release grace to expire.",
+      "reasoning": "Multiple hosted screen instances already work independently; the missing seam was intentional immediate retargeting of scrub and navigation on gaze."
+    },
+    {
+      "area": "left-stick-host-scale",
+      "summary": "Left-stick vertical now drives the focused host atom's `Control.Scale` parameter through a smooth deterministic tween.",
+      "reasoning": "The host atom scale seam already scales the CUA resource cleanly, so it is the safest first resize prototype for left-hand interaction."
+    },
+    {
+      "area": "small-scale-taper",
+      "summary": "Scale speed stays normal above 0.1 and tapers only once the host gets smaller than that threshold.",
+      "reasoning": "The operator asked for small screens to scale much more slowly without making ordinary resizing feel sluggish."
+    }
+  ],
+  "verification": [
+    "Compile the CUA player in Release after adding gaze-preemption and left-stick host-scale tweening.",
+    "Compile the no-input seam with EnablePlayerInputFeatures=false to bin\\ReleaseNoInput\\fa_cua_player.dll.",
+    "Stamp version 0.4.0 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.4.0.dll and fa_player_asset.0.4.0.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.4.0 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This release intentionally keeps multiple screen instances independent; it does not add any shared playlist, shared state, or cross-instance awareness beyond immediate gaze retargeting.",
+    "The new left-stick scale prototype is host-atom scaling only. It does not yet include left-stick depth, lasso movement, or other Fork B manipulation behaviors.",
+    "The separate subscene-save and VaM slider serialization behavior is still not part of this fix.",
+    "Spatial audio controls remain a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}
