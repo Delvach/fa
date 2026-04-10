@@ -4,6 +4,7 @@ public partial class FASyncRuntime
 {
     private void RunAttachedPlayerDirectAction(string actionId, string extraArgsBody, string successStatus)
     {
+        ClearQueuedAttachedPlayerSeekNormalizedAction();
         string selectorJson;
         string errorMessage;
         if (!TryBuildAttachedPlayerSelectorJson(out selectorJson, out errorMessage))
@@ -30,6 +31,35 @@ public partial class FASyncRuntime
             playerRuntimeStateField.valNoCallback = string.IsNullOrEmpty(successStatus) ? "state=ok" : successStatus;
         UpdateAttachedPlayerAspectModeField(ExtractJsonArgString(resultJson, "aspectMode"));
         RefreshVisiblePlayerDebugFields();
+    }
+
+    private void QueueAttachedPlayerSeekNormalizedAction(float normalized, string successStatus)
+    {
+        queuedAttachedPlayerSeekNormalized = true;
+        queuedAttachedPlayerSeekNormalizedValue = Mathf.Clamp01(normalized);
+        queuedAttachedPlayerSeekNormalizedApplyAt = Time.unscaledTime + StandalonePlayerScrubCommitDebounceSeconds;
+        queuedAttachedPlayerSeekNormalizedStatus = string.IsNullOrEmpty(successStatus) ? "Player scrub set" : successStatus;
+        if (playerRuntimeStateField != null)
+            playerRuntimeStateField.valNoCallback = "Player scrub pending";
+    }
+
+    private void TickQueuedAttachedPlayerSeekNormalizedAction()
+    {
+        if (!queuedAttachedPlayerSeekNormalized || Time.unscaledTime < queuedAttachedPlayerSeekNormalizedApplyAt)
+            return;
+
+        float normalized = queuedAttachedPlayerSeekNormalizedValue;
+        string successStatus = queuedAttachedPlayerSeekNormalizedStatus;
+        ClearQueuedAttachedPlayerSeekNormalizedAction();
+        RunAttachedPlayerSeekNormalizedAction(normalized, successStatus);
+    }
+
+    private void ClearQueuedAttachedPlayerSeekNormalizedAction()
+    {
+        queuedAttachedPlayerSeekNormalized = false;
+        queuedAttachedPlayerSeekNormalizedValue = 0f;
+        queuedAttachedPlayerSeekNormalizedApplyAt = 0f;
+        queuedAttachedPlayerSeekNormalizedStatus = "";
     }
 
     private void RunAttachedPlayerSeekNormalizedAction(float normalized, string successStatus)

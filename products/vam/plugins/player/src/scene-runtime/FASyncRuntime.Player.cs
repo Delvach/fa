@@ -53,6 +53,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
+    private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
     private const float StandalonePlayerVolumeCurveExponent = 2f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;

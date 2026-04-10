@@ -168,6 +168,10 @@ public partial class FASyncRuntime : MVRScript
     private bool playerMediaBrowserOpen = false;
     private bool suppressStandalonePlayerSliderCallbacks = false;
     private float standalonePlayerScrubFieldSyncHoldoffUntil = 0f;
+    private bool queuedAttachedPlayerSeekNormalized = false;
+    private float queuedAttachedPlayerSeekNormalizedValue = 0f;
+    private float queuedAttachedPlayerSeekNormalizedApplyAt = 0f;
+    private string queuedAttachedPlayerSeekNormalizedStatus = "";
     private static readonly string[] PlayerRuntimeMediaExtensions = new[]
     {
         ".mp4",
@@ -269,6 +273,7 @@ public partial class FASyncRuntime : MVRScript
         TickPendingInnerPieceAnchorSpawns();
         TickInnerPieceFollowBindings();
         TickPlayerControlSurfaceRelativeBindings();
+        TickQueuedAttachedPlayerSeekNormalizedAction();
         TickStandalonePlayerRuntime();
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         TickCuaPlayerInput();
@@ -349,7 +354,7 @@ public partial class FASyncRuntime : MVRScript
                     return;
 
                 ArmStandalonePlayerScrubFieldSyncHoldoff();
-                RunAttachedPlayerSeekNormalizedAction(value, "Player scrub set");
+                QueueAttachedPlayerSeekNormalizedAction(value, "Player scrub set");
             },
             0f,
             1f,

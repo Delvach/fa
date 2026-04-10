@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.6",
+  "title": "Debounce the VaM scrub slider and preserve the live scene control seam",
+  "summary": "Live testing showed that the VaM scrub slider could make timeline instability worse than the joystick path because the plugin slider callback still dispatched a real seek for every intermediate value while the operator dragged. The current scene template confirms that the live operator seam is exactly that path: `screen/scrub_slider` in `default.json` and the latest `screen` subscene both drive the plugin target `scrub_normalized` through transition actions. This release keeps the same live scene contract but changes the plugin behavior behind it. Slider movement now stages a pending normalized target locally, waits for the drag to settle, and then commits one seek instead of spamming repeated seek calls into the player.",
+  "reasoning": "The 0.3.5 joystick fix narrowed one source of repeated seek churn, but the VaM plugin slider was still effectively the older worst-case path. A VaM `UISlider` transition action can emit many intermediate values during a single drag, and the plugin callback was still treating each one like a fresh player seek. That makes the scene slider a direct reproducer for the same decoder churn that had already been hurting joystick scrub stability. The right fix for the current release lane is not to abandon the VaM control surface yet. It is to preserve the existing scene wiring while changing the plugin callback from immediate dispatch to a small debounce window and a single committed seek. This keeps the first-release VaM control contract intact and aligns it better with the future toolkit-control direction, where local slider state and committed player actions are meant to be separate.",
+  "changes": [
+    {
+      "area": "vam-plugin-scrub-slider",
+      "summary": "The plugin `scrub_normalized` storable now queues a pending seek and waits for the slider value to settle before committing one player seek.",
+      "reasoning": "This prevents the current VaM slider from turning a single drag into a long burst of immediate timeline mutations."
+    },
+    {
+      "area": "queued-scrub-cancellation",
+      "summary": "Any other attached-player direct action clears the queued scrub commit before it runs.",
+      "reasoning": "This keeps a stale pending scrub from landing after a different operator action changes the player state."
+    },
+    {
+      "area": "scene-contract-preservation",
+      "summary": "The scene-facing control names stay the same: `screen/scrub_slider` and `screen/volume_slider` continue targeting `scrub_normalized` and `volume_normalized`.",
+      "reasoning": "The operator template in `F:/sim/vam/Saves/scene/default.json` and `F:/sim/vam/Custom/SubScene/FrameAngel/screen/0.3.4.json` remains valid while the plugin side gets safer behavior."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.6 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.6.dll and fa_player_asset.0.3.6.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.6 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VaM, drag the scene or plugin scrub slider repeatedly across a video and confirm the slider still tracks while the player no longer freezes or drifts audio from repeated intermediate seeks."
+  ],
+  "knownIssues": [
+    "The future custom toolkit slider path is still the better long-term control surface because it already separates local slider state from player-state hydration more cleanly than the raw VaM plugin UI.",
+    "Spatial audio is not part of this release. The current runtime still initializes the player audio source as 2D and the latest screen subscene has `AnimationMaster.linkToAudioSourceControl` set to `false`.",
+    "If finalized seeks still degrade Unity VideoPlayer over long runs, the next seam to inspect is the shared seek implementation and paused-frame refresh path, not the scene control names."
+  ]
+}
