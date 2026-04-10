@@ -291,6 +291,7 @@ public partial class FASyncRuntime : MVRScript
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         OnCuaPlayerInputDestroy();
 #endif
+        OnPlayerPresetDestroy();
 #if !FRAMEANGEL_CUA_PLAYER
         ClearReferencePreviewVisuals();
 #endif
@@ -340,6 +341,8 @@ public partial class FASyncRuntime : MVRScript
 
         playerRuntimePlaylistField = new JSONStorableString("FrameAngel Player Playlist", "playlist=idle");
         ConfigureTransientField(playerRuntimePlaylistField, false);
+
+        BuildPlayerPresetStorables();
 
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         BuildCuaPlayerInputStorables();
@@ -603,6 +606,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterString(playerRuntimeAspectModeField);
         RegisterString(playerRuntimeTimelineField);
         RegisterString(playerRuntimePlaylistField);
+        RegisterPlayerPresetStorables();
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         RegisterCuaPlayerInputStorables();
 #endif
@@ -663,14 +667,8 @@ public partial class FASyncRuntime : MVRScript
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         BuildCuaPlayerInputUi();
 #endif
-        CreateTextField(playerRuntimeTargetField, false);
-        CreateTextField(playerRuntimeMediaField, false);
-        CreateTextField(playerRuntimeStateField, false);
+        BuildPlayerPresetUi();
         CreateTextField(playerMediaPathField, true);
-        CreateTextField(playerRuntimeParityField, false);
-        CreateTextField(playerRuntimeAspectModeField, false);
-        CreateTextField(playerRuntimeTimelineField, false);
-        CreateTextField(playerRuntimePlaylistField, false);
         CreateSlider(playerScrubNormalizedField, false);
         CreateSlider(playerVolumeNormalizedField, false);
         if (ShouldExposePlayerAspectControls())
@@ -802,18 +800,13 @@ public partial class FASyncRuntime : MVRScript
                 RunAttachedPlayerSetRandomAction(true, "Player random enabled");
             }
         );
-        CreateButton("Player Resize Down").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerResizeAction(PlayerResizeDownMultiplier, "Player resized down");
-            }
-        );
-        CreateButton("Player Resize Up").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerResizeAction(PlayerResizeUpMultiplier, "Player resized up");
-            }
-        );
+        CreateTextField(playerRuntimeTargetField, false);
+        CreateTextField(playerRuntimeMediaField, false);
+        CreateTextField(playerRuntimeStateField, false);
+        CreateTextField(playerRuntimeParityField, false);
+        CreateTextField(playerRuntimeAspectModeField, false);
+        CreateTextField(playerRuntimeTimelineField, false);
+        CreateTextField(playerRuntimePlaylistField, false);
 
 #if FRAMEANGEL_TEST_SURFACES
         CreateToggle(syncDevModeToggle);

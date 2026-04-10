@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.3",
+  "title": "Add player presets and clean up the top of the plugin UI",
+  "summary": "0.4.3 gives the current CUA player a first real preset system. Presets can be saved, favorited, loaded from a dropdown, and set to auto-load on selection. They restore the current media path, video time, loop mode, shuffle state, and optional host CUA scale, while the plugin UI now surfaces that preset workflow near the top and removes the visible resize buttons that were no longer part of the supported release surface.",
+  "reasoning": "The remaining small ImagePanel-style advantage was fast preset recall of the same media and playback state. The current player already had the needed state and host hooks, so the right move is to package that into a focused preset seam instead of widening the playback core again. UI cleanup belongs in the same slice because presets only help if they are easy to reach in the crowded plugin panel.",
+  "changes": [
+    {
+      "area": "player-preset-storage",
+      "summary": "Added file-backed player presets under `Custom\\\\PluginData\\\\FrameAngel\\\\Player\\\\presets`, with a normal preset chooser plus a favorites-only chooser.",
+      "reasoning": "This gives the player a durable save/load seam that matches the standard VaM-style preset workflow more closely than re-entering media paths manually."
+    },
+    {
+      "area": "player-preset-restore",
+      "summary": "Preset save and load now capture and restore the current media path, current video time, current loop mode, current shuffle state, and optional host `Control.Scale`.",
+      "reasoning": "Those are the operator-facing pieces that matter for recalling the same screen state quickly without rebuilding the setup by hand."
+    },
+    {
+      "area": "favorite-and-load-flow",
+      "summary": "Preset favorites now surface in their own dropdown, and a `Load On Select` toggle can apply the selected preset immediately.",
+      "reasoning": "Favorites are the fast-path replacement for repeatedly drilling into preset files when there are a few common screen setups."
+    },
+    {
+      "area": "plugin-ui-cleanup",
+      "summary": "The preset section now sits near the top of the plugin UI, the runtime debug fields move lower, and the visible resize buttons are removed from the panel.",
+      "reasoning": "The plugin needed a cleaner top-level operator flow, and the visible resize buttons no longer belonged in the release surface after the earlier resize rollback."
+    }
+  ],
+  "verification": [
+    "Compile the CUA player in Release with the new preset seam and updated UI order.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Stamp version 0.4.3 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.3.dll` and `fa_player_asset.0.4.3.assetbundle` through the existing player foundation script.",
+    "Run foundation release validation for 0.4.3 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This first preset slice does not yet add rename, delete, or filter workflows; it focuses only on save, load, favorites, and load-on-select.",
+    "Preset files are refreshed at plugin startup and after save, not from a live watched folder if files are edited externally during the same session.",
+    "The preset system only restores video time after the player has prepared the clip, so time restore is still bounded by the underlying video prepare seam."
+  ]
+}
