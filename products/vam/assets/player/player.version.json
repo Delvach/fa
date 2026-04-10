@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.1",
-    "notes":  "0.4.1 keeps the new multi-screen gaze targeting from 0.4.0 but simplifies the control split so only the right stick can scrub or navigate and the left stick is free to drive host-atom scale. It also replaces the old history-only random stepping with a stored unique random order so next and previous can walk a full shuffled playlist without duplicates until the list has been traversed, and it promotes playlist loop plus random-on as the default player stance.",
+    "version":  "0.4.2",
+    "notes":  "0.4.2 removes the unfinished left-stick resize experiment and returns the CUA input lane to the simpler 0.4.0-style focus and scrub behavior while keeping the 0.4.1 playlist improvements. Multi-screen gaze preemption stays intact, random playlists now traverse one stored shuffled order without duplicates until exhausted, and the default player stance remains random on with playlist loop.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.1.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.2.json"
 }

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.2",
+  "title": "Remove unfinished resize and keep only 0.4.0 focus plus 0.4.1 shuffle defaults",
+  "summary": "0.4.2 is a cleanup release. It removes the unfinished left-stick resize prototype entirely and returns the CUA input lane to the simpler 0.4.0-style focus and scrub behavior, while preserving the 0.4.1 playlist improvements: stable unique-random traversal and random-on plus playlist-loop defaults.",
+  "reasoning": "The resize path had not worked yet and was adding unnecessary ambiguity to the input lane. The operator confirmed the 0.4.0 multi-screen focus behavior was already the right feel, so the correct move is to back out the resize experiment instead of carrying more control-splitting logic. The random playlist order and defaults from 0.4.1 are still good foundation behavior and should remain.",
+  "changes": [
+    {
+      "area": "remove-left-stick-resize",
+      "summary": "The left-stick host-scale prototype and all related scale tween logic were removed from the CUA input module.",
+      "reasoning": "Resize had not worked yet and should not stay in the release surface as a half-finished interaction seam."
+    },
+    {
+      "area": "restore-0-4-0-style-input",
+      "summary": "CUA focus and scrub/navigation return to the simpler 0.4.0-style stick arbitration and gaze-targeted focus flow.",
+      "reasoning": "The operator confirmed the 0.4.0 focus behavior was already correct, so 0.4.2 should preserve that feel instead of keeping the 0.4.1 control split."
+    },
+    {
+      "area": "unique-random-playlist-order",
+      "summary": "Random playback still stores a full shuffled playlist order plus cursor so next and previous do not repeat items until the entire list has been traversed.",
+      "reasoning": "That 0.4.1 playlist behavior is the desired foundation and remains part of this release."
+    },
+    {
+      "area": "default-player-stance",
+      "summary": "New player records and pending playlist summaries still default to `random=on` and `loop=playlist`.",
+      "reasoning": "Those defaults match the current desired playback stance and pair naturally with the new unique-random traversal model."
+    }
+  ],
+  "verification": [
+    "Compile the CUA player in Release after removing the left-stick resize seam and keeping the unique-random playlist logic and defaults.",
+    "Compile the no-input seam with EnablePlayerInputFeatures=false to bin\\ReleaseNoInput\\fa_cua_player.dll.",
+    "Stamp version 0.4.2 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.4.2.dll and fa_player_asset.0.4.2.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.4.2 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This release intentionally removes the resize experiment rather than replacing it. Left-stick resize will need a fresh future design when that lane is ready again.",
+    "Spatial audio controls remain a separate follow-up seam because the player runtime still initializes the underlying audio source as 2D.",
+    "The subscene-save and VaM slider serialization issues are not part of this release."
+  ]
+}
