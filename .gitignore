@@ -23,6 +23,7 @@ products/vam/assets/player/unity/ghost_training_export_clone/.vscode/
 products/vam/assets/player/unity/ghost_training_export_clone/.vsconfig
 products/vam/assets/player/unity/ghost_training_export_clone/*.csproj
 products/vam/assets/player/unity/ghost_training_export_clone/*.sln
+products/vam/assets/player/unity/ghost_training_export_clone/ProjectSettings/NetworkManager.asset
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/__FrameAngelTemp/
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/__FrameAngelTemp.meta
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/TextMesh Pro/Examples & Extras/
