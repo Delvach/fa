@@ -61,13 +61,13 @@ public partial class FASyncRuntime : MVRScript
         playerPresetStatusField = new JSONStorableString("FrameAngel Player Presets", "presets=0 favorites=0");
         ConfigureTransientField(playerPresetStatusField, false);
 
-        playerPresetLoadOnSelectToggle = new JSONStorableBool("Player Preset Load On Select", true);
+        playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", true);
 
         playerPresetChooser = new JSONStorableStringChooser(
-            "Player Preset Selection",
+            "Select Existing...",
             new List<string> { PlayerPresetNoneChoice },
             PlayerPresetNoneChoice,
-            "Player Preset Selection");
+            "Select Existing...");
         playerPresetChooser.displayChoices = new List<string> { "(none)" };
         playerPresetChooser.setCallbackFunction = delegate(string value)
         {
@@ -75,23 +75,23 @@ public partial class FASyncRuntime : MVRScript
         };
 
         playerFavoritePresetChooser = new JSONStorableStringChooser(
-            "Player Preset Favorites",
+            "Favorite Selection",
             new List<string> { PlayerPresetNoneChoice },
             PlayerPresetNoneChoice,
-            "Player Preset Favorites");
+            "Favorite Selection");
         playerFavoritePresetChooser.displayChoices = new List<string> { "(none)" };
         playerFavoritePresetChooser.setCallbackFunction = delegate(string value)
         {
             HandlePlayerPresetSelectionChanged(value, true);
         };
 
-        playerPresetNameField = new JSONStorableString("Player Preset Name", "");
-        playerPresetFavoriteToggle = new JSONStorableBool("Player Preset Favorite", false);
-        playerPresetStoreMediaToggle = new JSONStorableBool("Player Preset Store Media", true);
-        playerPresetStoreTimeToggle = new JSONStorableBool("Player Preset Store Video Time", true);
-        playerPresetStoreScaleToggle = new JSONStorableBool("Player Preset Store CUA Scale", true);
-        playerPresetStoreLoopToggle = new JSONStorableBool("Player Preset Store Loop Mode", true);
-        playerPresetStoreRandomToggle = new JSONStorableBool("Player Preset Store Shuffle", true);
+        playerPresetNameField = new JSONStorableString("Preset Name", "");
+        playerPresetFavoriteToggle = new JSONStorableBool("Favorite", false);
+        playerPresetStoreMediaToggle = new JSONStorableBool("Store Media", true);
+        playerPresetStoreTimeToggle = new JSONStorableBool("Store Video Time", true);
+        playerPresetStoreScaleToggle = new JSONStorableBool("Store CUA Scale", true);
+        playerPresetStoreLoopToggle = new JSONStorableBool("Store Loop Mode", true);
+        playerPresetStoreRandomToggle = new JSONStorableBool("Store Shuffle", true);
 
         playerPresetSaveAction = new JSONStorableAction(
             "Player Preset Save",
@@ -128,27 +128,27 @@ public partial class FASyncRuntime : MVRScript
 
     private void BuildPlayerPresetUi()
     {
-        CreateTextField(playerPresetStatusField, false);
+        CreatePopup(playerPresetChooser, true);
         CreateToggle(playerPresetLoadOnSelectToggle);
         CreatePopup(playerFavoritePresetChooser, true);
-        CreatePopup(playerPresetChooser, true);
-        CreateTextField(playerPresetNameField, true);
         CreateToggle(playerPresetFavoriteToggle);
+        CreateTextField(playerPresetNameField, true);
+        CreateButton("Create New Preset").button.onClick.AddListener(
+            delegate
+            {
+                RunPlayerSavePreset();
+            });
+        CreateButton("Load").button.onClick.AddListener(
+            delegate
+            {
+                RunPlayerLoadSelectedPreset();
+            });
+        CreateTextField(playerPresetStatusField, false);
         CreateToggle(playerPresetStoreMediaToggle);
         CreateToggle(playerPresetStoreTimeToggle);
         CreateToggle(playerPresetStoreScaleToggle);
         CreateToggle(playerPresetStoreLoopToggle);
         CreateToggle(playerPresetStoreRandomToggle);
-        CreateButton("Player Preset Save").button.onClick.AddListener(
-            delegate
-            {
-                RunPlayerSavePreset();
-            });
-        CreateButton("Player Preset Load").button.onClick.AddListener(
-            delegate
-            {
-                RunPlayerLoadSelectedPreset();
-            });
     }
 
     private void OnPlayerPresetDestroy()
@@ -977,30 +977,49 @@ public partial class FASyncRuntime : MVRScript
         if (playerPresetStatusField == null)
             return;
 
-        int presetCount = 0;
-        int favoriteCount = 0;
-        foreach (KeyValuePair<string, PlayerPresetRecord> kvp in playerPresetsById)
-        {
-            presetCount++;
-            if (kvp.Value != null && kvp.Value.favorite)
-                favoriteCount++;
-        }
-
-        StringBuilder sb = new StringBuilder(96);
-        sb.Append("presets=").Append(presetCount.ToString(CultureInfo.InvariantCulture));
-        sb.Append(" favorites=").Append(favoriteCount.ToString(CultureInfo.InvariantCulture));
         string selectedPresetId = ResolveSelectedPlayerPresetId();
+        string selectedPresetName = "";
         if (!string.IsNullOrEmpty(selectedPresetId)
             && playerPresetsById.TryGetValue(selectedPresetId, out PlayerPresetRecord selectedPreset)
-            && selectedPreset != null
-            && !string.IsNullOrEmpty(selectedPreset.displayName))
+            && selectedPreset != null)
         {
-            sb.Append(" selected=").Append(selectedPreset.displayName);
+            selectedPresetName = string.IsNullOrEmpty(selectedPreset.displayName) ? selectedPresetId : selectedPreset.displayName;
         }
-        if (!string.IsNullOrEmpty(state))
-            sb.Append(" state=").Append(state);
 
-        playerPresetStatusField.valNoCallback = sb.ToString();
+        string message;
+        switch ((state ?? "").Trim().ToLowerInvariant())
+        {
+            case "saved":
+                message = string.IsNullOrEmpty(selectedPresetName)
+                    ? "Preset saved"
+                    : "Saved preset " + selectedPresetName;
+                break;
+            case "loaded":
+                message = string.IsNullOrEmpty(selectedPresetName)
+                    ? "Preset loaded"
+                    : "Loaded preset " + selectedPresetName;
+                break;
+            case "seeking":
+                message = string.IsNullOrEmpty(selectedPresetName)
+                    ? "Loading preset..."
+                    : "Loading preset " + selectedPresetName + "...";
+                break;
+            case "error":
+                message = string.IsNullOrEmpty(selectedPresetName)
+                    ? "Preset action failed"
+                    : "Preset action failed for " + selectedPresetName;
+                break;
+            default:
+                if (!string.IsNullOrEmpty(selectedPresetName))
+                    message = "Selected preset " + selectedPresetName;
+                else if (playerPresetsById.Count <= 0)
+                    message = "No presets saved yet";
+                else
+                    message = "Choose or create a preset";
+                break;
+        }
+
+        playerPresetStatusField.valNoCallback = message;
     }
 
     private static string GetPlayerPresetFileNameWithoutExtension(string path)

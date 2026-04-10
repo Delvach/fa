@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.4",
+  "title": "Clean up the preset panel into a normal VaM-style top section",
+  "summary": "0.4.4 keeps the new player preset system from 0.4.3, but fixes the way it presents in the plugin UI. The visible build, CUA, and runtime status text is no longer rendered in the release panel, the preset name field now sits near the top of the preset block where it belongs, the preset chooser/save/load flow reads more like the standard VaM preset layout, and the preset section now uses a simple loaded or saved receipt line instead of debug counters.",
+  "reasoning": "The preset seam itself was useful, but the panel shape was wrong for real use. The operator should not have to scroll past debug text just to reach the preset name, favorite, and save/load controls. This slice keeps the preset capability intact while making the top of the plugin feel like a normal operator-facing preset section instead of an internal diagnostic surface.",
+  "changes": [
+    {
+      "area": "preset-panel-order",
+      "summary": "Reordered the preset UI so the existing preset chooser, load-on-select toggle, favorite selection, favorite toggle, preset name field, and create/load buttons appear at the top of the panel before the storage options.",
+      "reasoning": "This makes the actual preset workflow visible immediately instead of pushing the preset name and actions downward."
+    },
+    {
+      "area": "visible-debug-cleanup",
+      "summary": "Stopped rendering the build version field, CUA input status field, preset status field, and runtime status text fields in the normal player panel.",
+      "reasoning": "Those fields were useful during recovery work, but they now get in the way of the real release UI."
+    },
+    {
+      "area": "preset-receipt-line",
+      "summary": "Replaced the old preset counter and state text with a simple operator-facing receipt line such as selected, loaded, or saved preset status.",
+      "reasoning": "The standard VaM preset pattern benefits from a lightweight confirmation line, but that line should report useful preset actions rather than internal counts and debug state."
+    },
+    {
+      "area": "preset-operator-labels",
+      "summary": "Shortened the visible preset labels and changed the top preset buttons to `Create New Preset` and `Load`.",
+      "reasoning": "The preset section should read like a familiar VaM preset block rather than a stack of plugin-internal control names."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.4 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the cleaned preset panel and hidden debug/status UI.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.4.dll` and `fa_player_asset.0.4.4.assetbundle` through the existing player foundation script.",
+    "Run foundation release validation for 0.4.4 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice cleans the preset panel order and labels, but it does not yet add rename, delete, or filter workflows.",
+    "The build and runtime status storables still exist for internal diagnostics; this release only removes them from the visible panel."
+  ]
+}
