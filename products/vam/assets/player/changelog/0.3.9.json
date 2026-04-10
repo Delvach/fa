@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.9",
+  "title": "Add a probe-style CUA scrub input source ladder with live source reporting",
+  "summary": "Operator retest disqualified both 0.3.7 and 0.3.8: right-stick scrub still stopped the moment the left controller stopped providing motion data. That means the bug is not closed by simply swapping between action-axis and `JoystickControl` reads. This release adds a more honest probe-style input ladder for the CUA scrub seam. It samples raw right-thumbstick axis names first, direct `JoystickControl` right-stick axes second, and VaM's broader free-navigation wrapper only as a last fallback. It also reports the winning navigation source in the transient player input state so operator retest can tell us which seam is actually live.",
+  "reasoning": "The new repro matters because it mentions physical left-controller motion, not left-stick input. That points toward a hidden gate in the broader input stack rather than toward scrub math alone. The earlier VR probe and Harp substrate already carried raw axis-name sampling for controller diagnostics, including the Oculus cross-platform thumbstick names. Bringing that style into the current CUA scrub lane gives us a stronger chance of bypassing the drifting interpreted seam while also exposing which path actually wins in a live test.",
+  "changes": [
+    {
+      "area": "cua-navigation-source-ladder",
+      "summary": "The CUA input module now samples raw right-thumbstick axis names, then direct `JoystickControl` right-stick axes, and finally the broader free-navigation wrapper.",
+      "reasoning": "This keeps the narrowest right-hand seams ahead of the combined wrapper that has been acting like it depends on left-hand motion."
+    },
+    {
+      "area": "operator-debug-visibility",
+      "summary": "The transient player input state string now includes `src=...` so the plugin UI can show whether `raw`, `joystick`, `wrapper`, or an idle variant is driving the current navigation read.",
+      "reasoning": "If 0.3.9 still fails, we need the next test to tell us which seam is actually live instead of inferring it from feel alone."
+    },
+    {
+      "area": "release-truth",
+      "summary": "This release explicitly records that 0.3.7 and 0.3.8 did not close the hidden left-motion dependency.",
+      "reasoning": "The release ladder should capture failed intermediate hypotheses honestly so we do not keep circling them."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.9 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.9.dll and fa_player_asset.0.3.9.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.9 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VR, scrub images and video with the right controller while the left controller stays still or is set down, then inspect the plugin's transient input field to see whether the live navigation source is `raw`, `joystick`, `wrapper`, or `none`."
+  ],
+  "knownIssues": [
+    "This release improves input truth and source visibility, but it still may not solve the deeper runtime issue if VaM is suppressing all right-hand scrub seams upstream.",
+    "The current subscene-save error is still unverified from logs, so this release does not claim to fix any scene serialization problem yet.",
+    "Spatial audio remains a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}

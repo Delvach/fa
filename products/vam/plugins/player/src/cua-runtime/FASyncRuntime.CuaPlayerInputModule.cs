@@ -6,10 +6,21 @@ using Valve.VR;
 public partial class FASyncRuntime : MVRScript
 {
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+    private static readonly string[] CuaPlayerRightStickXCandidates = new string[]
+    {
+        "Oculus_CrossPlatform_SecondaryThumbstickHorizontal",
+    };
+
+    private static readonly string[] CuaPlayerRightStickYCandidates = new string[]
+    {
+        "Oculus_CrossPlatform_SecondaryThumbstickVertical",
+    };
+
     private const float CuaPlayerFocusReleaseGraceSeconds = 0.20f;
     private const float CuaPlayerFocusInputGraceSeconds = 0.45f;
     private const float CuaPlayerNavigationDeadzone = 0.32f;
     private const float CuaPlayerNavigationAxisReleaseDeadzone = 0.18f;
+    private const float CuaPlayerNavigationSourceActiveThreshold = 0.05f;
     private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
@@ -52,6 +63,7 @@ public partial class FASyncRuntime : MVRScript
     private string cuaPlayerVideoScrubPlaybackKey = "";
     private float cuaPlayerNextInputStateUpdateAt = 0f;
     private string cuaPlayerLastInputState = "";
+    private string cuaPlayerLastNavigationSource = "none";
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
 
@@ -258,6 +270,7 @@ public partial class FASyncRuntime : MVRScript
         sb.Append(" gaze=").Append(gazeActive ? "on" : "off");
         sb.Append(" mode=").Append(string.IsNullOrEmpty(mode) ? "idle" : mode);
         sb.Append(" stick=right");
+        sb.Append(" src=").Append(string.IsNullOrEmpty(cuaPlayerLastNavigationSource) ? "none" : cuaPlayerLastNavigationSource);
         sb.Append(" lock=").Append(FormatCuaPlayerNavigationAxisLock(cuaPlayerNavigationAxisLock));
         sb.Append(" x=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
         sb.Append(" y=").Append(navigation.y.ToString("0.00", CultureInfo.InvariantCulture));
@@ -372,44 +385,94 @@ public partial class FASyncRuntime : MVRScript
     private Vector2 ReadCuaPlayerNavigationVector(SuperController sc)
     {
         if (sc == null)
+        {
+            cuaPlayerLastNavigationSource = "none";
             return Vector2.zero;
+        }
 
-        Vector2 rightNavigation = Vector2.zero;
-        bool hasDirectStick = false;
+        Vector2 rawNavigation = Vector2.zero;
+        bool rawValid = false;
+        Vector2 joystickNavigation = Vector2.zero;
+        bool joystickValid = false;
+        Vector2 wrapperNavigation = Vector2.zero;
+        bool wrapperValid = false;
         try
         {
+            float rawX;
+            float rawY;
+            bool rawXValid = TryReadCuaPlayerRawAxisCandidates(CuaPlayerRightStickXCandidates, out rawX);
+            bool rawYValid = TryReadCuaPlayerRawAxisCandidates(CuaPlayerRightStickYCandidates, out rawY);
+            if (rawXValid || rawYValid)
+            {
+                rawNavigation = new Vector2(rawXValid ? rawX : 0f, rawYValid ? rawY : 0f);
+                rawValid = true;
+            }
+
             float rightX;
             float rightY;
             bool rightXValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickX, out rightX);
             bool rightYValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickY, out rightY);
             if (rightXValid || rightYValid)
             {
-                rightNavigation = new Vector2(rightXValid ? rightX : 0f, rightYValid ? rightY : 0f);
-                hasDirectStick = true;
+                joystickNavigation = new Vector2(rightXValid ? rightX : 0f, rightYValid ? rightY : 0f);
+                joystickValid = true;
             }
-            else
+
+            SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
+            if (moveAction != null)
             {
-                SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
-                if (moveAction != null)
-                {
-                    Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
-                    rightNavigation = new Vector2(raw.z, raw.w);
-                }
+                Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
+                wrapperNavigation = new Vector2(raw.z, raw.w);
+                wrapperValid = true;
             }
         }
         catch
         {
-            rightNavigation = Vector2.zero;
+            rawNavigation = Vector2.zero;
+            rawValid = false;
+            joystickNavigation = Vector2.zero;
+            joystickValid = false;
+            wrapperNavigation = Vector2.zero;
+            wrapperValid = false;
         }
 
-        if (!hasDirectStick)
+        Vector2 selectedNavigation = Vector2.zero;
+        if (IsCuaPlayerNavigationActive(rawNavigation))
         {
-            rightNavigation = new Vector2(
-                Mathf.Abs(rightNavigation.x) >= CuaPlayerNavigationDeadzone ? rightNavigation.x : 0f,
-                Mathf.Abs(rightNavigation.y) >= CuaPlayerNavigationDeadzone ? rightNavigation.y : 0f);
+            selectedNavigation = rawNavigation;
+            cuaPlayerLastNavigationSource = "raw";
+        }
+        else if (IsCuaPlayerNavigationActive(joystickNavigation))
+        {
+            selectedNavigation = joystickNavigation;
+            cuaPlayerLastNavigationSource = "joystick";
+        }
+        else if (IsCuaPlayerNavigationActive(wrapperNavigation))
+        {
+            selectedNavigation = wrapperNavigation;
+            cuaPlayerLastNavigationSource = "wrapper";
+        }
+        else if (rawValid)
+        {
+            selectedNavigation = rawNavigation;
+            cuaPlayerLastNavigationSource = "raw_idle";
+        }
+        else if (joystickValid)
+        {
+            selectedNavigation = joystickNavigation;
+            cuaPlayerLastNavigationSource = "joystick_idle";
+        }
+        else if (wrapperValid)
+        {
+            selectedNavigation = wrapperNavigation;
+            cuaPlayerLastNavigationSource = "wrapper_idle";
+        }
+        else
+        {
+            cuaPlayerLastNavigationSource = "none";
         }
 
-        return ApplyCuaPlayerNavigationAxisLock(rightNavigation);
+        return ApplyCuaPlayerNavigationAxisLock(selectedNavigation);
     }
 
     private static bool TryReadCuaPlayerJoystickAxis(JoystickControl.Axis axis, out float value)
@@ -426,6 +489,46 @@ public partial class FASyncRuntime : MVRScript
             value = 0f;
             return false;
         }
+    }
+
+    private static bool TryReadCuaPlayerRawAxisCandidates(string[] candidates, out float value)
+    {
+        value = 0f;
+        if (candidates == null)
+            return false;
+
+        for (int i = 0; i < candidates.Length; i++)
+        {
+            if (TryReadCuaPlayerRawAxis(candidates[i], out value))
+                return true;
+        }
+
+        value = 0f;
+        return false;
+    }
+
+    private static bool TryReadCuaPlayerRawAxis(string axisName, out float value)
+    {
+        value = 0f;
+        if (string.IsNullOrEmpty(axisName))
+            return false;
+
+        try
+        {
+            value = Input.GetAxis(axisName);
+            return true;
+        }
+        catch
+        {
+            value = 0f;
+            return false;
+        }
+    }
+
+    private static bool IsCuaPlayerNavigationActive(Vector2 navigation)
+    {
+        return Mathf.Abs(navigation.x) >= CuaPlayerNavigationSourceActiveThreshold
+            || Mathf.Abs(navigation.y) >= CuaPlayerNavigationSourceActiveThreshold;
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)
