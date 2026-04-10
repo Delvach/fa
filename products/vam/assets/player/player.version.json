@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.7",
-    "notes":  "0.4.7 replaces the missing inline preset-name field with a deterministic preset-name dialog rooted to the player preset folder, and keeps `Select Existing...` on that same folder so browse, favorites, and save all operate on one preset set.",
+    "version":  "0.4.8",
+    "notes":  "0.4.8 removes the preset-name browser workaround and restores a real inline preset-name input by cloning the native VaM preset-manager input row, while keeping `Select Existing...` rooted to the same player preset folder as favorites.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.7.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.8.json"
 }

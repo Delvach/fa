@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.8",
+  "title": "Restore a real inline preset-name input",
+  "summary": "0.4.8 removes the preset-name browser workaround and restores a true inline preset-name box by cloning the native VaM preset-manager input row and registering it directly to the player preset name storable. `Select Existing...` still targets the same player preset folder used by favorites.",
+  "reasoning": "The 0.4.7 browser-based naming seam proved the folder alignment, but it was still the wrong operator experience. The user was right that the existing VaM preset panels already contain the exact name-input control we need. This slice stops improvising around the problem and goes back to the native preset-manager input row so creating a preset works like a normal preset workflow again.",
+  "changes": [
+    {
+      "area": "preset-name-input",
+      "summary": "Removed the `Preset Name...` browser button and restored an inline editable preset-name field by cloning VaM's native preset-manager input row.",
+      "reasoning": "The name should be entered directly in the panel instead of through a second browser dialog."
+    },
+    {
+      "area": "preset-save-flow",
+      "summary": "Returned `Create New Preset` to the normal inline-name flow, where the button saves or overwrites based on the visible preset-name field content.",
+      "reasoning": "This matches the expected preset workflow and avoids the confusing two-browser behavior from 0.4.7."
+    },
+    {
+      "area": "preset-folder-alignment",
+      "summary": "Kept `Select Existing...` rooted to the same player preset folder read by the favorites catalog.",
+      "reasoning": "Browse, favorites, save, and load should continue to operate on one shared preset set."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.8 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the restored inline preset-name input row.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.8.dll` and `fa_player_asset.0.4.8.assetbundle` through the player foundation script.",
+    "Run foundation release validation for 0.4.8 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice restores the native inline naming seam, but it does not yet add defaults-management buttons or delete and rename workflows.",
+    "The player preset UI still lives in the standard plugin two-column layout rather than the full native preset-manager panel shell."
+  ]
+}

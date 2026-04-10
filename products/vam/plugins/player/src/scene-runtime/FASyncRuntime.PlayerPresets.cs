@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using MeshVR;
 using MVR.FileManagementSecure;
 using UnityEngine;
+using UnityEngine.UI;
 using uFileBrowser;
 
 public partial class FASyncRuntime : MVRScript
@@ -50,14 +52,12 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableAction playerPresetLoadAction;
     private UIDynamicPopup playerFavoritePresetChooserPopup;
     private UIDynamicButton playerPresetBrowseButtonDynamic;
-    private UIDynamicButton playerPresetNameButtonDynamic;
     private UIDynamicButton playerPresetSaveButtonDynamic;
     private UIDynamicButton playerPresetLoadButtonDynamic;
     private UIDynamicTextField playerPresetStatusDynamic;
     private string playerSelectedPresetId = "";
     private string playerSelectedFavoritePresetId = "";
     private bool playerPresetUiSyncGuard = false;
-    private bool playerPresetSaveAfterNamePrompt = false;
     private Coroutine playerPresetDeferredSeekCoroutine;
     private readonly Dictionary<string, PlayerPresetRecord> playerPresetsById =
         new Dictionary<string, PlayerPresetRecord>(StringComparer.OrdinalIgnoreCase);
@@ -157,19 +157,15 @@ public partial class FASyncRuntime : MVRScript
         playerFavoritePresetChooserPopup = CreateFilterablePopup(playerFavoritePresetChooser, true);
         ConfigurePlayerPresetPopup(playerFavoritePresetChooserPopup);
 
-        playerPresetNameButtonDynamic = CreateButton("Preset Name...", false);
-        playerPresetNameButtonDynamic.button.onClick.AddListener(
-            delegate
-            {
-                OpenPlayerPresetNameDialog(false);
-            });
+        if (!TryCreatePlayerPresetNameInputUi())
+            CreateTextField(playerPresetNameField, false);
         CreateToggle(playerPresetFavoriteToggle, true);
 
         playerPresetSaveButtonDynamic = CreateButton("Create New Preset", false);
         playerPresetSaveButtonDynamic.button.onClick.AddListener(
             delegate
             {
-                RunPlayerSavePresetFromUi();
+                RunPlayerSavePreset();
             });
         playerPresetLoadButtonDynamic = CreateButton("Load", true);
         playerPresetLoadButtonDynamic.button.onClick.AddListener(
@@ -254,55 +250,6 @@ public partial class FASyncRuntime : MVRScript
         {
             ApplyPlayerPresetById(presetId);
         }
-    }
-
-    private void OpenPlayerPresetNameDialog(bool saveAfterNameSelection)
-    {
-        if (!TryGetPlayerPresetFileBrowser(out FileBrowser fileBrowser))
-        {
-            UpdatePlayerPresetStatusField("error");
-            return;
-        }
-
-        playerPresetSaveAfterNamePrompt = saveAfterNameSelection;
-        ConfigurePlayerPresetFileBrowser(fileBrowser, "Preset Name", true);
-        fileBrowser.Show(HandlePlayerPresetNameDialogClosed);
-        if (fileBrowser.fileEntryField != null)
-        {
-            fileBrowser.fileEntryField.text = ResolveSuggestedPlayerPresetName();
-            fileBrowser.ActivateFileNameField();
-        }
-    }
-
-    private void HandlePlayerPresetNameDialogClosed(string value)
-    {
-        string presetPath = string.IsNullOrEmpty(value) ? "" : value.Trim();
-        bool saveAfterNameSelection = playerPresetSaveAfterNamePrompt;
-        playerPresetSaveAfterNamePrompt = false;
-        if (string.IsNullOrEmpty(presetPath))
-            return;
-
-        string presetName = GetPlayerPresetFileNameWithoutExtension(presetPath);
-        if (string.IsNullOrEmpty(presetName))
-        {
-            UpdatePlayerPresetStatusField("error");
-            return;
-        }
-
-        playerPresetNameField.val = presetName;
-        if (saveAfterNameSelection)
-            RunPlayerSavePreset();
-    }
-
-    private void RunPlayerSavePresetFromUi()
-    {
-        if (string.IsNullOrEmpty(ResolveSuggestedPlayerPresetName()))
-        {
-            OpenPlayerPresetNameDialog(true);
-            return;
-        }
-
-        RunPlayerSavePreset();
     }
 
     private void RefreshPlayerPresetCatalog(bool preserveSelection, string preferredPresetId, bool forceEditorSync)
@@ -1193,6 +1140,171 @@ public partial class FASyncRuntime : MVRScript
         fileBrowser.SetTextEntry(allowTextEntry);
     }
 
+    private bool TryCreatePlayerPresetNameInputUi()
+    {
+        InputField template = FindVanillaPlayerPresetNameInputTemplate();
+        if (template == null)
+            return false;
+
+        Transform templateRoot = ResolvePlayerPresetNameInputTemplateRoot(template);
+        if (templateRoot == null)
+            templateRoot = template.transform;
+
+        Transform clone = CreateUIElement(templateRoot, false);
+        if (clone == null)
+            return false;
+
+        ActivateUiBranch(clone);
+
+        InputField inputField = clone.GetComponent<InputField>();
+        if (inputField == null)
+            inputField = clone.GetComponentInChildren<InputField>(true);
+        if (inputField == null)
+        {
+            Destroy(clone.gameObject);
+            return false;
+        }
+
+        InputFieldAction inputFieldAction = clone.GetComponent<InputFieldAction>();
+        if (inputFieldAction == null)
+            inputFieldAction = clone.GetComponentInChildren<InputFieldAction>(true);
+
+        Text placeholder = inputField.placeholder as Text;
+        Text inputText = inputField.textComponent;
+        Text labelText = FindPresetNameLabelText(clone, inputText, placeholder);
+        if (labelText != null)
+            labelText.text = "Preset Name";
+        if (placeholder != null)
+            placeholder.text = "Preset Name...";
+
+        inputField.lineType = InputField.LineType.SingleLine;
+        inputField.interactable = true;
+        EnsurePlayerPresetNameInputLayout(clone, inputField);
+
+        playerPresetNameField.RegisterInputField(inputField);
+        if (inputFieldAction != null)
+            playerPresetNameField.RegisterInputFieldAction(inputFieldAction);
+
+        inputField.text = playerPresetNameField.val;
+        return true;
+    }
+
+    private static InputField FindVanillaPlayerPresetNameInputTemplate()
+    {
+        PresetManagerControlUI[] providers = Resources.FindObjectsOfTypeAll<PresetManagerControlUI>();
+        if (providers == null)
+            return null;
+
+        for (int providerIndex = 0; providerIndex < providers.Length; providerIndex++)
+        {
+            PresetManagerControlUI provider = providers[providerIndex];
+            if (provider == null || provider.presetNameField == null)
+                continue;
+
+            return provider.presetNameField;
+        }
+
+        return null;
+    }
+
+    private static Transform ResolvePlayerPresetNameInputTemplateRoot(InputField template)
+    {
+        if (template == null)
+            return null;
+
+        Transform best = template.transform;
+        Transform current = template.transform;
+        while (current != null)
+        {
+            if (current.GetComponent<PresetManagerControlUI>() != null)
+                break;
+
+            InputField[] inputFields = current.GetComponentsInChildren<InputField>(true);
+            Text[] texts = current.GetComponentsInChildren<Text>(true);
+            if (inputFields != null
+                && inputFields.Length == 1
+                && texts != null
+                && texts.Length >= 3)
+            {
+                best = current;
+            }
+            else if (current.GetComponent<LayoutElement>() != null
+                && inputFields != null
+                && inputFields.Length == 1)
+            {
+                best = current;
+            }
+
+            current = current.parent;
+        }
+
+        return best;
+    }
+
+    private static Text FindPresetNameLabelText(Transform clone, Text inputText, Text placeholder)
+    {
+        if (clone == null)
+            return null;
+
+        Text[] texts = clone.GetComponentsInChildren<Text>(true);
+        if (texts == null)
+            return null;
+
+        for (int textIndex = 0; textIndex < texts.Length; textIndex++)
+        {
+            Text text = texts[textIndex];
+            if (text == null || text == inputText || text == placeholder)
+                continue;
+
+            return text;
+        }
+
+        return null;
+    }
+
+    private static void ActivateUiBranch(Transform root)
+    {
+        if (root == null)
+            return;
+
+        if (!root.gameObject.activeSelf)
+            root.gameObject.SetActive(true);
+
+        for (int childIndex = 0; childIndex < root.childCount; childIndex++)
+            ActivateUiBranch(root.GetChild(childIndex));
+    }
+
+    private static void EnsurePlayerPresetNameInputLayout(Transform root, InputField inputField)
+    {
+        if (root == null)
+            return;
+
+        const float rowHeight = 88f;
+        LayoutElement layout = root.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = root.gameObject.AddComponent<LayoutElement>();
+        layout.minHeight = Mathf.Max(layout.minHeight, rowHeight);
+        layout.preferredHeight = Mathf.Max(layout.preferredHeight, rowHeight);
+
+        RectTransform rootRect = root as RectTransform;
+        if (rootRect != null && rootRect.sizeDelta.y < rowHeight)
+            rootRect.sizeDelta = new Vector2(rootRect.sizeDelta.x, rowHeight);
+
+        if (inputField == null)
+            return;
+
+        inputField.gameObject.SetActive(true);
+        LayoutElement inputLayout = inputField.GetComponent<LayoutElement>();
+        if (inputLayout == null)
+            inputLayout = inputField.gameObject.AddComponent<LayoutElement>();
+        inputLayout.minHeight = Mathf.Max(inputLayout.minHeight, 48f);
+        inputLayout.preferredHeight = Mathf.Max(inputLayout.preferredHeight, 48f);
+
+        RectTransform inputRect = inputField.transform as RectTransform;
+        if (inputRect != null && inputRect.sizeDelta.y < 48f)
+            inputRect.sizeDelta = new Vector2(inputRect.sizeDelta.x, 48f);
+    }
+
     private string ResolveSuggestedPlayerPresetName()
     {
         string rawPresetName = playerPresetNameField != null ? playerPresetNameField.val : "";
@@ -1223,14 +1335,16 @@ public partial class FASyncRuntime : MVRScript
         else if (!string.IsNullOrEmpty(selectedPresetId))
             targetPresetId = selectedPresetId;
 
-        bool hasTargetPresetId = !string.IsNullOrEmpty(targetPresetId);
-        bool willOverwrite = hasTargetPresetId && playerPresetsById.ContainsKey(targetPresetId);
+        bool canSave = !string.IsNullOrEmpty(targetPresetId);
+        bool willOverwrite = canSave && playerPresetsById.ContainsKey(targetPresetId);
         if (playerPresetSaveButtonDynamic != null)
         {
             playerPresetSaveButtonDynamic.label = willOverwrite ? "Overwrite Preset" : "Create New Preset";
-            playerPresetSaveButtonDynamic.buttonColor = willOverwrite ? Color.red : Color.green;
+            playerPresetSaveButtonDynamic.buttonColor = !canSave
+                ? Color.gray
+                : (willOverwrite ? Color.red : Color.green);
             if (playerPresetSaveButtonDynamic.button != null)
-                playerPresetSaveButtonDynamic.button.interactable = true;
+                playerPresetSaveButtonDynamic.button.interactable = canSave;
         }
 
         bool canLoad = !string.IsNullOrEmpty(selectedPresetId);
@@ -1240,14 +1354,6 @@ public partial class FASyncRuntime : MVRScript
             playerPresetLoadButtonDynamic.buttonColor = canLoad ? Color.white : Color.gray;
             if (playerPresetLoadButtonDynamic.button != null)
                 playerPresetLoadButtonDynamic.button.interactable = canLoad;
-        }
-
-        if (playerPresetNameButtonDynamic != null)
-        {
-            playerPresetNameButtonDynamic.label = string.IsNullOrEmpty(rawPresetName)
-                ? "Preset Name..."
-                : rawPresetName;
-            playerPresetNameButtonDynamic.buttonColor = Color.white;
         }
 
         if (playerPresetStatusDynamic != null)
