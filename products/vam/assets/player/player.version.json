@@ -1,7 +1,7 @@
 {
-    "version":  "0.3.10",
-    "notes":  "0.3.10 does not claim a scrub fix. It promotes the existing CUA scrub and focus status field to the top of the plugin UI and relabels it clearly so operator retest can see `focus`, `mode`, `src`, and axis state without scrolling through the entire plugin.",
+    "version":  "0.3.11",
+    "notes":  "0.3.11 stops treating CUA scrub like one generic navigation vector. It broadens the right-hand raw thumbstick candidates to the older probe-style fallback set, chooses the strongest raw axis match instead of the first readable one, and blocks the generic free-navigation wrapper from driving scrub so left-controller motion cannot masquerade as right-hand scrub input.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.3.10.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.3.11.json"
 }

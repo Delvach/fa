@@ -9,11 +9,31 @@ public partial class FASyncRuntime : MVRScript
     private static readonly string[] CuaPlayerRightStickXCandidates = new string[]
     {
         "Oculus_CrossPlatform_SecondaryThumbstickHorizontal",
+        "Horizontal2",
+        "4th axis",
+        "Joy2 Axis 1",
+        "Joy3 Axis 1",
+        "Joy4 Axis 1",
+        "Joy1 Axis 1",
+        "Joy2 Axis 4",
+        "Joy3 Axis 4",
+        "Joy4 Axis 4",
+        "Joy1 Axis 4",
     };
 
     private static readonly string[] CuaPlayerRightStickYCandidates = new string[]
     {
         "Oculus_CrossPlatform_SecondaryThumbstickVertical",
+        "Vertical2",
+        "5th axis",
+        "Joy2 Axis 2",
+        "Joy3 Axis 2",
+        "Joy4 Axis 2",
+        "Joy1 Axis 2",
+        "Joy2 Axis 5",
+        "Joy3 Axis 5",
+        "Joy4 Axis 5",
+        "Joy1 Axis 5",
     };
 
     private const float CuaPlayerFocusReleaseGraceSeconds = 0.20f;
@@ -437,20 +457,31 @@ public partial class FASyncRuntime : MVRScript
         }
 
         Vector2 selectedNavigation = Vector2.zero;
-        if (IsCuaPlayerNavigationActive(rawNavigation))
+        bool rawActive = IsCuaPlayerNavigationActive(rawNavigation);
+        bool joystickActive = IsCuaPlayerNavigationActive(joystickNavigation);
+        bool wrapperActive = IsCuaPlayerNavigationActive(wrapperNavigation);
+        if (rawActive && joystickActive)
+        {
+            if (rawNavigation.sqrMagnitude >= joystickNavigation.sqrMagnitude)
+            {
+                selectedNavigation = rawNavigation;
+                cuaPlayerLastNavigationSource = "raw";
+            }
+            else
+            {
+                selectedNavigation = joystickNavigation;
+                cuaPlayerLastNavigationSource = "joystick";
+            }
+        }
+        else if (rawActive)
         {
             selectedNavigation = rawNavigation;
             cuaPlayerLastNavigationSource = "raw";
         }
-        else if (IsCuaPlayerNavigationActive(joystickNavigation))
+        else if (joystickActive)
         {
             selectedNavigation = joystickNavigation;
             cuaPlayerLastNavigationSource = "joystick";
-        }
-        else if (IsCuaPlayerNavigationActive(wrapperNavigation))
-        {
-            selectedNavigation = wrapperNavigation;
-            cuaPlayerLastNavigationSource = "wrapper";
         }
         else if (rawValid)
         {
@@ -462,10 +493,13 @@ public partial class FASyncRuntime : MVRScript
             selectedNavigation = joystickNavigation;
             cuaPlayerLastNavigationSource = "joystick_idle";
         }
+        else if (wrapperActive)
+        {
+            cuaPlayerLastNavigationSource = "wrapper_blocked";
+        }
         else if (wrapperValid)
         {
-            selectedNavigation = wrapperNavigation;
-            cuaPlayerLastNavigationSource = "wrapper_idle";
+            cuaPlayerLastNavigationSource = "wrapper_seen";
         }
         else
         {
@@ -497,14 +531,23 @@ public partial class FASyncRuntime : MVRScript
         if (candidates == null)
             return false;
 
+        bool foundAnyAxis = false;
+        float bestValue = 0f;
         for (int i = 0; i < candidates.Length; i++)
         {
-            if (TryReadCuaPlayerRawAxis(candidates[i], out value))
-                return true;
+            float candidateValue;
+            if (!TryReadCuaPlayerRawAxis(candidates[i], out candidateValue))
+                continue;
+
+            if (!foundAnyAxis || Mathf.Abs(candidateValue) > Mathf.Abs(bestValue))
+            {
+                bestValue = candidateValue;
+                foundAnyAxis = true;
+            }
         }
 
-        value = 0f;
-        return false;
+        value = foundAnyAxis ? bestValue : 0f;
+        return foundAnyAxis;
     }
 
     private static bool TryReadCuaPlayerRawAxis(string axisName, out float value)

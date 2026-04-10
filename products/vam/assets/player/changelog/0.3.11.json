@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.11",
+  "title": "Port the older right-hand scrub input law into the CUA player seam",
+  "summary": "Operator feedback was right: this had been solved before in a different runtime shape, and the current lane was overfitting to one generic navigation read. This release ports the smallest useful part of the older input law into the current CUA player seam. It broadens the right-hand raw thumbstick fallback candidates, chooses the strongest raw axis match instead of the first readable one, and stops the generic free-navigation wrapper from driving scrub at all. The goal is to prevent left-controller motion from masquerading as right-hand scrub input and to force the current player to live or die on actual direct right-hand reads.",
+  "reasoning": "The important correction is that the old system did not treat controller navigation as one anonymous float source. It had explicit hand-selection and direct input seams above the generic wrapper. The current CUA lane had drifted into proving and reproving wrapper-adjacent behavior. Broadening the direct right-hand raw candidates and blocking wrapper-driven scrub is a better port of the old solved category than adding yet another status field or trying a different wrapper-flavored read order.",
+  "changes": [
+    {
+      "area": "right-hand-raw-axis-coverage",
+      "summary": "The CUA scrub input layer now scans a broader right-hand raw thumbstick fallback set, including the older `Horizontal2` / `Vertical2`, `4th axis` / `5th axis`, and Joy-axis style names.",
+      "reasoning": "This matches the older probe-style direct-input coverage more closely than the narrow two-name Oculus-only fallback."
+    },
+    {
+      "area": "best-axis-selection",
+      "summary": "Raw candidate sampling now keeps the strongest readable axis value instead of stopping at the first readable candidate.",
+      "reasoning": "That keeps a weak or idle early candidate from hiding the actual active right-stick axis later in the fallback ladder."
+    },
+    {
+      "area": "wrapper-isolation",
+      "summary": "The generic free-navigation wrapper no longer drives scrub behavior; when it is the only active seam it is reported as `wrapper_blocked` or `wrapper_seen` instead of being used as navigation.",
+      "reasoning": "If left-controller motion has been activating the generic wrapper path, this isolates that contamination instead of letting it keep faking successful scrub."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.11 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.11.dll and fa_player_asset.0.3.11.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.11 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VR, watch `FrameAngel Player CUA Status` near the top of the plugin while moving only the right stick with the left controller still or set down.",
+    "Confirm whether `src=` now becomes `raw` or `joystick` during right-hand scrub, or whether it falls to `wrapper_blocked` / `none`."
+  ],
+  "knownIssues": [
+    "This release still may not be the full old solved seam if the missing piece is higher-level hand ownership or control gating rather than direct axis coverage alone.",
+    "Joystick and slider scrub stability for video is still unresolved, including the freeze and audio desync spiral reported in earlier 0.3.x retests.",
+    "The current plugin UI still needs broader cleanup beyond the top-field visibility work in 0.3.10.",
+    "The current subscene-save error is still unverified from logs, so this release does not claim to fix any scene serialization problem yet.",
+    "Spatial audio remains a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}
