@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.8",
+  "title": "Move CUA scrub to direct JoystickControl right-stick axes",
+  "summary": "Operator retest disqualified 0.3.7: its direct right-hand action-axis read did not produce working scrub, while 0.3.6 still showed the older symptom where image scrub only responded while left-hand motion kept VaM's broader navigation state active. That means the real problem is not just a generic right-hand read missing from the code path. The cleaner fix is to use the older direct joystick seam that already worked elsewhere in the product family: read `JoystickControl.Axis.RightStickX` and `RightStickY` directly, and only fall back to VaM's broader free-navigation wrapper when those axes are unavailable.",
+  "reasoning": "The operator repro is much sharper now. `0.3.7` proved that asking the underlying action for a right-hand axis directly was not sufficient in this lane, because scrub stopped working entirely instead of only partially. Meanwhile `0.3.6` still responded when left-hand movement was present, which points back to the combined navigation wrapper rather than to scrub math or focus logic. Historical runtime seams in the older player stack used `JoystickControl` stick axes directly and explicitly warned that two-controller arbitration matters in VR. This release aligns the current CUA scrub seam with that older solved input law.",
+  "changes": [
+    {
+      "area": "cua-right-stick-input",
+      "summary": "The CUA input module now reads `JoystickControl.Axis.RightStickX` and `JoystickControl.Axis.RightStickY` directly before touching the broader free-navigation wrapper.",
+      "reasoning": "That keeps the right-stick lane tied to the actual right controller instead of requiring unrelated left-hand movement to keep combined navigation state alive."
+    },
+    {
+      "area": "fallback-compatibility",
+      "summary": "The older `GetFreeNavigateVector` path remains only as a fallback when the direct joystick axes are unavailable.",
+      "reasoning": "This preserves compatibility without letting the broader wrapper remain the primary runtime seam."
+    },
+    {
+      "area": "release-truth",
+      "summary": "This release explicitly treats 0.3.7's direct action-axis experiment as unsuccessful in the current CUA lane.",
+      "reasoning": "The operator retest matters more than theoretical cleanliness, so the release ladder should record that 0.3.7 did not close the bug."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.8 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.8.dll and fa_player_asset.0.3.8.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.8 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VR, scrub images and video with the right controller while the left controller stays still or is set down, and confirm the right stick still responds."
+  ],
+  "knownIssues": [
+    "This release only changes the joystick read seam and does not yet solve the remaining scrub freeze or audio-desync issues on the video path.",
+    "The current subscene-save error is still unverified from logs, so this release does not claim to fix any scene serialization problem yet.",
+    "Spatial audio remains a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}

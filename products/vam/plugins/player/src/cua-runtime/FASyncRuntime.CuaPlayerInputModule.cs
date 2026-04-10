@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Text;
 using UnityEngine;
 using Valve.VR;
-
 public partial class FASyncRuntime : MVRScript
 {
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
@@ -376,12 +375,22 @@ public partial class FASyncRuntime : MVRScript
             return Vector2.zero;
 
         Vector2 rightNavigation = Vector2.zero;
+        bool hasDirectStick = false;
         try
         {
-            SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
-            if (moveAction != null)
+            float rightX;
+            float rightY;
+            bool rightXValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickX, out rightX);
+            bool rightYValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickY, out rightY);
+            if (rightXValid || rightYValid)
             {
-                if (!TryReadCuaPlayerDirectNavigation(moveAction, SteamVR_Input_Sources.RightHand, out rightNavigation))
+                rightNavigation = new Vector2(rightXValid ? rightX : 0f, rightYValid ? rightY : 0f);
+                hasDirectStick = true;
+            }
+            else
+            {
+                SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
+                if (moveAction != null)
                 {
                     Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
                     rightNavigation = new Vector2(raw.z, raw.w);
@@ -393,26 +402,28 @@ public partial class FASyncRuntime : MVRScript
             rightNavigation = Vector2.zero;
         }
 
+        if (!hasDirectStick)
+        {
+            rightNavigation = new Vector2(
+                Mathf.Abs(rightNavigation.x) >= CuaPlayerNavigationDeadzone ? rightNavigation.x : 0f,
+                Mathf.Abs(rightNavigation.y) >= CuaPlayerNavigationDeadzone ? rightNavigation.y : 0f);
+        }
+
         return ApplyCuaPlayerNavigationAxisLock(rightNavigation);
     }
 
-    private static bool TryReadCuaPlayerDirectNavigation(
-        SteamVR_Action_Vector2 moveAction,
-        SteamVR_Input_Sources inputSource,
-        out Vector2 navigation)
+    private static bool TryReadCuaPlayerJoystickAxis(JoystickControl.Axis axis, out float value)
     {
-        navigation = Vector2.zero;
-        if (moveAction == null)
-            return false;
+        value = 0f;
 
         try
         {
-            navigation = moveAction.GetAxis(inputSource);
+            value = JoystickControl.GetAxis(axis);
             return true;
         }
         catch
         {
-            navigation = Vector2.zero;
+            value = 0f;
             return false;
         }
     }
