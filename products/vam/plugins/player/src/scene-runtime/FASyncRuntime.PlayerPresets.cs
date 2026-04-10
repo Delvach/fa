@@ -14,8 +14,10 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerPresetRootPath = "Custom\\PluginData\\FrameAngel\\Player\\presets";
     private const string PlayerPresetNoneChoice = "none";
     private const float PlayerPresetDeferredSeekTimeoutSeconds = 10f;
+    private const string PlayerPresetBrowseFilter = "json";
     private const float PlayerPresetPopupLabelWidth = 112f;
     private const float PlayerPresetPopupPanelHeight = 260f;
+    private const float PlayerPresetNameInputHeight = 56f;
     private const string PlayerPresetSeekToSecondsActionId = "Player.SeekToSeconds";
 
     private sealed class PlayerPresetRecord
@@ -38,6 +40,7 @@ public partial class FASyncRuntime : MVRScript
 
     private JSONStorableStringChooser playerPresetChooser;
     private JSONStorableStringChooser playerFavoritePresetChooser;
+    private JSONStorableUrl playerPresetBrowsePathField;
     private JSONStorableBool playerPresetLoadOnSelectToggle;
     private JSONStorableString playerPresetNameField;
     private JSONStorableBool playerPresetFavoriteToggle;
@@ -49,8 +52,8 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerPresetStatusField;
     private JSONStorableAction playerPresetSaveAction;
     private JSONStorableAction playerPresetLoadAction;
-    private UIDynamicPopup playerPresetChooserPopup;
     private UIDynamicPopup playerFavoritePresetChooserPopup;
+    private UIDynamicButton playerPresetBrowseButtonDynamic;
     private UIDynamicButton playerPresetSaveButtonDynamic;
     private UIDynamicButton playerPresetLoadButtonDynamic;
     private UIDynamicTextField playerPresetStatusDynamic;
@@ -93,6 +96,19 @@ public partial class FASyncRuntime : MVRScript
         {
             HandlePlayerPresetSelectionChanged(value, true);
         };
+
+        playerPresetBrowsePathField = new JSONStorableUrl(
+            "Player Preset Browse Path",
+            "",
+            delegate(string value)
+            {
+                HandlePlayerPresetBrowsePathChanged(value);
+            },
+            PlayerPresetBrowseFilter,
+            ResolvePlayerPresetRootPath(),
+            true);
+        playerPresetBrowsePathField.allowBrowseAboveSuggestedPath = false;
+        playerPresetBrowsePathField.allowFullComputerBrowse = false;
 
         playerPresetNameField = new JSONStorableString(
             "Preset Name",
@@ -144,8 +160,8 @@ public partial class FASyncRuntime : MVRScript
 
     private void BuildPlayerPresetUi()
     {
-        playerPresetChooserPopup = CreateFilterablePopup(playerPresetChooser, false);
-        ConfigurePlayerPresetPopup(playerPresetChooserPopup);
+        playerPresetBrowseButtonDynamic = CreateButton("Select Existing...", false);
+        playerPresetBrowsePathField.RegisterFileBrowseButton(playerPresetBrowseButtonDynamic.button);
         CreateSpacer(true);
 
         CreateToggle(playerPresetLoadOnSelectToggle, false);
@@ -201,6 +217,35 @@ public partial class FASyncRuntime : MVRScript
         if (playerPresetLoadOnSelectToggle != null
             && playerPresetLoadOnSelectToggle.val
             && !string.IsNullOrEmpty(presetId))
+        {
+            ApplyPlayerPresetById(presetId);
+        }
+    }
+
+    private void HandlePlayerPresetBrowsePathChanged(string value)
+    {
+        string presetPath = string.IsNullOrEmpty(value) ? "" : value.Trim();
+        if (string.IsNullOrEmpty(presetPath))
+            return;
+
+        string presetId = GetPlayerPresetFileNameWithoutExtension(presetPath);
+        if (string.IsNullOrEmpty(presetId))
+        {
+            UpdatePlayerPresetStatusField("error");
+            return;
+        }
+
+        RefreshPlayerPresetCatalog(false, presetId, true);
+        if (!playerPresetsById.ContainsKey(presetId))
+        {
+            UpdatePlayerPresetStatusField("error");
+            return;
+        }
+
+        SelectPlayerPresetId(presetId, true);
+
+        if (playerPresetLoadOnSelectToggle != null
+            && playerPresetLoadOnSelectToggle.val)
         {
             ApplyPlayerPresetById(presetId);
         }
@@ -326,6 +371,8 @@ public partial class FASyncRuntime : MVRScript
         {
             playerPresetUiSyncGuard = false;
         }
+
+        SyncPlayerPresetBrowsePath(normalizedPresetId);
 
         if (syncEditorFields)
             SyncPlayerPresetEditorFields(normalizedPresetId);
@@ -1070,7 +1117,8 @@ public partial class FASyncRuntime : MVRScript
         if (template == null)
             return false;
 
-        Transform transform = CreateUIElement(template.transform, false);
+        Transform templateRoot = ResolvePlayerPresetNameInputTemplateRoot(template);
+        Transform transform = CreateUIElement(templateRoot, false);
         if (transform == null)
             return false;
 
@@ -1091,12 +1139,67 @@ public partial class FASyncRuntime : MVRScript
         if (inputFieldAction != null)
             playerPresetNameField.RegisterInputFieldAction(inputFieldAction);
 
+        EnsurePlayerPresetNameInputLayout(transform, inputField);
         Text placeholder = inputField.placeholder as Text;
         if (placeholder != null)
             placeholder.text = "Preset Name...";
 
         inputField.text = playerPresetNameField.val;
         return true;
+    }
+
+    private static Transform ResolvePlayerPresetNameInputTemplateRoot(InputField template)
+    {
+        if (template == null)
+            return null;
+
+        Transform best = template.transform;
+        Transform current = template.transform;
+        while (current != null)
+        {
+            if (current.GetComponent<PresetManagerControlUI>() != null)
+                break;
+
+            if (current.GetComponent<LayoutElement>() != null)
+                best = current;
+
+            current = current.parent;
+        }
+
+        return best;
+    }
+
+    private static void EnsurePlayerPresetNameInputLayout(Transform transform, InputField inputField)
+    {
+        if (transform == null)
+            return;
+
+        LayoutElement layout = transform.GetComponent<LayoutElement>();
+        if (layout == null)
+            layout = transform.gameObject.AddComponent<LayoutElement>();
+        layout.minHeight = Mathf.Max(layout.minHeight, PlayerPresetNameInputHeight);
+        layout.preferredHeight = Mathf.Max(layout.preferredHeight, PlayerPresetNameInputHeight);
+
+        RectTransform rect = transform as RectTransform;
+        if (rect != null)
+        {
+            Vector2 size = rect.sizeDelta;
+            if (size.y < PlayerPresetNameInputHeight)
+            {
+                size.y = PlayerPresetNameInputHeight;
+                rect.sizeDelta = size;
+            }
+        }
+
+        if (inputField == null)
+            return;
+
+        LayoutElement inputLayout = inputField.GetComponent<LayoutElement>();
+        if (inputLayout == null)
+            inputLayout = inputField.gameObject.AddComponent<LayoutElement>();
+        inputLayout.minHeight = Mathf.Max(inputLayout.minHeight, PlayerPresetNameInputHeight - 8f);
+        inputLayout.preferredHeight = Mathf.Max(inputLayout.preferredHeight, PlayerPresetNameInputHeight - 8f);
+        inputField.gameObject.SetActive(true);
     }
 
     private static InputField FindVanillaPlayerPresetNameInputTemplate()
@@ -1115,6 +1218,16 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return null;
+    }
+
+    private void SyncPlayerPresetBrowsePath(string presetId)
+    {
+        if (playerPresetBrowsePathField == null)
+            return;
+
+        playerPresetBrowsePathField.valNoCallback = string.IsNullOrEmpty(presetId)
+            ? ""
+            : ResolvePlayerPresetPath(presetId);
     }
 
     private void SyncPlayerPresetActionButtons()

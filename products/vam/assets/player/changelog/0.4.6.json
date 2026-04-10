@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.6",
+  "title": "Correct the preset selector and restore the visible preset name field",
+  "summary": "0.4.6 fixes the two layout problems left behind by 0.4.5. The top-left preset control now follows the real VaM pattern by using a `Select Existing...` browse button instead of a second popup, and the preset name row now uses a stronger visible input-layout seam so the name field actually appears in the live plugin panel.",
+  "reasoning": "The 0.4.5 reference work found the right VaM preset-manager pattern, but the first pass still surfaced two operator-facing misses in the live panel: the main selector looked like a duplicate popup, and the preset name field did not render visibly. This slice keeps the VaM-style direction but corrects those specific misses without reopening the rest of the player UI.",
+  "changes": [
+    {
+      "area": "select-existing-button",
+      "summary": "Replaced the left-side preset popup with a proper `Select Existing...` browse button backed by a JSON file browser rooted at the player preset folder.",
+      "reasoning": "This matches the actual VaM preset-manager pattern and removes the confusing duplicated-selector look."
+    },
+    {
+      "area": "preset-name-visibility",
+      "summary": "Reworked the preset name seam to clone a stronger layout root from the VaM preset-manager input template and force a visible row height for the input surface.",
+      "reasoning": "The first input clone path compiled but did not produce a visible field in the real plugin panel. This version forces the field into the layout instead of relying on the more fragile previous clone path."
+    },
+    {
+      "area": "preset-selection-sync",
+      "summary": "Synced the browse-button path back into the internal selected preset state so load-on-select, favorites, save-or-overwrite logic, and status text continue to operate on the chosen preset.",
+      "reasoning": "The visible selector changed shape, but the player preset behavior still needs one consistent selected-preset source of truth."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.6 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the corrected preset selector and visible preset name field seam.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.6.dll` and `fa_player_asset.0.4.6.assetbundle` through the existing player foundation script.",
+    "Run foundation release validation for 0.4.6 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice corrects the selector shape and preset-name visibility, but it does not yet add delete, rename, or defaults-management workflows.",
+    "The player preset UI still lives inside the standard plugin two-column layout rather than a full custom preset-manager panel."
+  ]
+}

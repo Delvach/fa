@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.5",
-    "notes":  "0.4.5 rebuilds the player preset block around the actual VaM preset-manager pattern: filterable preset selectors, a real preset-name input seam, synced create or overwrite and load buttons, and balanced rows so the rest of the player controls start underneath the preset section instead of bleeding into it.",
+    "version":  "0.4.6",
+    "notes":  "0.4.6 corrects the preset layout after the 0.4.5 VaM-style pass: the top-left control is now the proper `Select Existing...` browse button instead of a second popup, and the preset-name seam uses a stronger visible input layout so the name field actually renders in the live panel.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.5.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.6.json"
 }
