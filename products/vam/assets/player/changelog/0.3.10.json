@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.10",
+  "title": "Promote the CUA scrub status field to the top of the plugin UI",
+  "summary": "Operator retest disqualified 0.3.9 and also surfaced a practical debugging problem: the plugin UI is crowded enough that the transient input field showing `src=...` was effectively buried. This release does not claim to fix scrub behavior. Instead, it promotes the existing CUA status field to the top of the plugin UI and relabels it as `FrameAngel Player CUA Status` so the next retest can see focus, mode, source, and axis state without scrolling through pages of fields and buttons.",
+  "reasoning": "The right next move is to improve operator visibility before guessing at another scrub seam. We already have transient input truth in the plugin, but if the field is hard to find during a VR repro then the extra telemetry is not actually helping close the bug. Making the live CUA status obvious keeps the release ladder honest and gives the next input slice better evidence.",
+  "changes": [
+    {
+      "area": "operator-debug-visibility",
+      "summary": "The existing transient CUA input field is now labeled `FrameAngel Player CUA Status` instead of the vaguer `FrameAngel Player Input`.",
+      "reasoning": "This makes it clear which top field to watch during scrub and focus retests."
+    },
+    {
+      "area": "plugin-ui-order",
+      "summary": "The CUA status field now appears immediately under the version field near the top of the plugin UI instead of being buried deeper in the player panel.",
+      "reasoning": "The operator can now inspect `focus`, `mode`, `src`, `lock`, and axis values without scrolling through the full plugin just to find the debug field."
+    },
+    {
+      "area": "release-truth",
+      "summary": "This version explicitly records that scrub is still unresolved and that 0.3.10 is a visibility cleanup slice, not a confirmed behavior fix.",
+      "reasoning": "The release ladder should distinguish between instrumentation and actual closure so we do not accidentally overclaim progress."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.10 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.10.dll and fa_player_asset.0.3.10.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.10 and keep the generated receipt beside the versioned release shelf.",
+    "Compile the no-input seam to confirm the release remains isolated to the interactive CUA path.",
+    "In VR, reopen the plugin and confirm `FrameAngel Player CUA Status` is visible near the top without scrolling through the full plugin.",
+    "Repeat the right-controller scrub repro and report the visible `src=...`, focus state, and axis values while the left controller is still or set down."
+  ],
+  "knownIssues": [
+    "This release does not claim to fix the hidden left-controller motion dependency behind right-hand scrub.",
+    "Joystick and slider scrub stability for video is still unresolved, including the freeze and audio desync spiral reported in earlier 0.3.x retests.",
+    "The current plugin UI still needs broader cleanup beyond this top-field visibility slice.",
+    "The current subscene-save error is still unverified from logs, so this release does not claim to fix any scene serialization problem yet.",
+    "Spatial audio remains a separate follow-up seam because the current player runtime still initializes the underlying audio source as 2D."
+  ]
+}

@@ -1,7 +1,7 @@
 {
-    "version":  "0.3.9",
-    "notes":  "0.3.9 treats both 0.3.7 and 0.3.8 as disqualified input experiments, adds a probe-style navigation source ladder for CUA scrub, and reports which source is actually winning: raw right-thumbstick axis names first, direct JoystickControl right-stick axes second, and VaM's broader free-navigation wrapper only as a last fallback.",
+    "version":  "0.3.10",
+    "notes":  "0.3.10 does not claim a scrub fix. It promotes the existing CUA scrub and focus status field to the top of the plugin UI and relabels it clearly so operator retest can see `focus`, `mode`, `src`, and axis state without scrolling through the entire plugin.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.3.9.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.3.10.json"
 }

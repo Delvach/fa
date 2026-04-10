@@ -70,7 +70,7 @@ public partial class FASyncRuntime : MVRScript
     private void BuildCuaPlayerInputStorables()
     {
         playerInputStateField = new JSONStorableString(
-            "FrameAngel Player Input",
+            "FrameAngel Player CUA Status",
             "focus=off gaze=off mode=idle");
         ConfigureTransientField(playerInputStateField, false);
 

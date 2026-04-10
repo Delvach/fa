@@ -660,6 +660,9 @@ public partial class FASyncRuntime : MVRScript
     private void BuildUi()
     {
         CreateTextField(buildVersionField, false);
+#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+        BuildCuaPlayerInputUi();
+#endif
         CreateTextField(playerRuntimeTargetField, false);
         CreateTextField(playerRuntimeMediaField, false);
         CreateTextField(playerRuntimeStateField, false);
@@ -668,9 +671,6 @@ public partial class FASyncRuntime : MVRScript
         CreateTextField(playerRuntimeAspectModeField, false);
         CreateTextField(playerRuntimeTimelineField, false);
         CreateTextField(playerRuntimePlaylistField, false);
-#if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
-        BuildCuaPlayerInputUi();
-#endif
         CreateSlider(playerScrubNormalizedField, false);
         CreateSlider(playerVolumeNormalizedField, false);
         if (ShouldExposePlayerAspectControls())
