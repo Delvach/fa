@@ -2945,7 +2945,15 @@ public partial class FASyncRuntime : MVRScript
 
     private bool TryImportMetaToolkitDemoPackage(string packageFolderName, string traceFieldsJson, out string resourceId, out string errorMessage)
     {
-        return TryImportMetaToolkitPackage(BuildMetaToolkitDemoPackagePath(packageFolderName), traceFieldsJson, out resourceId, out errorMessage);
+        string resolvedPackagePath;
+        if (!TryResolveMetaToolkitDemoPackagePath(packageFolderName, out resolvedPackagePath))
+        {
+            resourceId = "";
+            errorMessage = "meta toolkit package not found";
+            return false;
+        }
+
+        return TryImportMetaToolkitPackage(resolvedPackagePath, traceFieldsJson, out resourceId, out errorMessage);
     }
 
     private bool TryImportMetaToolkitPackage(string packagePath, string traceFieldsJson, out string resourceId, out string errorMessage)
@@ -3019,6 +3027,45 @@ public partial class FASyncRuntime : MVRScript
             return ResolveMetaToolkitDefaultThemeLocalRootPath();
 
         return BuildMetaToolkitPackagePath(ResolveMetaToolkitDefaultThemeLocalRootPath(), folder);
+    }
+
+    private bool TryResolveMetaToolkitDemoPackagePath(string packageFolderName, out string packagePath)
+    {
+        packagePath = BuildMetaToolkitDemoPackagePath(packageFolderName);
+        if (FileManagerSecure.DirectoryExists(packagePath, false))
+            return true;
+
+        MetaToolkitDemoSurfaceDefinition curatedDefinition;
+        if (!TryFindMetaToolkitDefaultThemeSurfaceDefinition(packageFolderName, out curatedDefinition) || curatedDefinition == null)
+            return false;
+
+        string rootPath = ResolveMetaToolkitDefaultThemeLocalRootPath();
+        if (!FileManagerSecure.DirectoryExists(rootPath, false))
+            return false;
+
+        string[] packageDirectories = FileManagerSecure.GetDirectories(rootPath, "*");
+        if (packageDirectories == null || packageDirectories.Length <= 0)
+            return false;
+
+        for (int i = 0; i < packageDirectories.Length; i++)
+        {
+            MetaToolkitLocalPackageDefinition localDefinition;
+            if (!TryReadMetaToolkitLocalPackageDefinition(packageDirectories[i], out localDefinition) || localDefinition == null)
+                continue;
+
+            if (!string.IsNullOrEmpty(curatedDefinition.controlFamilyId)
+                && !string.Equals(localDefinition.controlFamilyId, curatedDefinition.controlFamilyId, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (curatedDefinition.bindToPlayer && !localDefinition.bindToPlayer)
+                continue;
+
+            packagePath = localDefinition.packagePath ?? "";
+            if (!string.IsNullOrEmpty(packagePath))
+                return true;
+        }
+
+        return false;
     }
 
     private string BuildMetaToolkitPackagePath(string rootPath, string packageFolderName)

@@ -1438,7 +1438,9 @@ public partial class FASyncRuntime : MVRScript
         float heightScale = targetHeightMeters / Mathf.Max(0.001f, panelHeightMeters);
         float uniformScale = Mathf.Clamp(Mathf.Min(widthScale, heightScale), 0.01f, 50f);
 
-        Vector3 desiredPanelForward = -hostPlane.forward;
+        // Meta proof panels should sit on the same operator-facing side as the host screen plane.
+        // Flipping against the host plane made the exported toolkit panel appear only from the rear.
+        Vector3 desiredPanelForward = hostPlane.forward;
         Vector3 desiredPanelCenter =
             hostPlane.center
             + (desiredPanelForward * Mathf.Max(

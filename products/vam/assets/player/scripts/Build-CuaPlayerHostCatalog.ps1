@@ -1,6 +1,6 @@
 param(
     [string]$ShellExportSummaryPath = "",
-    [string]$ControlsSummaryPath = "G:\recovery\C-drive\projects\15-training\unity\ghost_training_export_clone\Library\MetaUiToolkitExports\theme_00\ghost_meta_ui_toolkit_export_summary_theme_00.json",
+    [string]$ControlsSummaryPath = "",
     [string]$ControlsPackageRoot = "",
     [string]$ControlSurfaceId = "meta_patterns_contentuiexample_videoplayer_e7cfc411",
     [string]$ControlFamilyId = "meta_ui_video_player",
@@ -18,6 +18,9 @@ if ([string]::IsNullOrWhiteSpace($ShellExportSummaryPath)) {
 }
 if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
     $OutputRoot = Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\build\host_catalog"
+}
+if ([string]::IsNullOrWhiteSpace($ControlsSummaryPath)) {
+    $ControlsSummaryPath = Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\build\meta_toolkit_catalog\theme_00\ghost_meta_ui_toolkit_export_summary_theme_00.json"
 }
 
 function Assert-Path {

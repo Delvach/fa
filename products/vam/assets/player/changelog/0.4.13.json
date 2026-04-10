@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.13",
+  "title": "Repair the hosted Meta panel facing and promote the recovered toolkit lane",
+  "summary": "0.4.13 turns the recovered Meta video-player lane into a usable local foundation. The hosted Meta proof panel now faces the operator instead of rendering only from the rear, the recovered Unity toolkit lane now exports a readable self-contained video-player package from the repo-local ghost training project, and the catalog sync path now replaces stale package folders so the live theme root carries one current package instead of an archaeological pile of hashes.",
+  "reasoning": "The player core and the local hosted control slab were already working, but Meta remained stuck in a half-recovered state: the hosted panel layout pointed the wrong way, the toolkit export lane still depended on a recently moved Unity tool path, and the live toolkit root still held only an older broken video-player package. This slice reconnects those seams without widening into unrelated interaction work, so Meta can become a real current release lane inside the cleaned repo structure.",
+  "changes": [
+    {
+      "area": "hosted-meta-layout",
+      "summary": "Fixes the hosted Meta proof layout so the control panel follows the screen on the operator-facing side instead of appearing only from the rear.",
+      "reasoning": "The export could already produce a readable panel, but the live hosted runtime still rotated the proof control surface behind the screen."
+    },
+    {
+      "area": "meta-toolkit-export",
+      "summary": "Repairs the recovered toolkit exporter so the local video-player proof scene is used as the source for the self-contained Meta video-player package and preserves the proof control bindings during export.",
+      "reasoning": "The recovered package needed to bake from a real local proof scene with explicit semantic controls, not from the older package-scene placeholder path."
+    },
+    {
+      "area": "meta-toolkit-deploy",
+      "summary": "Makes the Meta toolkit sync path replace stale folders and adds fallback resolution so the runtime and host-package tooling can find the current installed video-player package even after the package hash changes.",
+      "reasoning": "The old toolkit root accumulated broken historical package ids, which caused drift between the export that looked right and the package that live VaM could actually import."
+    },
+    {
+      "area": "repo-consolidation",
+      "summary": "Keeps the active Meta export project in `fa` and the shared `unity-editor-bridge` package in `frameangel_tools`, with the recovered local scripts targeting those new homes.",
+      "reasoning": "The operator needs the recovered Unity tools to open and export from their current landing zones without bouncing through historical paths."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.13 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.13.dll` and matching `fa_player_asset.0.4.13.assetbundle` through the player foundation script.",
+    "Sync the repaired Meta toolkit theme catalog into `build\\meta_toolkit_catalog\\theme_00` and deploy it into `F:\\sim\\vam\\Custom\\PluginData\\FrameAngel\\meta_toolkit_demo\\theme_00` as a clean current root.",
+    "Confirm the deployed theme root exposes the current self-contained `faipe_meta_contentuiexample_videoplayer_*` package with the readable five-control snapshot.",
+    "In live VaM, attach the 0.4.13 player plugin and verify the hosted Meta proof panel faces the operator and no longer renders as a rear-only dark slab."
+  ],
+  "knownIssues": [
+    "The recovered Unity project is now in the correct repo lane, but its authoring source still needs a later pass to trim down historical generated assets before it becomes a small tidy project.",
+    "This slice repairs the current Meta video-player surface and deploy path; A-B loop retrieval, playlists, and richer Meta interaction still remain separate work.",
+    "The current distribution player still ships the basic screen-core product surface; broader shell-family polish and Pro-lane assembly continue separately."
+  ]
+}

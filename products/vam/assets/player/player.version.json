@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.12",
-    "notes":  "0.4.12 promotes the hosted control slab into the current screen-core asset by authoring a real local control panel under the exported CUA screen, binding it to a repo-local screen-core control contract instead of the legacy external Meta layout, surfacing hover state in the hosted control model, and unhiding the authored panel in the live hosted runtime.",
+    "version":  "0.4.13",
+    "notes":  "0.4.13 fixes the hosted Meta proof panel so the control surface faces the operator instead of rendering from the rear, repairs the local Meta toolkit export lane so the current self-contained video-player package bakes a readable front-facing snapshot, and consolidates the recovered Unity tool path around the repo-local ghost training project plus the migrated unity-editor-bridge under frameangel_tools.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.12.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.13.json"
 }

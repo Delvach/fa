@@ -1,7 +1,7 @@
 param(
     [string]$UnityExe = "C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Unity.exe",
-    [string]$ProjectPath = "C:\projects\archive\15-training\unity\ghost_training_export_clone",
-    [string]$UnityEditorBridgePackagePath = "C:\projects\frameangel\tools\unity\packages\unity-editor-bridge",
+    [string]$ProjectPath = "",
+    [string]$UnityEditorBridgePackagePath = "",
     [string]$OutputRoot = "",
     [string]$DeployAssetsRoot = "F:\sim\vam\Custom\Assets\FrameAngel\Player",
     [string]$DeployPresetRoot = "F:\sim\vam\Custom\Atom\CustomUnityAsset",
@@ -11,6 +11,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $resolvedAssetLaneRoot = Split-Path -Parent $PSScriptRoot
+$defaultProjectPath = Join-Path $resolvedAssetLaneRoot "unity\ghost_training_export_clone"
+$defaultUnityEditorBridgePackagePath = "C:\projects\frameangel_tools\tools\unity_editor_bridge\current"
 $defaultFamilyShellKeys = @(
     "mcbrooke_laptop",
     "ivone_phone",
@@ -54,9 +56,11 @@ function Repair-UnityEditorBridgeDependency {
 
     $manifestPath = Join-Path $TargetProjectPath "Packages\manifest.json"
     $lockPath = Join-Path $TargetProjectPath "Packages\packages-lock.json"
-    $legacyBridgePackagePath = "C:\projects\10-products\vam\vam-plugin-suite\external\unity-editor-bridge"
-    $legacyDependencyValue = "file:C:/projects/10-products/vam/vam-plugin-suite/external/unity-editor-bridge"
     $liveDependencyValue = "file:" + ($LiveBridgePackagePath -replace "\\", "/")
+    $legacyDependencyValues = @(
+        "file:C:/projects/10-products/vam/vam-plugin-suite/external/unity-editor-bridge",
+        "file:C:/projects/frameangel/tools/unity/packages/unity-editor-bridge"
+    )
 
     if (-not (Test-Path -LiteralPath $manifestPath)) {
         return
@@ -67,22 +71,36 @@ function Repair-UnityEditorBridgeDependency {
     }
 
     $manifestContent = Get-Content -LiteralPath $manifestPath -Raw
-    if ((-not (Test-Path -LiteralPath $legacyBridgePackagePath)) -and $manifestContent.Contains($legacyDependencyValue)) {
-        $updatedManifest = $manifestContent.Replace($legacyDependencyValue, $liveDependencyValue)
-        if ($updatedManifest -ne $manifestContent) {
-            [System.IO.File]::WriteAllText($manifestPath, $updatedManifest, (New-Object System.Text.UTF8Encoding($false)))
+    $updatedManifest = $manifestContent
+    foreach ($dependencyValue in $legacyDependencyValues) {
+        if (-not [string]::Equals($dependencyValue, $liveDependencyValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $updatedManifest = $updatedManifest.Replace($dependencyValue, $liveDependencyValue)
         }
+    }
+    if ($updatedManifest -ne $manifestContent) {
+        [System.IO.File]::WriteAllText($manifestPath, $updatedManifest, (New-Object System.Text.UTF8Encoding($false)))
     }
 
     if (Test-Path -LiteralPath $lockPath) {
         $lockContent = Get-Content -LiteralPath $lockPath -Raw
-        if ((-not (Test-Path -LiteralPath $legacyBridgePackagePath)) -and $lockContent.Contains($legacyDependencyValue)) {
-            $updatedLock = $lockContent.Replace($legacyDependencyValue, $liveDependencyValue)
-            if ($updatedLock -ne $lockContent) {
-                [System.IO.File]::WriteAllText($lockPath, $updatedLock, (New-Object System.Text.UTF8Encoding($false)))
+        $updatedLock = $lockContent
+        foreach ($dependencyValue in $legacyDependencyValues) {
+            if (-not [string]::Equals($dependencyValue, $liveDependencyValue, [System.StringComparison]::OrdinalIgnoreCase)) {
+                $updatedLock = $updatedLock.Replace($dependencyValue, $liveDependencyValue)
             }
         }
+        if ($updatedLock -ne $lockContent) {
+            [System.IO.File]::WriteAllText($lockPath, $updatedLock, (New-Object System.Text.UTF8Encoding($false)))
+        }
     }
+}
+
+if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
+    $ProjectPath = $defaultProjectPath
+}
+
+if ([string]::IsNullOrWhiteSpace($UnityEditorBridgePackagePath)) {
+    $UnityEditorBridgePackagePath = $defaultUnityEditorBridgePackagePath
 }
 
 Assert-Path -Path $UnityExe -Label "Unity editor"

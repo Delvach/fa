@@ -264,6 +264,36 @@ function Get-OptionalPropertyValue {
     return $value
 }
 
+function Resolve-ExistingControlsPackageRoot {
+    param(
+        [string]$RequestedRoot
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($RequestedRoot) -and (Test-Path -LiteralPath $RequestedRoot)) {
+        return $RequestedRoot
+    }
+
+    $fallbackRoot = if ([string]::IsNullOrWhiteSpace($RequestedRoot)) {
+        "F:\sim\vam\Custom\PluginData\FrameAngel\meta_toolkit_demo\theme_00"
+    }
+    else {
+        Split-Path -Parent $RequestedRoot
+    }
+
+    if ([string]::IsNullOrWhiteSpace($fallbackRoot) -or -not (Test-Path -LiteralPath $fallbackRoot)) {
+        return $RequestedRoot
+    }
+
+    $matches = Get-ChildItem -LiteralPath $fallbackRoot -Directory -Filter "faipe_meta_contentuiexample_videoplayer_*" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTimeUtc -Descending
+
+    if ($matches -and $matches.Count -gt 0) {
+        return $matches[0].FullName
+    }
+
+    return $RequestedRoot
+}
+
 function Get-FirstRootNodeId {
     param($Nodes)
 
@@ -357,10 +387,12 @@ $screenMaterialsPath = Join-Path $ScreenPackageRoot "materials.innerpiece.json"
 $screenContractPath = Join-Path $ScreenPackageRoot "screens.innerpiece.json"
 $defaultHostProfilePath = Join-Path $ScreenPackageRoot "host_profile.json"
 
-$controlsManifestPath = Join-Path $ControlsPackageRoot "manifest.json"
-$controlsGeometryPath = Join-Path $ControlsPackageRoot "geometry.innerpiece.json"
-$controlsMaterialsPath = Join-Path $ControlsPackageRoot "materials.innerpiece.json"
-$controlsContractPath = Join-Path $ControlsPackageRoot "controls.innerpiece.json"
+$resolvedControlsPackageRoot = Resolve-ExistingControlsPackageRoot -RequestedRoot $ControlsPackageRoot
+
+$controlsManifestPath = Join-Path $resolvedControlsPackageRoot "manifest.json"
+$controlsGeometryPath = Join-Path $resolvedControlsPackageRoot "geometry.innerpiece.json"
+$controlsMaterialsPath = Join-Path $resolvedControlsPackageRoot "materials.innerpiece.json"
+$controlsContractPath = Join-Path $resolvedControlsPackageRoot "controls.innerpiece.json"
 
 Assert-Path -Path $screenManifestPath -Label "Screen manifest"
 Assert-Path -Path $screenGeometryPath -Label "Screen geometry"
@@ -778,7 +810,7 @@ $compositionReceipt = [ordered]@{
     schemaVersion = "frameangel_cua_player_host_composition_receipt_v2"
     createdAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     screenPackageRoot = $ScreenPackageRoot
-    controlsPackageRoot = $ControlsPackageRoot
+    controlsPackageRoot = $resolvedControlsPackageRoot
     hostProfilePath = if ($null -ne $hostProfile) { $resolvedHostProfilePath } else { "" }
     outputRoot = $OutputRoot
     packageId = $composedManifest.packageId
