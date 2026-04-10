@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.10",
+  "title": "Deploy the refreshed player screen prefab",
+  "summary": "0.4.10 carries the updated `fa_player_screen.prefab` from the concurrent authoring thread into a versioned release. The asset now reflects the refreshed root and child ordering plus the current screen-surface, disconnect-surface, and anchor mesh and material assignments.",
+  "reasoning": "The working tree already had a tracked prefab update from another thread. This slice does not reopen player runtime behavior; it packages the current authored screen prefab state as a clean release so the live assetbundle matches the latest local authoring seam.",
+  "changes": [
+    {
+      "area": "screen-prefab-structure",
+      "summary": "Promotes `fa_player_screen` back to the prefab root and reorders the authored child transforms beneath it.",
+      "reasoning": "The concurrent authoring update changed the prefab hierarchy and that needs to travel intact in the release assetbundle."
+    },
+    {
+      "area": "surface-and-anchor-assignment",
+      "summary": "Refreshes the authored `screen_surface`, `disconnect_surface`, `controls_anchor`, and `bottom_anchor` transform and renderer assignments in the prefab.",
+      "reasoning": "The live assetbundle should match the current authored screen package rather than the previous prefab state."
+    },
+    {
+      "area": "version-stamp-only-runtime",
+      "summary": "Leaves player runtime code behavior unchanged apart from the required build-version stamp.",
+      "reasoning": "This is a packaging release for the concurrent prefab update, not a new runtime-behavior slice."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.10 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.10.dll` and `fa_player_asset.0.4.10.assetbundle` through the player foundation script.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Run foundation release validation for 0.4.10 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This slice packages the concurrent prefab update only; it does not address the separate inline preset-name rendering investigation.",
+    "The concurrent shell-recovery scripts and other untracked lane files remain out of this release commit."
+  ]
+}

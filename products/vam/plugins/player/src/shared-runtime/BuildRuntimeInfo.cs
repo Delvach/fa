@@ -12,7 +12,7 @@ internal static class BuildRuntimeInfo
     internal const string IntegrityMarker = "FRAMEANGEL:20260408:R1";
     // Reflection is intentionally avoided because VaM guardrails block it.
     // Stamped by scripts/Build-Plugins.ps1 from VERSION.
-    internal static readonly string BuildVersion = "0.4.9";
+    internal static readonly string BuildVersion = "0.4.10";
 
     internal static bool TryValidateIntegrity(out string code)
     {
