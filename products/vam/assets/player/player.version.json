@@ -1,7 +1,7 @@
 {
-    "version":  "0.3.11",
-    "notes":  "0.3.11 stops treating CUA scrub like one generic navigation vector. It broadens the right-hand raw thumbstick candidates to the older probe-style fallback set, chooses the strongest raw axis match instead of the first readable one, and blocks the generic free-navigation wrapper from driving scrub so left-controller motion cannot masquerade as right-hand scrub input.",
+    "version":  "0.3.12",
+    "notes":  "0.3.12 replaces the stacked CUA scrub selector with the older direct-stick arbitration shape. Instead of hardcoding one assumed right-stick seam or letting the generic navigation wrapper leak in, the player now reads both direct stick lanes, picks the actually-active direct lane, keeps short continuity on that lane, and reports the real selected stick in status. The goal is to remove the hidden dependency on unrelated controller motion and make scrub live or die on one deterministic direct-input path.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.3.11.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.3.12.json"
 }

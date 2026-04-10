@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.12",
+  "title": "Replace the stacked CUA scrub selector with direct active-stick arbitration",
+  "summary": "This release stops stacking more wrapper-adjacent guesses on top of the CUA scrub seam. The current player had drifted into a hardcoded assumed right-stick path plus layered fallbacks, while the older solved family used direct stick arbitration. 0.3.12 ports that simpler shape into the cleanroom player: it reads both direct stick lanes, chooses the actually-active direct lane, keeps short continuity on the selected lane, and reports the real selected stick in status. The intent is to remove the hidden dependency on unrelated controller motion instead of masking it with more fallback order changes.",
+  "reasoning": "Operator feedback was consistent across multiple versions: changing the read order did not change behavior, and left-controller motion still appeared to wake scrub up. Live code verification also showed a second separate scrub lane through the plugin storable and subscene control surface, so the safest current fix is to make the CUA stick lane internally deterministic rather than widening the patch surface again. The older runtime seam that mattered here was not a bigger candidate list; it was explicit direct-stick selection with continuity. That is the part being carried forward.",
+  "changes": [
+    {
+      "area": "direct-stick-selection",
+      "summary": "The CUA input module now reads both left and right direct stick lanes instead of assuming one hardcoded right-stick mapping.",
+      "reasoning": "If the live runtime or device mapping surfaces the operator's active control on the other lane, scrub still resolves through a direct path instead of silently dying and waiting for unrelated movement."
+    },
+    {
+      "area": "active-lane-arbitration",
+      "summary": "Stick selection now picks the active direct lane by magnitude, biases ties to the last active direct lane, and keeps short continuity for that lane.",
+      "reasoning": "This mirrors the older solved shape more closely than the recent ladder of raw, joystick, and wrapper probes."
+    },
+    {
+      "area": "wrapper-removal",
+      "summary": "The generic free-navigation wrapper is no longer part of CUA scrub selection.",
+      "reasoning": "Wrapper-adjacent motion was the most likely reason unrelated controller activity could appear to wake scrub up. Removing it gives the lane one owner."
+    },
+    {
+      "area": "truthful-status",
+      "summary": "The top plugin status now reports the selected stick lane instead of always claiming `stick=right`.",
+      "reasoning": "If this seam ever drifts again, the UI needs to describe the actual chosen direct lane rather than a hardcoded assumption."
+    }
+  ],
+  "verification": [
+    "Compile the CUA player in Release after replacing the scrub selector with direct active-stick arbitration.",
+    "Compile the no-input seam with EnablePlayerInputFeatures=false to bin\\ReleaseNoInput\\fa_cua_player.dll.",
+    "Stamp version 0.3.12 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.12.dll and fa_player_asset.0.3.12.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.12 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This release only changes the CUA stick scrub lane. It does not claim to fix the separate subscene or VaM slider-save behavior yet.",
+    "Video scrub stability, loop retest, and custom toolkit controls remain separate follow-up seams if problems remain after the direct-stick fix.",
+    "Spatial audio controls are still a separate slice because the player runtime currently initializes the underlying audio source as 2D."
+  ]
+}

@@ -2,10 +2,31 @@ using System;
 using System.Globalization;
 using System.Text;
 using UnityEngine;
-using Valve.VR;
 public partial class FASyncRuntime : MVRScript
 {
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
+    private static readonly string[] CuaPlayerLeftStickXCandidates = new string[]
+    {
+        "Oculus_CrossPlatform_PrimaryThumbstickHorizontal",
+        "Horizontal",
+        "Joy1 Axis 1",
+        "Joy2 Axis 1",
+        "Joy3 Axis 1",
+        "Joy4 Axis 1",
+        "X Axis",
+    };
+
+    private static readonly string[] CuaPlayerLeftStickYCandidates = new string[]
+    {
+        "Oculus_CrossPlatform_PrimaryThumbstickVertical",
+        "Vertical",
+        "Joy1 Axis 2",
+        "Joy2 Axis 2",
+        "Joy3 Axis 2",
+        "Joy4 Axis 2",
+        "Y Axis",
+    };
+
     private static readonly string[] CuaPlayerRightStickXCandidates = new string[]
     {
         "Oculus_CrossPlatform_SecondaryThumbstickHorizontal",
@@ -40,7 +61,8 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerFocusInputGraceSeconds = 0.45f;
     private const float CuaPlayerNavigationDeadzone = 0.32f;
     private const float CuaPlayerNavigationAxisReleaseDeadzone = 0.18f;
-    private const float CuaPlayerNavigationSourceActiveThreshold = 0.05f;
+    private const float CuaPlayerNavigationSourceActiveThreshold = 0.02f;
+    private const float CuaPlayerNavigationStickContinuitySeconds = 0.30f;
     private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
@@ -56,6 +78,15 @@ public partial class FASyncRuntime : MVRScript
         public bool disableAllNavigationToggle;
         public bool hasDisableGrabNavigationToggle;
         public bool disableGrabNavigationToggle;
+    }
+
+    private struct CuaPlayerStickRead
+    {
+        public string slot;
+        public Vector2 navigation;
+        public string source;
+        public bool valid;
+        public bool active;
     }
 
     private enum CuaPlayerNavigationAxisLock
@@ -84,6 +115,9 @@ public partial class FASyncRuntime : MVRScript
     private float cuaPlayerNextInputStateUpdateAt = 0f;
     private string cuaPlayerLastInputState = "";
     private string cuaPlayerLastNavigationSource = "none";
+    private string cuaPlayerLastNavigationStick = "none";
+    private string cuaPlayerLastActiveDirectStick = "none";
+    private float cuaPlayerLastActiveDirectStickAt = -1000f;
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
 
@@ -289,7 +323,7 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("focus=").Append(focusActive ? "on" : "off");
         sb.Append(" gaze=").Append(gazeActive ? "on" : "off");
         sb.Append(" mode=").Append(string.IsNullOrEmpty(mode) ? "idle" : mode);
-        sb.Append(" stick=right");
+        sb.Append(" stick=").Append(string.IsNullOrEmpty(cuaPlayerLastNavigationStick) ? "none" : cuaPlayerLastNavigationStick);
         sb.Append(" src=").Append(string.IsNullOrEmpty(cuaPlayerLastNavigationSource) ? "none" : cuaPlayerLastNavigationSource);
         sb.Append(" lock=").Append(FormatCuaPlayerNavigationAxisLock(cuaPlayerNavigationAxisLock));
         sb.Append(" x=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
@@ -407,43 +441,67 @@ public partial class FASyncRuntime : MVRScript
         if (sc == null)
         {
             cuaPlayerLastNavigationSource = "none";
+            cuaPlayerLastNavigationStick = "none";
             return Vector2.zero;
         }
+
+        CuaPlayerStickRead leftRead = ReadCuaPlayerStick(
+            "left",
+            CuaPlayerLeftStickXCandidates,
+            CuaPlayerLeftStickYCandidates,
+            JoystickControl.Axis.LeftStickX,
+            JoystickControl.Axis.LeftStickY);
+        CuaPlayerStickRead rightRead = ReadCuaPlayerStick(
+            "right",
+            CuaPlayerRightStickXCandidates,
+            CuaPlayerRightStickYCandidates,
+            JoystickControl.Axis.RightStickX,
+            JoystickControl.Axis.RightStickY);
+
+        CuaPlayerStickRead selectedRead = SelectCuaPlayerStickRead(leftRead, rightRead);
+        cuaPlayerLastNavigationStick = string.IsNullOrEmpty(selectedRead.slot) ? "none" : selectedRead.slot;
+        cuaPlayerLastNavigationSource = string.IsNullOrEmpty(selectedRead.source) ? "none" : selectedRead.source;
+        return ApplyCuaPlayerNavigationAxisLock(selectedRead.navigation);
+    }
+
+    private CuaPlayerStickRead ReadCuaPlayerStick(
+        string slot,
+        string[] rawXCandidates,
+        string[] rawYCandidates,
+        JoystickControl.Axis joystickXAxis,
+        JoystickControl.Axis joystickYAxis)
+    {
+        CuaPlayerStickRead read = new CuaPlayerStickRead();
+        read.slot = string.IsNullOrEmpty(slot) ? "none" : slot;
+        read.navigation = Vector2.zero;
+        read.source = "none";
+        read.valid = false;
+        read.active = false;
 
         Vector2 rawNavigation = Vector2.zero;
         bool rawValid = false;
         Vector2 joystickNavigation = Vector2.zero;
         bool joystickValid = false;
-        Vector2 wrapperNavigation = Vector2.zero;
-        bool wrapperValid = false;
         try
         {
             float rawX;
             float rawY;
-            bool rawXValid = TryReadCuaPlayerRawAxisCandidates(CuaPlayerRightStickXCandidates, out rawX);
-            bool rawYValid = TryReadCuaPlayerRawAxisCandidates(CuaPlayerRightStickYCandidates, out rawY);
+            bool rawXValid = TryReadCuaPlayerRawAxisCandidates(rawXCandidates, out rawX);
+            bool rawYValid = TryReadCuaPlayerRawAxisCandidates(rawYCandidates, out rawY);
             if (rawXValid || rawYValid)
             {
                 rawNavigation = new Vector2(rawXValid ? rawX : 0f, rawYValid ? rawY : 0f);
                 rawValid = true;
             }
 
-            float rightX;
-            float rightY;
-            bool rightXValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickX, out rightX);
-            bool rightYValid = TryReadCuaPlayerJoystickAxis(JoystickControl.Axis.RightStickY, out rightY);
-            if (rightXValid || rightYValid)
+            float joystickX;
+            float joystickY;
+            bool joystickXValid = TryReadCuaPlayerJoystickAxis(joystickXAxis, out joystickX);
+            bool joystickYValid = TryReadCuaPlayerJoystickAxis(joystickYAxis, out joystickY);
+            if (joystickXValid || joystickYValid)
             {
-                joystickNavigation = new Vector2(rightXValid ? rightX : 0f, rightYValid ? rightY : 0f);
+                joystickNavigation = new Vector2(joystickXValid ? joystickX : 0f, joystickYValid ? joystickY : 0f);
                 joystickValid = true;
-            }
-
-            SteamVR_Action_Vector2 moveAction = sc.freeMoveAction;
-            if (moveAction != null)
-            {
-                Vector4 raw = sc.GetFreeNavigateVector(moveAction, true);
-                wrapperNavigation = new Vector2(raw.z, raw.w);
-                wrapperValid = true;
             }
         }
         catch
@@ -452,61 +510,107 @@ public partial class FASyncRuntime : MVRScript
             rawValid = false;
             joystickNavigation = Vector2.zero;
             joystickValid = false;
-            wrapperNavigation = Vector2.zero;
-            wrapperValid = false;
         }
 
-        Vector2 selectedNavigation = Vector2.zero;
         bool rawActive = IsCuaPlayerNavigationActive(rawNavigation);
         bool joystickActive = IsCuaPlayerNavigationActive(joystickNavigation);
-        bool wrapperActive = IsCuaPlayerNavigationActive(wrapperNavigation);
+        read.valid = rawValid || joystickValid;
+
         if (rawActive && joystickActive)
         {
             if (rawNavigation.sqrMagnitude >= joystickNavigation.sqrMagnitude)
             {
-                selectedNavigation = rawNavigation;
-                cuaPlayerLastNavigationSource = "raw";
+                read.navigation = rawNavigation;
+                read.source = "raw";
             }
             else
             {
-                selectedNavigation = joystickNavigation;
-                cuaPlayerLastNavigationSource = "joystick";
+                read.navigation = joystickNavigation;
+                read.source = "joystick";
             }
         }
         else if (rawActive)
         {
-            selectedNavigation = rawNavigation;
-            cuaPlayerLastNavigationSource = "raw";
+            read.navigation = rawNavigation;
+            read.source = "raw";
         }
         else if (joystickActive)
         {
-            selectedNavigation = joystickNavigation;
-            cuaPlayerLastNavigationSource = "joystick";
+            read.navigation = joystickNavigation;
+            read.source = "joystick";
         }
         else if (rawValid)
         {
-            selectedNavigation = rawNavigation;
-            cuaPlayerLastNavigationSource = "raw_idle";
+            read.navigation = rawNavigation;
+            read.source = "raw_idle";
         }
         else if (joystickValid)
         {
-            selectedNavigation = joystickNavigation;
-            cuaPlayerLastNavigationSource = "joystick_idle";
+            read.navigation = joystickNavigation;
+            read.source = "joystick_idle";
         }
-        else if (wrapperActive)
+
+        read.active = IsCuaPlayerNavigationActive(read.navigation);
+        return read;
+    }
+
+    private CuaPlayerStickRead SelectCuaPlayerStickRead(CuaPlayerStickRead leftRead, CuaPlayerStickRead rightRead)
+    {
+        CuaPlayerStickRead selectedRead = new CuaPlayerStickRead
         {
-            cuaPlayerLastNavigationSource = "wrapper_blocked";
+            slot = "none",
+            navigation = Vector2.zero,
+            source = "none",
+            valid = false,
+            active = false,
+        };
+
+        if (leftRead.active && rightRead.active)
+        {
+            if (leftRead.navigation.sqrMagnitude > rightRead.navigation.sqrMagnitude)
+                selectedRead = leftRead;
+            else if (rightRead.navigation.sqrMagnitude > leftRead.navigation.sqrMagnitude)
+                selectedRead = rightRead;
+            else if (string.Equals(cuaPlayerLastActiveDirectStick, "left", StringComparison.Ordinal))
+                selectedRead = leftRead;
+            else
+                selectedRead = rightRead;
         }
-        else if (wrapperValid)
+        else if (leftRead.active)
         {
-            cuaPlayerLastNavigationSource = "wrapper_seen";
+            selectedRead = leftRead;
+        }
+        else if (rightRead.active)
+        {
+            selectedRead = rightRead;
         }
         else
         {
-            cuaPlayerLastNavigationSource = "none";
+            float now = Time.unscaledTime;
+            if ((now - cuaPlayerLastActiveDirectStickAt) <= CuaPlayerNavigationStickContinuitySeconds)
+            {
+                if (string.Equals(cuaPlayerLastActiveDirectStick, "left", StringComparison.Ordinal) && leftRead.valid)
+                    selectedRead = leftRead;
+                else if (string.Equals(cuaPlayerLastActiveDirectStick, "right", StringComparison.Ordinal) && rightRead.valid)
+                    selectedRead = rightRead;
+            }
+
+            if (!selectedRead.valid)
+            {
+                if (rightRead.valid)
+                    selectedRead = rightRead;
+                else if (leftRead.valid)
+                    selectedRead = leftRead;
+            }
         }
 
-        return ApplyCuaPlayerNavigationAxisLock(selectedNavigation);
+        if (selectedRead.active && !string.IsNullOrEmpty(selectedRead.slot) && !string.Equals(selectedRead.slot, "none", StringComparison.Ordinal))
+        {
+            cuaPlayerLastActiveDirectStick = selectedRead.slot;
+            cuaPlayerLastActiveDirectStickAt = Time.unscaledTime;
+        }
+
+        return selectedRead;
     }
 
     private static bool TryReadCuaPlayerJoystickAxis(JoystickControl.Axis axis, out float value)
