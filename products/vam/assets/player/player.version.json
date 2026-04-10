@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.4",
-    "notes":  "0.4.4 keeps the 0.4.3 preset seam but cleans the plugin panel into a more normal VaM preset layout: the visible debug/status text is removed, the preset name field moves to the top of the preset block, and the preset controls read more like the standard save/load flow.",
+    "version":  "0.4.5",
+    "notes":  "0.4.5 rebuilds the player preset block around the actual VaM preset-manager pattern: filterable preset selectors, a real preset-name input seam, synced create or overwrite and load buttons, and balanced rows so the rest of the player controls start underneath the preset section instead of bleeding into it.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.4.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.5.json"
 }

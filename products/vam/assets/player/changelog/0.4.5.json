@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.5",
+  "title": "Align the player preset block with the actual VaM preset manager pattern",
+  "summary": "0.4.5 replaces the still-generic preset block from 0.4.4 with a closer match to VaM's built-in preset manager shape. The top of the player panel now uses filterable preset selectors, a real preset-name input seam, synced create or overwrite and load buttons, and balanced left or right rows so later player controls no longer appear inside the preset area.",
+  "reasoning": "The previous cleanup hid debug clutter, but the preset section still did not behave like a normal VaM preset area. The name seam was not operator-ready, the action buttons did not reflect overwrite versus create state, and the unbalanced column layout allowed unrelated player controls to drift upward into the preset block. This release uses the actual VaM preset manager implementation as the reference so the player plugin reads like a normal preset workflow instead of a custom internal surface.",
+  "changes": [
+    {
+      "area": "preset-manager-reference",
+      "summary": "Rebuilt the player preset block around VaM's actual preset manager pattern by switching the chooser surfaces to filterable popups and syncing the save and load buttons to the current preset state.",
+      "reasoning": "The built-in preset workflow is the operator expectation, so the player should follow that pattern instead of approximating it with a generic stack of controls."
+    },
+    {
+      "area": "preset-name-input",
+      "summary": "Added a real preset-name input seam by binding the player preset name storable to a cloned VaM preset-manager input field when that template is available at runtime.",
+      "reasoning": "A display-only text row is not enough for preset creation. The operator needs an actual name-entry field near the top of the preset workflow."
+    },
+    {
+      "area": "button-state-sync",
+      "summary": "Made the save button switch between `Create New Preset` and `Overwrite Preset`, update its color, and disable or enable based on the current typed or selected preset target. The load button now disables cleanly when no preset is selected.",
+      "reasoning": "This mirrors the normal VaM preset feedback pattern and makes the preset workflow readable without trial and error."
+    },
+    {
+      "area": "panel-row-balance",
+      "summary": "Balanced the preset block row-by-row across the left and right plugin columns so later controls like media path, scrub, and volume no longer bleed into the preset area.",
+      "reasoning": "The player controls should begin under the preset section, not inside it. Row balance is what keeps the rest of the panel visually stable."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.5 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Compile the CUA player in Release with the updated preset layout and VaM-style preset input seam.",
+    "Compile the no-input seam with `EnablePlayerInputFeatures=false` to `bin\\\\ReleaseNoInput\\\\fa_cua_player.dll`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.5.dll` and `fa_player_asset.0.4.5.assetbundle` through the existing player foundation script.",
+    "Run foundation release validation for 0.4.5 and keep the generated receipt beside the release shelf."
+  ],
+  "knownIssues": [
+    "This release follows the VaM preset manager pattern more closely, but it still lives inside the normal plugin left or right column system rather than a full custom preset-manager UI provider.",
+    "The player preset surface still does not include delete, rename, or user-default preset flows."
+  ]
+}
