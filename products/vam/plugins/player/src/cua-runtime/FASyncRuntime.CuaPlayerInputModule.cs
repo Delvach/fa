@@ -12,8 +12,6 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerNavigationDeadzone = 0.32f;
     private const float CuaPlayerNavigationAxisReleaseDeadzone = 0.18f;
     private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
-    private const float CuaPlayerVideoSeekApplyIntervalSeconds = 0.10f;
-    private const float CuaPlayerVideoSeekApplyMinDeltaNormalized = 0.008f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
@@ -50,8 +48,6 @@ public partial class FASyncRuntime : MVRScript
     private CuaPlayerNavigationAxisLock cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
     private bool cuaPlayerVideoScrubTargetKnown = false;
     private float cuaPlayerVideoScrubTargetNormalized = 0f;
-    private float cuaPlayerLastAppliedVideoScrubNormalized = -1f;
-    private float cuaPlayerNextVideoSeekApplyAt = 0f;
     private bool cuaPlayerVideoScrubSessionActive = false;
     private bool cuaPlayerVideoScrubResumeAfterRelease = false;
     private string cuaPlayerVideoScrubPlaybackKey = "";
@@ -157,8 +153,6 @@ public partial class FASyncRuntime : MVRScript
             if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
                 horizontal = 0f;
             cuaPlayerVideoScrubTargetKnown = false;
-            cuaPlayerLastAppliedVideoScrubNormalized = -1f;
-            cuaPlayerNextVideoSeekApplyAt = 0f;
             TickCuaPlayerImageStepInput(record, horizontal);
             UpdateCuaPlayerInputState(
                 true,
@@ -496,27 +490,6 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
             cuaPlayerVideoScrubTargetNormalized
             + (horizontal * CuaPlayerVideoScrubNormalizedPerSecond * Time.unscaledDeltaTime));
-
-        if (Time.unscaledTime < cuaPlayerNextVideoSeekApplyAt)
-            return;
-
-        if (cuaPlayerLastAppliedVideoScrubNormalized >= 0f
-            && Mathf.Abs(cuaPlayerVideoScrubTargetNormalized - cuaPlayerLastAppliedVideoScrubNormalized)
-                < CuaPlayerVideoSeekApplyMinDeltaNormalized)
-            return;
-
-        string argsJson = "{\"playbackKey\":\""
-            + EscapeJsonString(record.playbackKey)
-            + "\",\"normalized\":"
-            + FormatFloat(cuaPlayerVideoScrubTargetNormalized)
-            + "}";
-
-        string ignoredResult;
-        if (TrySeekStandalonePlayerNormalized("Player.InputScrub", argsJson, out ignoredResult, out errorMessage))
-        {
-            cuaPlayerLastAppliedVideoScrubNormalized = cuaPlayerVideoScrubTargetNormalized;
-            cuaPlayerNextVideoSeekApplyAt = Time.unscaledTime + CuaPlayerVideoSeekApplyIntervalSeconds;
-        }
     }
 
     private void BeginCuaPlayerVideoScrubSession(StandalonePlayerRecord record)
@@ -549,7 +522,6 @@ public partial class FASyncRuntime : MVRScript
         string playbackKey = cuaPlayerVideoScrubPlaybackKey;
         bool targetKnown = cuaPlayerVideoScrubTargetKnown;
         float targetNormalized = cuaPlayerVideoScrubTargetNormalized;
-        float lastAppliedNormalized = cuaPlayerLastAppliedVideoScrubNormalized;
         bool shouldResumePlayback = resumePlayback && cuaPlayerVideoScrubResumeAfterRelease;
 
         cuaPlayerVideoScrubSessionActive = false;
@@ -557,15 +529,11 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerVideoScrubPlaybackKey = "";
         cuaPlayerVideoScrubTargetKnown = false;
         cuaPlayerVideoScrubTargetNormalized = 0f;
-        cuaPlayerLastAppliedVideoScrubNormalized = -1f;
-        cuaPlayerNextVideoSeekApplyAt = 0f;
 
         if (string.IsNullOrEmpty(playbackKey))
             return;
 
-        if (targetKnown
-            && (lastAppliedNormalized < 0f
-                || Mathf.Abs(targetNormalized - lastAppliedNormalized) >= CuaPlayerVideoSeekApplyMinDeltaNormalized))
+        if (targetKnown)
         {
             string seekArgsJson = "{\"playbackKey\":\""
                 + EscapeJsonString(playbackKey)

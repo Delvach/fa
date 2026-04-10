@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.3.5",
+  "title": "Make joystick scrub release-committed to stop freeze and desync",
+  "summary": "Live VaM testing after 0.3.4 showed that right-stick scrub could still eventually desync audio, freeze video, and leave the player in a broken state after enough use. The remaining issue was not focus or explicit loop completion. It was the last piece of the scrub interaction itself: while the stick stayed held, the input layer was still issuing repeated seek commands into the paused VideoPlayer path, which then forced paused-frame refreshes over and over. This release keeps the same joystick target accumulation but stops mutating the VideoPlayer continuously during the hold. The scrub target now accumulates while the stick is engaged, and the runtime applies one final seek on release before optionally resuming playback.",
+  "reasoning": "The operator report is very specific: scrub can work briefly, then audio goes out of sync, then video freezes, and eventually the whole playback lane stops behaving. That points to an interaction seam that degrades the underlying Unity video runtime over time rather than a simple math error in target calculation. In 0.3.4, the player no longer restarted active playback for every scrub update, but it still performed repeated paused seeks and forced frame refreshes while the stick remained held. The narrowest stable fix is to stop driving the VideoPlayer at held-stick cadence. A release-committed scrub is slightly less preview-rich, but it removes the decoder churn that is most likely poisoning the runtime.",
+  "changes": [
+    {
+      "area": "joystick-scrub-commit-model",
+      "summary": "Held right-stick scrub now only updates the pending normalized target in the input layer; it does not call the player seek action until scrub release.",
+      "reasoning": "This prevents repeated seek-plus-refresh calls from accumulating while the joystick remains engaged."
+    },
+    {
+      "area": "scrub-session-finalization",
+      "summary": "When the stick releases or focus is dropped, the scrub session applies one final seek to the staged target and then resumes playback only if playback had been active before scrub began.",
+      "reasoning": "The single final seek preserves the scrub interaction while making the actual player mutation bounded and deterministic."
+    },
+    {
+      "area": "interaction-boundary",
+      "summary": "The focus reacquire and explicit loop-completion work from 0.3.4 stays intact; this release only narrows the remaining scrub seam.",
+      "reasoning": "Keeping the release scope small makes it easier to verify whether the freeze and desync were specifically caused by repeated held-stick seek churn."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.3.5 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the versioned fa_cua_player.0.3.5.dll and fa_player_asset.0.3.5.assetbundle through the existing player foundation script.",
+    "Run foundation release validation for 0.3.5 and keep the generated receipt beside the versioned release shelf.",
+    "In VaM, scrub hard with the right stick repeatedly across the clip and confirm playback no longer freezes or drifts audio after repeated use.",
+    "Retest loop single and loop playlist from the plugin UI because 0.3.4 loop changes remain part of the live build lineage."
+  ],
+  "knownIssues": [
+    "Held-stick scrub no longer gives live paused-frame preview while the joystick is still engaged; the position change commits on release in exchange for runtime stability.",
+    "The separate Fork B interaction work for left-stick depth, host scale tweening, and lasso or wrist manipulation remains outside this release.",
+    "If Unity VideoPlayer still degrades after repeated finalized seeks, the next seam to inspect is the underlying paused-frame refresh behavior in the shared player runtime."
+  ]
+}
