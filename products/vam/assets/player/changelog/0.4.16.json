@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.16",
+  "title": "Keep the package-first player var, but make the packaged demo scene clean by default",
+  "summary": "0.4.16 preserves the package-first player var seam from 0.4.15, but changes the packaged demo scene so it no longer pulls the older managed button rig into the default package witness. The scene builder can still generate that mapped button setup when explicitly requested, packaged player testing now defaults to a cleaner player-only scene, and the var packager now advances to the next public release automatically so VaM package caching stops confusing test results.",
+  "reasoning": "The packaged player finally loaded correctly from AddonPackages, which exposed two issues clearly: the current package scene was still inheriting the older button-heavy witness seam from the external buttons template, and reusing the same `Creator.Package.Release` identity was letting VaM cache muddy which package was actually live. The packaged witness should stay focused on the packaged player itself, and each test build needs a fresh package identity by default.",
+  "changes": [
+    {
+      "area": "packaged-scene",
+      "summary": "Adds an explicit `IncludeManagedControls` seam to the player scene builder and routes the var packager so packaged scenes default to omitting the older managed UIButton and slider rig.",
+      "reasoning": "The default package witness should stay focused on the packaged player itself instead of carrying the older external scene-control scaffold."
+    },
+    {
+      "area": "release-process",
+      "summary": "Threads the packaged-scene control choice through the foundation build and var packager so package-first builds can stay self-contained while still allowing the old mapped demo controls as an opt-in path, and makes the packager advance to the next available public release automatically unless an explicit release number is requested.",
+      "reasoning": "We want one deterministic release path, but we still need a way to regenerate the older mapped witness deliberately when that specific seam is useful, while also keeping package identity changes automatic enough that cache collisions stop slowing testing down."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.16 into `player.version.json` and build the matching player release artifacts through the foundation build.",
+    "Run the foundation build in package-only mode with var packaging enabled and confirm the packaged scene no longer includes the older managed UIButton and slider scaffold by default.",
+    "Confirm the generated var advances to the next `FrameAngel.Player.<n>.var` public release automatically instead of reusing the previous package identity.",
+    "Open the built var and verify it still contains the packaged player assetbundle, packaged plugin, packaged preset, and packaged scene JSON.",
+    "In live VaM, load the packaged scene and confirm the loose white demo buttons from the older buttons witness are no longer present by default."
+  ],
+  "knownIssues": [
+    "The square control slab attached to the current player screen asset is the authored `control_surface` baked into the screen-core asset and remains a separate product decision from the packaged scene cleanup.",
+    "Further standalone Meta proof polish, A-B playback, and build-flavor assembly remain separate follow-on slices."
+  ]
+}

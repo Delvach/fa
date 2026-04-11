@@ -8,6 +8,7 @@ param(
     [string]$PrimaryMediaPath = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$DisplayPolicy = "multi_aspect",
+    [int]$IncludeManagedControls = 1,
     [double]$ControlOffsetX = 0.0,
     [double]$ControlOffsetY = 0.0,
     [double]$ControlOffsetZ = 0.0,
@@ -623,8 +624,10 @@ $controlRootAtom = $atoms | Where-Object { [string]$_.id -eq "controls" } | Sele
 $controlParentId = if ($null -ne $controlRootAtom) { "controls" } else { "" }
 $controlSubSceneStorePath = "Custom/SubScene/FrameAngel/controls/player_controls.json"
 $useControlSubScene = $null -ne $controlRootAtom -and [string]::Equals([string]$controlRootAtom.type, "SubScene", [System.StringComparison]::OrdinalIgnoreCase)
+$managedControlAtomIds = Get-PlayerDemoManagedControlAtomIds -ParentAtomId $controlParentId
+$includeManagedControlsEnabled = $IncludeManagedControls -ne 0
 
-if ($useControlSubScene) {
+if ($useControlSubScene -and $includeManagedControlsEnabled) {
     $controlStorables = New-OrderedStorableList -ExistingStorables @($controlRootAtom.storables)
     $subSceneStorable = Get-StorableById -Storables @($controlStorables) -Id "SubScene"
     if ($null -eq $subSceneStorable) {
@@ -638,7 +641,6 @@ if ($useControlSubScene) {
     }
     $controlRootAtom.storables = $controlStorables
 
-    $managedControlAtomIds = Get-PlayerDemoManagedControlAtomIds -ParentAtomId $controlParentId
     for ($atomIndex = $atoms.Count - 1; $atomIndex -ge 0; $atomIndex--) {
         $atom = $atoms[$atomIndex]
         $atomId = if ($null -eq $atom) { "" } else { [string]$atom.id }
@@ -646,6 +648,20 @@ if ($useControlSubScene) {
             $atoms.RemoveAt($atomIndex)
         }
     }
+}
+
+if (-not $includeManagedControlsEnabled) {
+    for ($atomIndex = $atoms.Count - 1; $atomIndex -ge 0; $atomIndex--) {
+        $atom = $atoms[$atomIndex]
+        $atomId = if ($null -eq $atom) { "" } else { [string]$atom.id }
+        if (($managedControlAtomIds -contains $atomId) -or $atomId -eq "controls") {
+            $atoms.RemoveAt($atomIndex)
+        }
+    }
+
+    $controlRootAtom = $null
+    $controlParentId = ""
+    $useControlSubScene = $false
 }
 
 if (-not $IncludeDebugConsole.IsPresent) {
@@ -657,47 +673,52 @@ if (-not $IncludeDebugConsole.IsPresent) {
     }
 }
 
-$buttonSpecs = Get-PlayerDemoButtonSpecs -Policy $DisplayPolicy -ParentAtomId $controlParentId
+$buttonSpecs = @()
+$sliderSpecs = @()
 
-$sliderSpecs = @(
-    [pscustomobject]@{
-        localId = "scrub_slider"
-        id = (Get-SceneManagedAtomId -LocalId "scrub_slider" -ParentAtomId $controlParentId)
-        text = "scrub"
-        x = 1.15
-        y = -1.30
-        z = 0.0
-        parentAtom = $controlParentId
-        receiverTargetName = "scrub_normalized"
-        startValue = 0.0
-        endValue = 1.0
-        defaultValue = 0.0
-    },
-    [pscustomobject]@{
-        localId = "volume_slider"
-        id = (Get-SceneManagedAtomId -LocalId "volume_slider" -ParentAtomId $controlParentId)
-        text = "volume"
-        x = 1.15
-        y = -1.80
-        z = 0.0
-        parentAtom = $controlParentId
-        receiverTargetName = "volume_normalized"
-        startValue = 0.0
-        endValue = 1.0
-        defaultValue = 1.0
-    }
-)
+if ($includeManagedControlsEnabled) {
+    $buttonSpecs = Get-PlayerDemoButtonSpecs -Policy $DisplayPolicy -ParentAtomId $controlParentId
 
-$buttonSpecs = @($buttonSpecs | ForEach-Object {
-    New-OffsetSceneSpec -Spec $_ -OffsetX $ControlOffsetX -OffsetY $ControlOffsetY -OffsetZ $ControlOffsetZ
-})
+    $sliderSpecs = @(
+        [pscustomobject]@{
+            localId = "scrub_slider"
+            id = (Get-SceneManagedAtomId -LocalId "scrub_slider" -ParentAtomId $controlParentId)
+            text = "scrub"
+            x = 1.15
+            y = -1.30
+            z = 0.0
+            parentAtom = $controlParentId
+            receiverTargetName = "scrub_normalized"
+            startValue = 0.0
+            endValue = 1.0
+            defaultValue = 0.0
+        },
+        [pscustomobject]@{
+            localId = "volume_slider"
+            id = (Get-SceneManagedAtomId -LocalId "volume_slider" -ParentAtomId $controlParentId)
+            text = "volume"
+            x = 1.15
+            y = -1.80
+            z = 0.0
+            parentAtom = $controlParentId
+            receiverTargetName = "volume_normalized"
+            startValue = 0.0
+            endValue = 1.0
+            defaultValue = 1.0
+        }
+    )
 
-$sliderSpecs = @($sliderSpecs | ForEach-Object {
-    New-OffsetSceneSpec -Spec $_ -OffsetX $ControlOffsetX -OffsetY $ControlOffsetY -OffsetZ $ControlOffsetZ
-})
+    $buttonSpecs = @($buttonSpecs | ForEach-Object {
+        New-OffsetSceneSpec -Spec $_ -OffsetX $ControlOffsetX -OffsetY $ControlOffsetY -OffsetZ $ControlOffsetZ
+    })
+
+    $sliderSpecs = @($sliderSpecs | ForEach-Object {
+        New-OffsetSceneSpec -Spec $_ -OffsetX $ControlOffsetX -OffsetY $ControlOffsetY -OffsetZ $ControlOffsetZ
+    })
+}
 
 $managedButtonIds = Get-PlayerDemoManagedButtonIds -ParentAtomId $controlParentId
-if (-not $useControlSubScene) {
+if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
     $buttonTemplate = Find-SceneAtomByIds -Atoms $atoms -CandidateIds $managedButtonIds
     if ($null -eq $buttonTemplate) {
         throw "Scene template is missing a managed button template atom."
@@ -849,6 +870,7 @@ $receipt = [pscustomobject]@{
     pluginPath = $pluginPath
     primaryMediaPath = $resolvedPrimaryMediaPath
     displayPolicy = $DisplayPolicy
+    includeManagedControls = $includeManagedControlsEnabled
     includeDebugConsole = $IncludeDebugConsole.IsPresent
     controlParentAtom = $controlParentId
     controlSubScenePath = if ($useControlSubScene) { $controlSubSceneStorePath } else { "" }
@@ -897,6 +919,7 @@ $markdownLines.Add("- Plugin: $($receipt.pluginPath)")
 $markdownLines.Add("- Asset Name: $($receipt.assetName)")
 $markdownLines.Add("- Primary Media Path: $($receipt.primaryMediaPath)")
 $markdownLines.Add("- Display Policy: $($receipt.displayPolicy)")
+$markdownLines.Add("- Include Managed Controls: $($receipt.includeManagedControls)")
 $markdownLines.Add("- Control Offset: ($($receipt.controlOffset.x), $($receipt.controlOffset.y), $($receipt.controlOffset.z))")
 $markdownLines.Add("")
 $markdownLines.Add("## Button Mappings")

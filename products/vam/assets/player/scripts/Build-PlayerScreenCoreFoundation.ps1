@@ -11,9 +11,10 @@ param(
     [string]$VarScenePrimaryMediaPath = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$VarSceneDisplayPolicy = "multi_aspect",
+    [int]$VarSceneIncludeManagedControls = 0,
     [string]$VarCreatorName = "FrameAngel",
     [string]$VarPackageName = "Player",
-    [int]$VarPublicRelease = 1,
+    [int]$VarPublicRelease = 0,
     [string]$VarDestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipVarDistribute
 )
@@ -421,7 +422,9 @@ if ($BuildVarPackage.IsPresent) {
             "-SceneTemplatePath",
             $VarSceneTemplatePath,
             "-SceneDisplayPolicy",
-            $VarSceneDisplayPolicy
+            $VarSceneDisplayPolicy,
+            "-SceneIncludeManagedControls",
+            $VarSceneIncludeManagedControls
         )
         if (-not [string]::IsNullOrWhiteSpace($VarScenePrimaryMediaPath)) {
             $varArgs += @(

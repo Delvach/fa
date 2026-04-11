@@ -4,13 +4,14 @@ param(
     [string]$ReleaseManifestPath = "",
     [string]$CreatorName = "FrameAngel",
     [string]$PackageName = "Player",
-    [int]$PublicRelease = 1,
+    [int]$PublicRelease = 0,
     [string]$OutputRoot = "",
     [switch]$IncludeScene,
     [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$ScenePrimaryMediaPath = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$SceneDisplayPolicy = "multi_aspect",
+    [int]$SceneIncludeManagedControls = 0,
     [string]$DestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipDistribute
 )
@@ -81,6 +82,39 @@ function Copy-FileIntoStage {
     Ensure-Directory -PathValue $targetDirectory
     Copy-Item -LiteralPath $SourcePath -Destination $targetPath -Force
     return $targetPath
+}
+
+function Resolve-VarPublicRelease {
+    param(
+        [string]$ResolvedCreatorName,
+        [string]$ResolvedPackageName,
+        [int]$RequestedPublicRelease,
+        [string[]]$SearchDirectories
+    )
+
+    if ($RequestedPublicRelease -gt 0) {
+        return $RequestedPublicRelease
+    }
+
+    $pattern = '^{0}\.{1}\.(\d+)\.var$' -f [Regex]::Escape($ResolvedCreatorName), [Regex]::Escape($ResolvedPackageName)
+    $maxRelease = 0
+    foreach ($directory in @($SearchDirectories)) {
+        if ([string]::IsNullOrWhiteSpace($directory) -or -not (Test-Path -LiteralPath $directory)) {
+            continue
+        }
+
+        Get-ChildItem -LiteralPath $directory -File -Filter "$ResolvedCreatorName.$ResolvedPackageName.*.var" -ErrorAction SilentlyContinue | ForEach-Object {
+            $match = [Regex]::Match($_.Name, $pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+            if ($match.Success) {
+                $candidateRelease = 0
+                if ([int]::TryParse($match.Groups[1].Value, [ref]$candidateRelease) -and $candidateRelease -gt $maxRelease) {
+                    $maxRelease = $candidateRelease
+                }
+            }
+        }
+    }
+
+    return ($maxRelease + 1)
 }
 
 function Write-ZipArchiveFromStageRoot {
@@ -281,11 +315,16 @@ else {
     Resolve-PathFromBase -PathValue $OutputRoot -BasePath $RepoRoot -Label "Output root" -MustExist $false
 }
 
-$packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $PublicRelease
-$packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $PublicRelease
 $resourceRoot = $resolvedOutputRoot
 $stageRoot = Join-Path $resourceRoot "source"
 $packagesRoot = Join-Path $resourceRoot "packages"
+$resolvedPublicRelease = Resolve-VarPublicRelease `
+    -ResolvedCreatorName $CreatorName `
+    -ResolvedPackageName $PackageName `
+    -RequestedPublicRelease $PublicRelease `
+    -SearchDirectories @($packagesRoot, $DestinationAddonPackages)
+$packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $resolvedPublicRelease
+$packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $resolvedPublicRelease
 $zipPath = Join-Path $packagesRoot $packageZipName
 $varPath = Join-Path $packagesRoot $packageFileName
 $metaPath = Join-Path $stageRoot "meta.json"
@@ -315,8 +354,8 @@ $presetRelativePath = Join-Path "Custom\Atom\CustomUnityAsset" $presetFileName
 $packagedAssetPath = ($assetBundleRelativePath -replace '\\', '/')
 $packagedPluginPath = ($pluginRelativePath -replace '\\', '/')
 $packagedPresetPath = ($presetRelativePath -replace '\\', '/')
-$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $PublicRelease, $packagedAssetPath
-$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $PublicRelease, $packagedPluginPath
+$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedAssetPath
+$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedPluginPath
 
 [void](Copy-FileIntoStage -SourcePath $assetBundlePath -StageRoot $stageRoot -RelativePath $assetBundleRelativePath)
 [void](Copy-FileIntoStage -SourcePath $pluginDllPath -StageRoot $stageRoot -RelativePath $pluginRelativePath)
@@ -359,6 +398,8 @@ if ($IncludeScene.IsPresent) {
         $packagedPluginUrl,
         "-DisplayPolicy",
         $SceneDisplayPolicy,
+        "-IncludeManagedControls",
+        $SceneIncludeManagedControls,
         "-AllowExistingVersion"
     )
     if (-not [string]::IsNullOrWhiteSpace($ScenePrimaryMediaPath)) {
@@ -446,7 +487,7 @@ $stageManifest = [ordered]@{
     packageMode = "direct_cua"
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $PublicRelease
+    publicRelease = $resolvedPublicRelease
     packageFileName = $packageFileName
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
@@ -471,6 +512,7 @@ $stageManifest = [ordered]@{
             sceneTemplatePath = $SceneTemplatePath
             scenePrimaryMediaPath = $ScenePrimaryMediaPath
             sceneDisplayPolicy = $SceneDisplayPolicy
+            sceneIncludeManagedControls = ($SceneIncludeManagedControls -ne 0)
             sourceScenePath = $generatedScenePath
             sourceScenePreviewPath = if (Test-Path -LiteralPath $generatedScenePreviewPath) { $generatedScenePreviewPath } else { "" }
             packagedScenePath = $packagedScenePath
@@ -514,7 +556,7 @@ $report = [ordered]@{
     version = $resolvedVersion
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $PublicRelease
+    publicRelease = $resolvedPublicRelease
     packageMode = "direct_cua"
     packageFileName = $packageFileName
     packagePath = $varPath
@@ -538,7 +580,7 @@ Write-JsonFile -Path $reportPath -Value $report
     version = $resolvedVersion
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $PublicRelease
+    publicRelease = $resolvedPublicRelease
     packageMode = "direct_cua"
     packagePath = $varPath
     reportPath = $reportPath

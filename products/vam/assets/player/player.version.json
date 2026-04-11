@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.15",
-    "notes":  "0.4.15 makes package-first testing real: the player `.var` now stages the versioned assetbundle, packaged plugin, packaged preset with packaged plugin auto-attach, and a packaged demo scene, while ordinary player startup stops refreshing legacy Meta proof defaults during rig-state snapshots.",
+    "version":  "0.4.16",
+    "notes":  "0.4.16 keeps the package-first player var path, but the packaged demo scene now defaults to a clean player-only witness instead of inheriting the older managed button rig from the external buttons scene template.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.15.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.16.json"
 }
