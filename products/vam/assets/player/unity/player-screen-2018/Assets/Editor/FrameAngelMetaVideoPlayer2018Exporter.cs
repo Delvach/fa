@@ -394,7 +394,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
         surface.name = "meta_video_player_snapshot_surface";
         surface.transform.SetParent(root.transform, false);
         surface.transform.localPosition = Vector3.zero;
-        surface.transform.localRotation = Quaternion.identity;
+        surface.transform.localRotation = Quaternion.Euler(0f, 180f, 0f);
         surface.transform.localScale = new Vector3(width, height, 1f);
 
         Collider collider = surface.GetComponent<Collider>();
