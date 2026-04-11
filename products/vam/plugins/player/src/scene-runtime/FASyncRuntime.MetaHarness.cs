@@ -774,9 +774,11 @@ public partial class FASyncRuntime
 
     private void TryHydrateMetaProofDefaults()
     {
+        bool hadActiveSurfaceConfig = false;
         MetaPlayerRuntimeSurfaceConfig activeSurfaceConfig;
         if (TryResolveMetaPlayerRuntimeActiveSurfaceConfig(out activeSurfaceConfig) && activeSurfaceConfig != null)
         {
+            hadActiveSurfaceConfig = true;
             syncMetaProofPackagePath = activeSurfaceConfig.packagePath ?? "";
             if (syncMetaProofPackagePathField != null)
                 syncMetaProofPackagePathField.valNoCallback = syncMetaProofPackagePath;
@@ -793,6 +795,15 @@ public partial class FASyncRuntime
             if (syncMetaProofPackagePathField != null)
                 syncMetaProofPackagePathField.valNoCallback = "";
         }
+
+        bool hasExplicitMetaProofState = hadActiveSurfaceConfig
+            || !string.IsNullOrEmpty(syncMetaProofPackagePath)
+            || !string.IsNullOrEmpty(syncMetaProofResourceId)
+            || !string.IsNullOrEmpty(syncMetaProofPlayerAtomUid)
+            || (!string.IsNullOrEmpty(syncMetaProofInstanceId)
+                && !string.Equals(syncMetaProofInstanceId, MetaProofControlSurfaceDefaultInstanceId, StringComparison.OrdinalIgnoreCase));
+        if (!hasExplicitMetaProofState)
+            return;
 
         if (string.IsNullOrEmpty(syncMetaProofResourceId))
         {
@@ -867,15 +878,38 @@ public partial class FASyncRuntime
             && FileManagerSecure.FileExists(FAInnerPieceStorage.ResolveResourcePath(resourceId), false);
 
         string packagePath = ExtractJsonArgString(json, "packagePath");
+        if (!string.IsNullOrEmpty(packagePath))
+            packagePath = packagePath.Trim();
         bool hasPackagePath = !string.IsNullOrEmpty(packagePath);
+        if (hasPackagePath
+            && (!IsSecureRuntimePathCandidate(packagePath) || IsLegacyMetaProofPackagePath(packagePath)))
+        {
+            packagePath = "";
+            hasPackagePath = false;
+        }
+
         if (!hasStoredResource && !hasPackagePath)
             return false;
 
         if (hasPackagePath)
         {
-            string[] manifests = FileManagerSecure.GetFiles(packagePath, "manifest.json");
+            string[] manifests = null;
+            try
+            {
+                manifests = FileManagerSecure.GetFiles(packagePath, "manifest.json");
+            }
+            catch
+            {
+                manifests = null;
+            }
+
             if ((manifests == null || manifests.Length <= 0) && !hasStoredResource)
                 return false;
+            if (manifests == null || manifests.Length <= 0)
+            {
+                packagePath = "";
+                hasPackagePath = false;
+            }
         }
 
         if (!hasStoredResource && !hasPackagePath)
@@ -883,7 +917,7 @@ public partial class FASyncRuntime
 
         config = new MetaPlayerRuntimeSurfaceConfig();
         config.schemaVersion = schemaVersion;
-        config.packagePath = packagePath;
+        config.packagePath = hasPackagePath ? packagePath : "";
         config.packageId = ExtractJsonArgString(json, "packageId");
         config.resourceId = resourceId;
         config.controlSurfaceId = ExtractJsonArgString(json, "controlSurfaceId");

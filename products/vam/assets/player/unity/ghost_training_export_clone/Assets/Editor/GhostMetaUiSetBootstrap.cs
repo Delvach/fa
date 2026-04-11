@@ -27,6 +27,18 @@ public static class GhostMetaUiSetBootstrap
     private const string PackageVideoPlayerPrefabPath = "Packages/com.meta.xr.sdk.interaction/Runtime/Sample/Objects/UISet/Prefabs/Patterns/ContentUIExample-VideoPlayer.prefab";
     private const string PackageUiSetInstructionVideoPath = "Packages/com.meta.xr.sdk.interaction/Runtime/Sample/Objects/Environment/Tooltips/DialogVideos/Instruction_UISet.mp4";
 
+    [Serializable]
+    private sealed class FlatGalleryElementCaptureMetadata
+    {
+        public string schemaVersion = "ghost_meta_ui_set_flat_gallery_element_capture_v1";
+        public string scenePath = "";
+        public string elementName = "";
+        public int textureWidth = 0;
+        public int textureHeight = 0;
+        public float surfaceWidthMeters = 0f;
+        public float surfaceHeightMeters = 0f;
+    }
+
     [MenuItem("FrameAngel/Ghost/Meta UI Set/Open Study Scene")]
     public static void OpenStudyScene()
     {
@@ -212,6 +224,61 @@ public static class GhostMetaUiSetBootstrap
         Debug.Log($"GhostMetaUiSetBootstrap: captured preview for {scene.path} to {capturePath}");
     }
 
+    public static void CaptureFlatGalleryElementBatch()
+    {
+        string capturePath = GetCommandLineArgument("-metaUiSetCapturePath");
+        if (string.IsNullOrWhiteSpace(capturePath))
+        {
+            throw new InvalidOperationException("Missing -metaUiSetCapturePath for GhostMetaUiSetBootstrap.CaptureFlatGalleryElementBatch");
+        }
+
+        string elementName = GetCommandLineArgument("-metaUiSetElementName");
+        if (string.IsNullOrWhiteSpace(elementName))
+        {
+            throw new InvalidOperationException("Missing -metaUiSetElementName for GhostMetaUiSetBootstrap.CaptureFlatGalleryElementBatch");
+        }
+
+        string captureMetaPath = GetCommandLineArgument("-metaUiSetCaptureMetaPath");
+        string absoluteFlatGalleryScenePath = GetAbsoluteScenePath(FlatGalleryScenePath);
+        if (!File.Exists(absoluteFlatGalleryScenePath))
+        {
+            CreateFlatGallerySceneInternal();
+        }
+
+        string captureDirectory = Path.GetDirectoryName(capturePath) ?? string.Empty;
+        Directory.CreateDirectory(captureDirectory);
+        if (!string.IsNullOrWhiteSpace(captureMetaPath))
+        {
+            string captureMetaDirectory = Path.GetDirectoryName(captureMetaPath) ?? string.Empty;
+            Directory.CreateDirectory(captureMetaDirectory);
+        }
+
+        Scene scene = EditorSceneManager.OpenScene(FlatGalleryScenePath, OpenSceneMode.Single);
+        Canvas.ForceUpdateCanvases();
+
+        GameObject elementObject = FindSceneObjectByName(scene, elementName);
+        if (elementObject == null)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: flat gallery element '" + elementName + "' was not found in " + scene.path);
+        }
+
+        RectTransform rectTransform = elementObject.GetComponent<RectTransform>();
+        if (rectTransform == null)
+        {
+            rectTransform = elementObject.GetComponentInChildren<RectTransform>(true);
+        }
+
+        if (rectTransform == null)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: flat gallery element '" + elementName + "' did not expose a RectTransform.");
+        }
+
+        CaptureRectTransformToPng(scene.path, elementName, rectTransform, capturePath, captureMetaPath);
+        Debug.Log($"GhostMetaUiSetBootstrap: captured flat gallery element '{elementName}' to {capturePath}");
+    }
+
     private static void OpenOrCreateSceneInternal(string scenePath, Action createSceneAction, bool rebuildScene)
     {
         if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
@@ -321,6 +388,134 @@ public static class GhostMetaUiSetBootstrap
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log($"GhostMetaUiSetBootstrap: wrote {scenePath}");
+    }
+
+    private static void CaptureRectTransformToPng(
+        string scenePath,
+        string elementName,
+        RectTransform rectTransform,
+        string capturePath,
+        string captureMetaPath)
+    {
+        if (rectTransform == null)
+        {
+            throw new ArgumentNullException(nameof(rectTransform));
+        }
+
+        Canvas.ForceUpdateCanvases();
+
+        Vector3[] corners = new Vector3[4];
+        rectTransform.GetWorldCorners(corners);
+        float surfaceWidthMeters = Vector3.Distance(corners[0], corners[3]);
+        float surfaceHeightMeters = Vector3.Distance(corners[0], corners[1]);
+        if (surfaceWidthMeters <= 0f || surfaceHeightMeters <= 0f)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: capture element '" + elementName + "' had zero-sized bounds.");
+        }
+
+        Vector3 center = (corners[0] + corners[1] + corners[2] + corners[3]) * 0.25f;
+        Vector3 forward = rectTransform.forward;
+        Vector3 up = rectTransform.up;
+        float aspect = Mathf.Max(0.01f, surfaceWidthMeters / surfaceHeightMeters);
+        int longEdgePixels = 2048;
+        int textureWidth = aspect >= 1f
+            ? longEdgePixels
+            : Mathf.Clamp(Mathf.RoundToInt(longEdgePixels * aspect), 256, longEdgePixels);
+        int textureHeight = aspect >= 1f
+            ? Mathf.Clamp(Mathf.RoundToInt(longEdgePixels / aspect), 256, longEdgePixels)
+            : longEdgePixels;
+
+        float paddingMeters = Mathf.Max(surfaceWidthMeters, surfaceHeightMeters) * 0.08f;
+
+        GameObject cameraObject = new GameObject("MetaUiSetElementCaptureCamera");
+        Camera captureCamera = cameraObject.AddComponent<Camera>();
+        captureCamera.transform.position = center - (forward * 1.5f);
+        captureCamera.transform.rotation = Quaternion.LookRotation(forward, up);
+        captureCamera.orthographic = true;
+        captureCamera.orthographicSize = Mathf.Max(
+            (surfaceHeightMeters + (paddingMeters * 2f)) * 0.5f,
+            ((surfaceWidthMeters + (paddingMeters * 2f)) * 0.5f) / aspect);
+        captureCamera.clearFlags = CameraClearFlags.SolidColor;
+        captureCamera.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        captureCamera.nearClipPlane = 0.01f;
+        captureCamera.farClipPlane = 10f;
+        captureCamera.allowHDR = false;
+        captureCamera.allowMSAA = false;
+
+        RenderTexture renderTexture = new RenderTexture(textureWidth, textureHeight, 24, RenderTextureFormat.ARGB32);
+        RenderTexture previousActive = RenderTexture.active;
+        RenderTexture previousTarget = captureCamera.targetTexture;
+        Texture2D captureTexture = null;
+        try
+        {
+            renderTexture.antiAliasing = 1;
+            captureCamera.targetTexture = renderTexture;
+            RenderTexture.active = renderTexture;
+            captureCamera.Render();
+
+            captureTexture = new Texture2D(textureWidth, textureHeight, TextureFormat.RGBA32, false);
+            captureTexture.ReadPixels(new Rect(0, 0, textureWidth, textureHeight), 0, 0);
+            captureTexture.Apply();
+            File.WriteAllBytes(capturePath, captureTexture.EncodeToPNG());
+
+            if (!string.IsNullOrWhiteSpace(captureMetaPath))
+            {
+                FlatGalleryElementCaptureMetadata metadata = new FlatGalleryElementCaptureMetadata();
+                metadata.scenePath = scenePath ?? "";
+                metadata.elementName = elementName ?? "";
+                metadata.textureWidth = textureWidth;
+                metadata.textureHeight = textureHeight;
+                metadata.surfaceWidthMeters = surfaceWidthMeters;
+                metadata.surfaceHeightMeters = surfaceHeightMeters;
+                File.WriteAllText(captureMetaPath, JsonUtility.ToJson(metadata, true));
+            }
+        }
+        finally
+        {
+            captureCamera.targetTexture = previousTarget;
+            RenderTexture.active = previousActive;
+
+            if (captureTexture != null)
+            {
+                UnityEngine.Object.DestroyImmediate(captureTexture);
+            }
+
+            renderTexture.Release();
+            UnityEngine.Object.DestroyImmediate(renderTexture);
+            UnityEngine.Object.DestroyImmediate(cameraObject);
+        }
+    }
+
+    private static GameObject FindSceneObjectByName(Scene scene, string objectName)
+    {
+        if (!scene.IsValid() || string.IsNullOrWhiteSpace(objectName))
+        {
+            return null;
+        }
+
+        GameObject[] roots = scene.GetRootGameObjects();
+        for (int i = 0; i < roots.Length; i++)
+        {
+            GameObject root = roots[i];
+            if (root == null)
+            {
+                continue;
+            }
+
+            if (string.Equals(root.name, objectName, StringComparison.Ordinal))
+            {
+                return root;
+            }
+
+            Transform nested = FindChildRecursive(root.transform, objectName);
+            if (nested != null)
+            {
+                return nested.gameObject;
+            }
+        }
+
+        return null;
     }
 
     private static void SceneSetup()

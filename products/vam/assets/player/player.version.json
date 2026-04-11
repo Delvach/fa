@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.13",
-    "notes":  "0.4.13 fixes the hosted Meta proof panel so the control surface faces the operator instead of rendering from the rear, repairs the local Meta toolkit export lane so the current self-contained video-player package bakes a readable front-facing snapshot, and consolidates the recovered Unity tool path around the repo-local ghost training project plus the migrated unity-editor-bridge under frameangel_tools.",
+    "version":  "0.4.14",
+    "notes":  "0.4.14 stops ordinary player init from hydrating stale Meta proof state from dead PluginData paths, preserves a clean stable player startup even when historical Meta configs linger, and replaces the blank search-bar witness with a curated self-contained Meta proof built from the current local Unity lane.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.13.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.14.json"
 }

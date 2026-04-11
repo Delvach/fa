@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.14",
+  "title": "Harden player startup against stale Meta proof state and replace the blank search-bar witness",
+  "summary": "0.4.14 closes the biggest stability hole exposed by the Meta lane: the player no longer reaches into dead Meta proof package paths during normal startup, so historical `active_surface.json` leftovers stop throwing init exceptions on otherwise ordinary player loads. In the same slice, the standalone Meta proof lane replaces the blank search-bar witness with a curated self-contained capture from the current local Unity authoring project, and the 2018 proof carrier now respects transparency instead of flattening transparent UI into opaque black slabs.",
+  "reasoning": "The user proved the old failure directly with a fresh 0.4.11 load: ordinary player init still touched `Custom\\PluginData\\FrameAngel\\meta_toolkit_demo...` and died before the plugin could finish loading. At the same time, the search-bar proof lane was not merely ugly but genuinely dishonest, because the exported search-bar snapshot payload was blank. This version fixes both seams in bounded places so the player can stay stable while Meta proofs continue evolving toward the final semantic runtime path.",
+  "changes": [
+    {
+      "area": "player-init",
+      "summary": "Guards Meta proof hydration so ordinary player startup no longer seeds or validates Meta proof defaults unless there is explicit proof state to honor, and treats dead or insecure package paths as absent instead of throwing during init.",
+      "reasoning": "Historical Meta proof configs in `Custom\\PluginData` should not be able to break a fresh stable player load."
+    },
+    {
+      "area": "meta-search-bar-proof",
+      "summary": "Replaces the blank generic search-bar package snapshot with a curated search-bar witness captured from the current local flat-gallery authoring scene and exported as a self-contained CUA proof asset.",
+      "reasoning": "The existing search-bar toolkit package exported a fully blank snapshot payload, so continuing to ship it as a proof would have been misleading."
+    },
+    {
+      "area": "meta-proof-carrier",
+      "summary": "Updates the 2018 Meta proof carrier to prefer transparent-capable shaders so alpha-heavy Meta witnesses stop collapsing into opaque black rectangles.",
+      "reasoning": "Transparent UI proofs need a carrier that respects alpha if they are going to inform the final live control-surface lane."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.14 into `player.version.json` and `BuildRuntimeInfo.cs`.",
+    "Build and deploy the versioned `fa_cua_player.0.4.14.dll` and matching `fa_player_asset.0.4.14.assetbundle` through the player foundation script.",
+    "Rebuild and deploy `Preset_FA Meta Search Bar Proof.vap` plus `fa_meta_search_bar_proof.assetbundle` from the curated search-bar capture path.",
+    "In live VaM, load a fresh player with the 0.4.14 plugin and confirm startup no longer throws on stale `meta_toolkit_demo` package paths.",
+    "In live VaM, load the search-bar proof preset and confirm it is no longer a blank black rectangle witness."
+  ],
+  "knownIssues": [
+    "The standalone Meta proof lane is still witness-oriented; the final shipped Meta UI will continue moving toward live semantic controls and plugin-driven text, cards, media, sliders, and buttons.",
+    "The grid and video-player proofs are already useful witnesses, but transparency-heavy proof families may still need small family-specific polish beyond the generic carrier improvements in this slice.",
+    "A-B playback, `.var` packaging, and build-flavor assembly remain separate next-lane work."
+  ]
+}

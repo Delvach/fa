@@ -417,11 +417,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
 
     private static Material CreateSnapshotMaterial(string materialPath, Texture2D texture)
     {
-        Shader shader = Shader.Find("Unlit/Texture");
-        if (shader == null)
-            shader = Shader.Find("Standard");
-        if (shader == null)
-            shader = Shader.Find("Legacy Shaders/Diffuse");
+        Shader shader = FindPreferredSnapshotShader();
         if (shader == null)
             throw new InvalidOperationException("FrameAngelMetaVideoPlayer2018Exporter: no compatible shader found.");
 
@@ -431,10 +427,59 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
         material.mainTexture = texture;
         if (material.HasProperty("_Cull"))
             material.SetInt("_Cull", (int)CullMode.Off);
+        ConfigureTransparentSnapshotMaterial(material);
 
         AssetDatabase.CreateAsset(material, materialPath);
         AssetDatabase.SaveAssets();
         return AssetDatabase.LoadAssetAtPath<Material>(materialPath) ?? material;
+    }
+
+    private static Shader FindPreferredSnapshotShader()
+    {
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader != null)
+            return shader;
+
+        shader = Shader.Find("Unlit/Transparent");
+        if (shader != null)
+            return shader;
+
+        shader = Shader.Find("Legacy Shaders/Transparent/Diffuse");
+        if (shader != null)
+            return shader;
+
+        shader = Shader.Find("Standard");
+        if (shader != null)
+            return shader;
+
+        shader = Shader.Find("Unlit/Texture");
+        if (shader != null)
+            return shader;
+
+        return Shader.Find("Legacy Shaders/Diffuse");
+    }
+
+    private static void ConfigureTransparentSnapshotMaterial(Material material)
+    {
+        if (material == null)
+            return;
+
+        material.renderQueue = 3000;
+
+        if (material.shader != null && string.Equals(material.shader.name, "Standard", StringComparison.OrdinalIgnoreCase))
+        {
+            if (material.HasProperty("_Mode"))
+                material.SetFloat("_Mode", 2f);
+            if (material.HasProperty("_SrcBlend"))
+                material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
+            if (material.HasProperty("_DstBlend"))
+                material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
+            if (material.HasProperty("_ZWrite"))
+                material.SetInt("_ZWrite", 0);
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.EnableKeyword("_ALPHABLEND_ON");
+            material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        }
     }
 
     private static GameObject CreateSnapshotRoot(string resourceId, Material material, float widthMeters, float heightMeters)
