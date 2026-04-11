@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.29",
-    "notes":  "0.4.29 retags the built-in screen-core controls as FA-native instead of Meta, while leaving the older authored Meta fallback and archived runtime-json seams untouched.",
+    "version":  "0.4.30",
+    "notes":  "0.4.30 routes skip-forward and skip-backward through the same stable seek helper as scrub, and adds skip boundary diagnostics, so transport jumps no longer rely on a narrower direct time-set path.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.29.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.30.json"
 }

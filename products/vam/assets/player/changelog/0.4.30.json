@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.30",
+  "title": "Unify skip transport with the stable seek path",
+  "summary": "0.4.30 publishes `Fa.Player.11.var` with a narrow transport fix: skip-forward and skip-backward now use the same seek-and-resume helper as scrub, and the diagnostics probe now logs skip request and completion details to the normal VaM log.",
+  "reasoning": "Live testing on `0.4.28` narrowed the failure seam further. Repeated slider scrubs appeared stable, but a skip-ahead button press could still leave playback stuck and contaminate later media loads. That behavior strongly suggested the transport buttons were still using a narrower runtime path than scrub. This slice keeps scope tight and simply routes skip through the already-hardened seek helper so skip inherits the same pause, motion-reset, audio-apply, and resume behavior as scrub.",
+  "changes": [
+    {
+      "area": "transport",
+      "summary": "Changes standalone skip-forward and skip-backward to call the same stable seek helper that slider scrub already uses.",
+      "reasoning": "The old skip path wrote `videoPlayer.time` directly and refreshed only the paused frame, which left it more fragile than the scrub path on problematic media."
+    },
+    {
+      "area": "diagnostics",
+      "summary": "Adds `skip_request`, `skip_ok`, and `skip_failed` probe logging at the transport boundary.",
+      "reasoning": "If a media-specific edge case still survives after the path unification, the next witness run should say exactly what the skip button attempted and whether playback resumed cleanly."
+    },
+    {
+      "area": "release-boundary",
+      "summary": "Publishes the transport-fix candidate under a fresh semantic version and `Fa.Player.11.var` package identity.",
+      "reasoning": "A new rung keeps the witness clean and avoids colliding with `main`, which already uses `0.4.29` for unrelated work."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.30 into player.version.json and BuildRuntimeInfo.cs, then build `Fa.Player.11.var` from the release worktree.",
+    "Verify the package contains the 0.4.30 assetbundle, plugin, preset, and demo scene.",
+    "Load `Fa.Player.11.var`, play a long video, scrub repeatedly, then use skip-forward and skip-backward to confirm transport jumps no longer leave playback stuck.",
+    "If the issue survives, enable the diagnostics probe and capture the normal VaM log so the skip events can be compared directly against scrub events."
+  ],
+  "knownIssues": [
+    "The diagnostics probe remains hidden and scene-configurable rather than user-facing.",
+    "This slice does not yet add a dedicated diagnostics scene variant; it only strengthens the transport path and the existing probe output."
+  ]
+}

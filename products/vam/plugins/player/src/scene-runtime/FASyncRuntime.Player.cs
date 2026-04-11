@@ -6882,19 +6882,36 @@ public partial class FASyncRuntime : MVRScript
         else
             targetTimeSeconds = Math.Max(0d, targetTimeSeconds);
 
-        try
+        bool shouldResumePlayback = record.desiredPlaying && !record.mediaIsStillImage;
+        LogStandalonePlayerDiagnostics(
+            record,
+            "skip_request",
+            "current=" + currentTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " duration=" + durationSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " delta=" + deltaSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " target=" + targetTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " resume=" + (shouldResumePlayback ? "true" : "false"));
+
+        if (!TrySeekStandalonePlayerRecordToSeconds(record, targetTimeSeconds, shouldResumePlayback, out errorMessage))
         {
-            record.videoPlayer.time = targetTimeSeconds;
-            TryRefreshStandalonePlayerPausedFrame(record);
-            record.lastError = "";
-            return true;
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "player skip failed: " + ex.Message;
-            record.lastError = errorMessage;
+            LogStandalonePlayerDiagnostics(
+                record,
+                "skip_failed",
+                "delta=" + deltaSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                    + " target=" + targetTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                    + " resume=" + (shouldResumePlayback ? "true" : "false")
+                    + " error=" + errorMessage);
             return false;
         }
+
+        LogStandalonePlayerDiagnostics(
+            record,
+            "skip_ok",
+            "delta=" + deltaSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " target=" + targetTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                + " resume=" + (shouldResumePlayback ? "true" : "false")
+                + " " + BuildStandalonePlayerDiagnosticsSnapshot(record));
+        return true;
     }
 
     private void TryRefreshStandalonePlayerPausedFrame(StandalonePlayerRecord record)
