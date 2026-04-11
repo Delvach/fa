@@ -139,6 +139,9 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableAction playerRandomOnAction;
     private JSONStorableAction playerResizeDownAction;
     private JSONStorableAction playerResizeUpAction;
+    private JSONStorableStringChooser playerMirrorBankLayoutChooser;
+    private JSONStorableStringChooser playerMirrorBankRowsChooser;
+    private JSONStorableStringChooser playerMirrorBankColumnsChooser;
     private JSONStorableString syncLastErrorField;
     private JSONStorableString syncBrokerActionIdField;
     private JSONStorableString syncBrokerArgsJsonField;
@@ -517,6 +520,7 @@ public partial class FASyncRuntime : MVRScript
             {
                 RunAttachedPlayerResizeAction(PlayerResizeUpMultiplier, "Player resized up");
             });
+        BuildPlayerMirrorBankStorables();
 
 #if FRAMEANGEL_TEST_SURFACES
         syncDevModeToggle = new JSONStorableBool("Sync Dev Mode", syncDevMode);
@@ -636,6 +640,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterAction(playerRandomOnAction);
         RegisterAction(playerResizeDownAction);
         RegisterAction(playerResizeUpAction);
+        RegisterPlayerMirrorBankStorables();
 
 #if FRAMEANGEL_TEST_SURFACES
         RegisterBool(syncDevModeToggle);
@@ -796,6 +801,7 @@ public partial class FASyncRuntime : MVRScript
                 RunAttachedPlayerSetRandomAction(true, "Player random enabled");
             }
         );
+        BuildPlayerMirrorBankUi();
 
 #if FRAMEANGEL_TEST_SURFACES
         CreateToggle(syncDevModeToggle);

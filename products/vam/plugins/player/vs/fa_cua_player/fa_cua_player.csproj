@@ -92,6 +92,7 @@
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.InnerPiece.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.MetaHarness.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.cs" />
+    <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.MultiScreenBank.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.PlayerPresets.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.PlayerPluginSurface.cs" />
     <Compile Include="..\..\src\scene-runtime\FASyncRuntime.Player.ControlSurface.cs" />

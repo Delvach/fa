@@ -6877,6 +6877,7 @@ public partial class FASyncRuntime : MVRScript
                         record.lastError = "";
                 }
 
+                TickStandalonePlayerMirrorBank(record);
                 continue;
             }
 
@@ -7036,6 +7037,8 @@ public partial class FASyncRuntime : MVRScript
                         record.lastError = "";
                     }
                 }
+
+                TickStandalonePlayerMirrorBank(record);
             }
         }
     }
@@ -8661,6 +8664,7 @@ public partial class FASyncRuntime : MVRScript
             return;
 
         StopStandalonePlayerResize(record);
+        DestroyStandalonePlayerMirrorBank(record);
 
         if (record.videoPlayer != null)
         {
@@ -8776,6 +8780,7 @@ public partial class FASyncRuntime : MVRScript
                 playerRuntimeTimelineField.valNoCallback = playerPendingTimelineSummary;
             if (playerRuntimePlaylistField != null)
                 playerRuntimePlaylistField.valNoCallback = playerPendingPlaylistSummary;
+            RefreshAttachedPlayerMirrorBankChooserFields();
             UpdateStandalonePlayerSliderFields(0f, 1f);
             return;
         }
@@ -8906,6 +8911,7 @@ public partial class FASyncRuntime : MVRScript
             + displayWidthMeters.ToString("0.###", CultureInfo.InvariantCulture)
             + "x"
             + displayHeightMeters.ToString("0.###", CultureInfo.InvariantCulture);
+        playlistSummary += " " + DescribeStandalonePlayerMirrorBank(record);
         if (record.playlistPaths == null || record.playlistPaths.Count <= 0)
         {
             string selectedDirectory = TryGetPathParentLeafName(playerMediaPath);
@@ -8932,6 +8938,7 @@ public partial class FASyncRuntime : MVRScript
             playerRuntimeTimelineField.valNoCallback = timelineSummary;
         if (playerRuntimePlaylistField != null)
             playerRuntimePlaylistField.valNoCallback = playlistSummary;
+        RefreshAttachedPlayerMirrorBankChooserFields(record);
         UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
     }
 
@@ -9283,6 +9290,9 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"resizeInFlight\":").Append(record.resizeInFlight ? "true" : "false").Append(',');
         sb.Append("\"resizeProgressNormalized\":").Append(FormatFloat(record.resizeProgressNormalized)).Append(',');
         sb.Append("\"lastError\":\"").Append(EscapeJsonString(record.lastError)).Append("\",");
+        sb.Append("\"mirrorBank\":");
+        AppendStandalonePlayerMirrorBankJson(sb, record);
+        sb.Append(',');
         sb.Append("\"screenDebug\":").Append(record.binding != null && !string.IsNullOrEmpty(record.binding.debugJson) ? record.binding.debugJson : "{}");
         sb.Append('}');
     }

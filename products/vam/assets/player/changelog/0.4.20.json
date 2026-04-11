@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.20",
+  "title": "Integrate the hosted multiscreen mirror-bank slice into the packaged player",
+  "summary": "0.4.20 keeps the stable package-first player boundary from 0.4.19 and pulls in the Beta hosted multiscreen mirror-bank runtime slice. The current player can now create mirrored neighboring screens in grid or circular layouts from the live player surface without widening into a separate per-screen playback system.",
+  "reasoning": "The Beta branch was a bounded runtime-side slice that adds mirrored hosted screens, configuration UI, and debug/state reporting without touching the working package flow. The right integration is to carry those runtime changes forward onto the current stable mainline so the next packaged build exposes multiscreen testing from the same known-good player seam.",
+  "changes": [
+    {
+      "area": "multiscreen-runtime",
+      "summary": "Adds a hosted standalone player mirror-bank runtime that can arrange mirrored neighboring screens in grid or circular layouts.",
+      "reasoning": "This carries forward the Beta multiscreen experiment as a testable feature without introducing separate playback runtimes per mirror."
+    },
+    {
+      "area": "player-ui",
+      "summary": "Adds transient player UI controls for multiscreen layout, rows, columns, circular radius, and circular max angle.",
+      "reasoning": "The feature needs a direct in-plugin control seam so layout changes can be tested quickly in live VaM."
+    },
+    {
+      "area": "state-debug",
+      "summary": "Adds multiscreen state summaries to the current player runtime debug output and playlist/status summary text.",
+      "reasoning": "This keeps the new mirror-bank seam inspectable without guessing whether a blank or off-screen bank is actually active."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.20 into player.version.json and BuildRuntimeInfo.cs, then build the packaged player release through the foundation build in package-only mode.",
+    "Confirm the packaged build advances the public `.var` release number automatically and emits a fresh AddonPackages package.",
+    "Verify the packaged player release contains the 0.4.20 asset, plugin, preset, and scene together inside the `.var`.",
+    "Verify the plugin compiles with the new multiscreen runtime file and that the packaged release validation still passes."
+  ],
+  "knownIssues": [
+    "The mirror-bank slice currently mirrors the main player surface rather than creating independent neighboring playback runtimes.",
+    "Live layout correctness for the new multiscreen bank still requires human VaM proof."
+  ]
+}
