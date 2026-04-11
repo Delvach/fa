@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.16",
-    "notes":  "0.4.16 keeps the package-first player var path, but the packaged demo scene now defaults to a clean player-only witness instead of inheriting the older managed button rig from the external buttons scene template.",
+    "version":  "0.4.17",
+    "notes":  "0.4.17 keeps the package-first player var path and clean packaged scene defaults, and also disables the authored back-mounted control slab on the packaged CUA player path so the stable player no longer carries the older Meta-style panel crossover.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.16.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.17.json"
 }

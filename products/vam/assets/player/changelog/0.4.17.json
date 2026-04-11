@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.17",
+  "title": "Keep the packaged player clean by disabling the authored back-mounted control slab on the CUA path",
+  "summary": "0.4.17 preserves the package-first `.var` seam from 0.4.16, but trims the remaining Meta-style crossover on the stable packaged player by stopping the hosted CUA path from auto-promoting the authored `control_surface` into a bound Meta control family and by keeping that authored slab hidden on the packaged player.",
+  "reasoning": "Once the packaged demo scene was cleaned up and the `.var` release identity started auto-advancing, the remaining visual hitchhiker became obvious: a translucent back-mounted panel that moved with the screen even though the older loose scene buttons were already gone. That panel was not a return to external `PluginData` JSON; it was the authored `control_surface` baked into the screen-core asset and still being promoted on the hosted CUA runtime path. The stable packaged player should not surface that older Meta-style control slab by default.",
+  "changes": [
+    {
+      "area": "hosted-cua-runtime",
+      "summary": "Stops the packaged CUA player path from automatically binding the authored screen-core `control_surface` as a hosted Meta-style control family.",
+      "reasoning": "The stable player package should keep the authored screen contract, but not surface the older back-mounted control slab as a live Meta crossover by default."
+    },
+    {
+      "area": "visual-cleanup",
+      "summary": "Keeps the authored `control_surface` renderers hidden on the packaged CUA player path while leaving the main screen basis visible.",
+      "reasoning": "The screen should stay visible and functional without carrying the translucent back-mounted slab that made the packaged player feel contaminated by the Meta experimentation lane."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.17 into `player.version.json` and build the matching player release artifacts through the foundation build in package-only mode.",
+    "Confirm the generated package advances to the next `FrameAngel.Player.<n>.var` public release automatically.",
+    "Load the packaged player from AddonPackages in live VaM and confirm the older loose scene buttons remain absent and the translucent back-mounted control slab no longer appears under or behind the screen.",
+    "Verify the packaged player asset, plugin, preset, and scene still load together correctly from the `.var`."
+  ],
+  "knownIssues": [
+    "Standalone packaged demo media and package-root browser shortcuts remain the next bounded slice.",
+    "Further Meta proof assets, A-B playback, and build-flavor assembly remain separate follow-on slices."
+  ]
+}
