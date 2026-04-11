@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.25",
-    "notes":  "0.4.25 trims always-on runtime overhead by removing unconditional per-frame audio reapply work, reusing scratch lists in hot player ticks, and avoiding redundant play-state polling in the standalone playback loop.",
+    "version":  "0.4.26",
+    "notes":  "0.4.26 stages the next still image as a pending texture and only commits it after the refreshed binding is in place, so image changes stop briefly presenting the new content on the wrong scale.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.25.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.26.json"
 }

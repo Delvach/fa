@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.26",
+  "title": "Stage still-image swaps until the final binding is ready",
+  "summary": "0.4.26 changes still-image loading so the next image is staged as a pending texture and only committed after the refreshed screen binding is in place, avoiding the brief wrong-scale presentation during image navigation.",
+  "reasoning": "The image-navigation glitch is a transition-order problem, not a broader playback problem. The smallest safe fix is to keep the old still visible until the new still can bind at its final fit, instead of letting the next image enter the runtime before the size and aspect update complete.",
+  "changes": [
+    {
+      "area": "still-image-handoff",
+      "summary": "Adds a pending still-image texture handoff and commits it only after screen refresh succeeds.",
+      "reasoning": "This keeps the visible still and the sizing refresh in sync, which prevents the next image from briefly appearing at the wrong scale."
+    },
+    {
+      "area": "hosted-and-scene-player-refresh",
+      "summary": "Applies the same pending-texture commit behavior to both hosted and non-hosted screen refresh paths.",
+      "reasoning": "The transition-order issue can show up in either path, so the fix needs to live in the shared refresh seam."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.26 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.26.var and contains the 0.4.26 asset, plugin, preset, and demo scene.",
+    "Verify the player plugin compiles after the pending still-image handoff changes."
+  ],
+  "knownIssues": [
+    "This slice is only about image-to-image handoff ordering; any movie-to-movie transition treatment is still a separate follow-up.",
+    "Live VaM proof is still needed to judge the subjective smoothness of rapid image stepping."
+  ]
+}

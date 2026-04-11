@@ -189,6 +189,7 @@ public partial class FASyncRuntime : MVRScript
         public VideoPlayer videoPlayer;
         public RenderTexture renderTexture;
         public Texture2D imageTexture;
+        public Texture2D pendingImageTexture;
         public bool mediaIsStillImage = false;
         public PlayerScreenBindingRecord binding;
         public Coroutine resizeCoroutine;
@@ -7037,13 +7038,16 @@ public partial class FASyncRuntime : MVRScript
 
             if (record.mediaIsStillImage)
             {
-                record.prepared = record.imageTexture != null;
+                Texture2D effectiveStillTexture = record.pendingImageTexture != null
+                    ? record.pendingImageTexture
+                    : record.imageTexture;
+                record.prepared = effectiveStillTexture != null;
                 record.preparePending = false;
                 record.prepareStartedAt = 0f;
                 record.desiredPlaying = false;
 
-                if (record.imageTexture != null && (record.textureWidth <= 0 || record.textureHeight <= 0))
-                    TryResolveTextureDimensions(record.imageTexture, out record.textureWidth, out record.textureHeight);
+                if (effectiveStillTexture != null && (record.textureWidth <= 0 || record.textureHeight <= 0))
+                    TryResolveTextureDimensions(effectiveStillTexture, out record.textureWidth, out record.textureHeight);
 
                 if (record.needsScreenRefresh)
                 {
@@ -8084,18 +8088,60 @@ public partial class FASyncRuntime : MVRScript
 
     private void DestroyStandalonePlayerImageTexture(StandalonePlayerRecord record)
     {
-        if (record == null || record.imageTexture == null)
+        if (record == null)
+            return;
+
+        if (record.imageTexture != null)
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(record.imageTexture);
+            }
+            catch
+            {
+            }
+
+            record.imageTexture = null;
+        }
+
+        DestroyStandalonePlayerPendingImageTexture(record);
+    }
+
+    private void DestroyStandalonePlayerPendingImageTexture(StandalonePlayerRecord record)
+    {
+        if (record == null || record.pendingImageTexture == null)
             return;
 
         try
         {
-            UnityEngine.Object.Destroy(record.imageTexture);
+            UnityEngine.Object.Destroy(record.pendingImageTexture);
         }
         catch
         {
         }
 
-        record.imageTexture = null;
+        record.pendingImageTexture = null;
+    }
+
+    private void CommitStandalonePlayerPendingImageTexture(StandalonePlayerRecord record)
+    {
+        if (record == null || record.pendingImageTexture == null)
+            return;
+
+        Texture2D previousTexture = record.imageTexture;
+        record.imageTexture = record.pendingImageTexture;
+        record.pendingImageTexture = null;
+
+        if (previousTexture == null)
+            return;
+
+        try
+        {
+            UnityEngine.Object.Destroy(previousTexture);
+        }
+        catch
+        {
+        }
     }
 
     private bool TryLoadStandalonePlayerImageTexture(
@@ -8184,8 +8230,8 @@ public partial class FASyncRuntime : MVRScript
                 record.renderTexture = null;
             }
 
-            DestroyStandalonePlayerImageTexture(record);
-            record.imageTexture = loadedTexture;
+            DestroyStandalonePlayerPendingImageTexture(record);
+            record.pendingImageTexture = loadedTexture;
             record.mediaIsStillImage = true;
             record.prepared = true;
             record.preparePending = false;
@@ -8205,7 +8251,7 @@ public partial class FASyncRuntime : MVRScript
         }
         finally
         {
-            if (!string.IsNullOrEmpty(errorMessage) && loadedTexture != null && loadedTexture != record.imageTexture)
+            if (!string.IsNullOrEmpty(errorMessage) && loadedTexture != null && loadedTexture != record.imageTexture && loadedTexture != record.pendingImageTexture)
             {
                 try
                 {
@@ -8331,10 +8377,14 @@ public partial class FASyncRuntime : MVRScript
         if (record == null)
             return false;
 
-        if (record.mediaIsStillImage && record.imageTexture != null)
+        if (record.mediaIsStillImage && (record.pendingImageTexture != null || record.imageTexture != null))
         {
-            sourceTexture = record.imageTexture;
-            sourceName = "StandalonePlayer.imageTexture";
+            sourceTexture = record.pendingImageTexture != null
+                ? record.pendingImageTexture
+                : record.imageTexture;
+            sourceName = record.pendingImageTexture != null
+                ? "StandalonePlayer.pendingImageTexture"
+                : "StandalonePlayer.imageTexture";
             return true;
         }
 
@@ -8529,6 +8579,7 @@ public partial class FASyncRuntime : MVRScript
         if (!string.IsNullOrEmpty(bindingOwnerAtomUid))
             playerScreenBindings[bindingOwnerAtomUid] = nextBinding;
         record.needsScreenRefresh = false;
+        CommitStandalonePlayerPendingImageTexture(record);
         return true;
     }
 
