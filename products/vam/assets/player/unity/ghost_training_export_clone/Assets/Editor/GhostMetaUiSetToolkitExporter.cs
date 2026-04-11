@@ -99,6 +99,12 @@ public static class GhostMetaUiSetToolkitExporter
         public string fingerprint = "";
     }
 
+    private sealed class ProfileIsolationState
+    {
+        public GameObject gameObject;
+        public bool wasActiveSelf;
+    }
+
     private static readonly string[] ThemeAssetPaths =
     {
         PackageThemesRoot + "/UIThemeQuest_Dark.asset",
@@ -402,57 +408,133 @@ public static class GhostMetaUiSetToolkitExporter
             return null;
         }
 
-        PrepareProfileForSnapshot(profile);
-        if (!HasExplicitProofBindings(profile))
+        List<ProfileIsolationState> isolationStates = null;
+        try
         {
-            profile.AutoConfigureElements();
+            isolationStates = IsolateProfileForSnapshot(profile);
+            PrepareProfileForSnapshot(profile);
+            if (!HasExplicitProofBindings(profile))
+            {
+                profile.AutoConfigureElements();
+            }
+            Selection.activeGameObject = profile.gameObject;
+
+            string surfaceRoot = Path.Combine(outputRoot, profile.controlSurfaceId ?? "meta_ui_surface");
+            UnityBridgeResponse response = UnityBridgeInnerPieceFacade.ExportSelectionFromWindow(
+                string.IsNullOrWhiteSpace(profile.exportDisplayName)
+                    ? profile.controlSurfaceLabel
+                    : profile.exportDisplayName,
+                surfaceRoot,
+                capturePreview,
+                string.IsNullOrWhiteSpace(profile.exportTagsCsv)
+                    ? "ghost,meta_ui,toolkit"
+                    : profile.exportTagsCsv);
+            EnsureSuccess(response, "asset.innerpiece.export_selection[" + (profile.controlSurfaceId ?? "unknown") + "]");
+
+            UnityInnerPieceLastExportSummary lastExport = UnityBridgeInnerPieceFacade.LastInnerPieceExport;
+            if (lastExport == null)
+            {
+                throw new InvalidOperationException("GhostMetaUiSetToolkitExporter: export completed but no last export summary was recorded.");
+            }
+
+            return new ToolkitSurfaceSummary
+            {
+                controlSurfaceId = profile.controlSurfaceId ?? "",
+                exportDisplayName = string.IsNullOrWhiteSpace(profile.exportDisplayName) ? (profile.controlSurfaceLabel ?? "") : profile.exportDisplayName,
+                relativePrefabPath = ResolveRelativePrefabPath(profile.sourcePrefabAssetPath),
+                category = ResolveCategoryFromTags(profile.exportTagsCsv),
+                controlFamilyId = profile.controlFamilyId ?? "",
+                exportTagsCsv = profile.exportTagsCsv ?? "",
+                defaultTargetDisplayId = profile.defaultTargetDisplayId ?? "",
+                themeId = profile.controlThemeId ?? "",
+                themeLabel = profile.controlThemeLabel ?? "",
+                themeVariantId = profile.controlThemeVariantId ?? "",
+                themeAssetPath = profile.controlThemeAssetPath ?? "",
+                themeAssetGuid = profile.controlThemeAssetGuid ?? "",
+                controlElementCount = profile.elements != null ? profile.elements.Count : 0,
+                packageId = lastExport.PackageId,
+                resourceId = lastExport.ResourceId,
+                packageRootPath = lastExport.PackageRootPath,
+                geometryPath = lastExport.GeometryPath,
+                materialsPath = lastExport.MaterialsPath,
+                controlsPath = lastExport.ControlsPath,
+                previewPath = lastExport.PreviewPath,
+                exportReceiptPath = lastExport.ExportReceiptPath,
+                fingerprint = lastExport.Fingerprint,
+                prefabAssetPath = profile.sourcePrefabAssetPath ?? ""
+            };
         }
-        Selection.activeGameObject = profile.gameObject;
-
-        string surfaceRoot = Path.Combine(outputRoot, profile.controlSurfaceId ?? "meta_ui_surface");
-        UnityBridgeResponse response = UnityBridgeInnerPieceFacade.ExportSelectionFromWindow(
-            string.IsNullOrWhiteSpace(profile.exportDisplayName)
-                ? profile.controlSurfaceLabel
-                : profile.exportDisplayName,
-            surfaceRoot,
-            capturePreview,
-            string.IsNullOrWhiteSpace(profile.exportTagsCsv)
-                ? "ghost,meta_ui,toolkit"
-                : profile.exportTagsCsv);
-        EnsureSuccess(response, "asset.innerpiece.export_selection[" + (profile.controlSurfaceId ?? "unknown") + "]");
-
-        UnityInnerPieceLastExportSummary lastExport = UnityBridgeInnerPieceFacade.LastInnerPieceExport;
-        if (lastExport == null)
+        finally
         {
-            throw new InvalidOperationException("GhostMetaUiSetToolkitExporter: export completed but no last export summary was recorded.");
+            RestoreProfileIsolation(isolationStates);
+        }
+    }
+
+    private static List<ProfileIsolationState> IsolateProfileForSnapshot(GhostMetaControlSurfaceExportProfile activeProfile)
+    {
+        List<ProfileIsolationState> states = new List<ProfileIsolationState>();
+        if (activeProfile == null || activeProfile.gameObject == null || activeProfile.gameObject.scene.IsValid() == false)
+        {
+            return states;
         }
 
-        return new ToolkitSurfaceSummary
+        GhostMetaControlSurfaceExportProfile[] profiles = UnityEngine.Object.FindObjectsOfType<GhostMetaControlSurfaceExportProfile>(true);
+        for (int i = 0; i < profiles.Length; i++)
         {
-            controlSurfaceId = profile.controlSurfaceId ?? "",
-            exportDisplayName = string.IsNullOrWhiteSpace(profile.exportDisplayName) ? (profile.controlSurfaceLabel ?? "") : profile.exportDisplayName,
-            relativePrefabPath = ResolveRelativePrefabPath(profile.sourcePrefabAssetPath),
-            category = ResolveCategoryFromTags(profile.exportTagsCsv),
-            controlFamilyId = profile.controlFamilyId ?? "",
-            exportTagsCsv = profile.exportTagsCsv ?? "",
-            defaultTargetDisplayId = profile.defaultTargetDisplayId ?? "",
-            themeId = profile.controlThemeId ?? "",
-            themeLabel = profile.controlThemeLabel ?? "",
-            themeVariantId = profile.controlThemeVariantId ?? "",
-            themeAssetPath = profile.controlThemeAssetPath ?? "",
-            themeAssetGuid = profile.controlThemeAssetGuid ?? "",
-            controlElementCount = profile.elements != null ? profile.elements.Count : 0,
-            packageId = lastExport.PackageId,
-            resourceId = lastExport.ResourceId,
-            packageRootPath = lastExport.PackageRootPath,
-            geometryPath = lastExport.GeometryPath,
-            materialsPath = lastExport.MaterialsPath,
-            controlsPath = lastExport.ControlsPath,
-            previewPath = lastExport.PreviewPath,
-            exportReceiptPath = lastExport.ExportReceiptPath,
-            fingerprint = lastExport.Fingerprint,
-            prefabAssetPath = profile.sourcePrefabAssetPath ?? ""
-        };
+            GhostMetaControlSurfaceExportProfile profile = profiles[i];
+            if (profile == null || profile.gameObject == null)
+            {
+                continue;
+            }
+
+            if (profile.gameObject.scene != activeProfile.gameObject.scene)
+            {
+                continue;
+            }
+
+            if (profile == activeProfile)
+            {
+                continue;
+            }
+
+            states.Add(new ProfileIsolationState
+            {
+                gameObject = profile.gameObject,
+                wasActiveSelf = profile.gameObject.activeSelf
+            });
+
+            if (profile.gameObject.activeSelf)
+            {
+                profile.gameObject.SetActive(false);
+            }
+        }
+
+        Canvas.ForceUpdateCanvases();
+        return states;
+    }
+
+    private static void RestoreProfileIsolation(List<ProfileIsolationState> states)
+    {
+        if (states == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < states.Count; i++)
+        {
+            ProfileIsolationState state = states[i];
+            if (state == null || state.gameObject == null)
+            {
+                continue;
+            }
+
+            if (state.gameObject.activeSelf != state.wasActiveSelf)
+            {
+                state.gameObject.SetActive(state.wasActiveSelf);
+            }
+        }
+
+        Canvas.ForceUpdateCanvases();
     }
 
     private static UIThemeManager EnsureThemeManager(GameObject root)
