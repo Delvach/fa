@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.22",
-    "notes":  "0.4.22 adds A-B loop controls to the standalone player runtime, preserves A-B state in player presets, and packages the next self-identifying test build as FrameAngel.Player.0.4.22.var.",
+    "version":  "0.4.23",
+    "notes":  "0.4.23 stops force-disabling grab navigation during gaze focus capture, keeping the rest of the current player input stack unchanged while the operator interaction model is refined.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.22.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.23.json"
 }

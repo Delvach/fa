@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.23",
+  "title": "Stop disabling grab navigation during gaze capture",
+  "summary": "0.4.23 removes the extra grab-navigation disable from the current CUA gaze-focus capture path while leaving the rest of the player input capture behavior unchanged.",
+  "reasoning": "The current runtime is not consuming the joystick press that originally justified grabbing and navigation suppression, so carrying that disable forward adds friction without helping the focused player controls.",
+  "changes": [
+    {
+      "area": "cua-input-capture",
+      "summary": "Stops toggling VaM's grab-navigation disable while the player owns focused gaze capture.",
+      "reasoning": "This keeps the capture seam narrower and removes an unnecessary side effect from the input module."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.23 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.23.var and contains the 0.4.23 asset, plugin, preset, and demo scene.",
+    "Verify the CUA player plugin compiles after the input-capture toggle change."
+  ],
+  "knownIssues": [
+    "This does not yet change any joystick-trigger modifier logic or future radial-input work.",
+    "Live VaM proof is still needed to judge the exact feel of grab navigation alongside gaze focus."
+  ]
+}
