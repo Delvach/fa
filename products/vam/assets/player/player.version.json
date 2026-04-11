@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.26",
-    "notes":  "0.4.26 stages the next still image as a pending texture and only commits it after the refreshed binding is in place, so image changes stop briefly presenting the new content on the wrong scale.",
+    "version":  "0.4.27",
+    "notes":  "0.4.27 adds a short transition fade overlay for movie-to-movie handoffs so next, previous, and natural-end playlist advances darken intentionally instead of flashing a harsher black gap.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.26.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.27.json"
 }

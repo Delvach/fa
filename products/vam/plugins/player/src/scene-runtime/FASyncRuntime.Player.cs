@@ -58,6 +58,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
+    private const float StandalonePlayerTransitionFadeDurationSeconds = 0.25f;
     private const float StandalonePlayerVolumeCurveExponent = 2f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
@@ -191,6 +192,14 @@ public partial class FASyncRuntime : MVRScript
         public Texture2D imageTexture;
         public Texture2D pendingImageTexture;
         public bool mediaIsStillImage = false;
+        public GameObject transitionFadeObject;
+        public Renderer transitionFadeRenderer;
+        public Material transitionFadeMaterial;
+        public float transitionFadeAlpha = 0f;
+        public float transitionFadeTargetAlpha = 0f;
+        public float transitionFadeLastTickTime = 0f;
+        public float transitionFadeReleaseAfterTime = 0f;
+        public bool transitionFadeReleaseRequested = false;
         public PlayerScreenBindingRecord binding;
         public Coroutine resizeCoroutine;
     }
@@ -1691,6 +1700,344 @@ public partial class FASyncRuntime : MVRScript
         binding.backdropTransformCaptured = false;
         binding.backdropRenderers = new Renderer[0];
         binding.backdropRendererStates = new bool[0];
+    }
+
+    private bool ShouldStartStandalonePlayerTransitionFade(StandalonePlayerRecord record, string nextMediaPath)
+    {
+        if (record == null || string.IsNullOrEmpty(nextMediaPath))
+            return false;
+
+        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(nextMediaPath))
+            return false;
+
+        if (record.mediaIsStillImage)
+            return false;
+
+        return record.binding != null
+            && record.binding.runtimeMediaSurfaceObject != null;
+    }
+
+    private void TickStandalonePlayerTransitionFade(StandalonePlayerRecord record)
+    {
+        if (record == null || record.transitionFadeObject == null || record.transitionFadeMaterial == null)
+            return;
+
+        float now = Time.unscaledTime;
+        if (record.transitionFadeLastTickTime <= 0f)
+            record.transitionFadeLastTickTime = now;
+
+        if (record.transitionFadeReleaseRequested
+            && now >= record.transitionFadeReleaseAfterTime
+            && record.transitionFadeTargetAlpha > 0f)
+        {
+            record.transitionFadeTargetAlpha = 0f;
+        }
+
+        float deltaTime = Mathf.Max(0f, now - record.transitionFadeLastTickTime);
+        record.transitionFadeLastTickTime = now;
+
+        float step = StandalonePlayerTransitionFadeDurationSeconds > 0.0001f
+            ? deltaTime / StandalonePlayerTransitionFadeDurationSeconds
+            : 1f;
+        record.transitionFadeAlpha = Mathf.MoveTowards(record.transitionFadeAlpha, record.transitionFadeTargetAlpha, step);
+        TryApplyStandalonePlayerTransitionFadeAlpha(record);
+
+        if (record.transitionFadeTargetAlpha <= 0.0001f
+            && record.transitionFadeAlpha <= 0.0001f)
+        {
+            DestroyStandalonePlayerTransitionFade(record);
+        }
+    }
+
+    private bool TryBeginStandalonePlayerTransitionFade(StandalonePlayerRecord record)
+    {
+        if (record == null || record.binding == null || record.binding.runtimeMediaSurfaceObject == null)
+            return false;
+
+        if (!TryEnsureStandalonePlayerTransitionFadeSurface(record))
+            return false;
+
+        record.transitionFadeTargetAlpha = 1f;
+        record.transitionFadeReleaseRequested = false;
+        record.transitionFadeReleaseAfterTime = Time.unscaledTime + StandalonePlayerTransitionFadeDurationSeconds;
+        if (record.transitionFadeLastTickTime <= 0f)
+            record.transitionFadeLastTickTime = Time.unscaledTime;
+        return true;
+    }
+
+    private void RequestStandalonePlayerTransitionFadeRelease(StandalonePlayerRecord record)
+    {
+        if (record == null || record.transitionFadeObject == null || record.transitionFadeMaterial == null)
+            return;
+
+        TryAlignStandalonePlayerTransitionFadeToBinding(record);
+        record.transitionFadeReleaseRequested = true;
+        if (record.transitionFadeReleaseAfterTime <= 0f)
+            record.transitionFadeReleaseAfterTime = Time.unscaledTime;
+    }
+
+    private bool TryEnsureStandalonePlayerTransitionFadeSurface(StandalonePlayerRecord record)
+    {
+        if (record == null || record.binding == null || record.binding.runtimeMediaSurfaceObject == null)
+            return false;
+
+        Transform runtimeSurfaceTransform = record.binding.runtimeMediaSurfaceObject.transform;
+        if (runtimeSurfaceTransform == null)
+            return false;
+
+        Transform parent = runtimeSurfaceTransform.parent;
+        if (parent == null)
+            return false;
+
+        if (record.transitionFadeObject == null || record.transitionFadeRenderer == null || record.transitionFadeMaterial == null)
+        {
+            Material fadeMaterial;
+            if (!TryCreateStandalonePlayerTransitionFadeMaterial(out fadeMaterial) || fadeMaterial == null)
+                return false;
+
+            GameObject fadeObject = null;
+            try
+            {
+                fadeObject = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                fadeObject.name = "FAPlayerRuntimeTransitionFade_" + SanitizeStandalonePlayerName(record.playbackKey);
+                fadeObject.layer = record.binding.runtimeMediaSurfaceObject.layer;
+                fadeObject.transform.SetParent(parent, false);
+
+                Collider fadeCollider = fadeObject.GetComponent<Collider>();
+                if (fadeCollider != null)
+                    UnityEngine.Object.Destroy(fadeCollider);
+
+                Renderer fadeRenderer = fadeObject.GetComponent<Renderer>();
+                if (fadeRenderer == null)
+                {
+                    UnityEngine.Object.Destroy(fadeObject);
+                    UnityEngine.Object.Destroy(fadeMaterial);
+                    return false;
+                }
+
+                fadeRenderer.sharedMaterials = new[] { fadeMaterial };
+                fadeRenderer.enabled = true;
+                fadeRenderer.receiveShadows = false;
+#pragma warning disable CS0618
+                fadeRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+#pragma warning restore CS0618
+                fadeRenderer.allowOcclusionWhenDynamic = false;
+
+                record.transitionFadeObject = fadeObject;
+                record.transitionFadeRenderer = fadeRenderer;
+                record.transitionFadeMaterial = fadeMaterial;
+                record.transitionFadeAlpha = 0f;
+                TryApplyStandalonePlayerTransitionFadeAlpha(record);
+            }
+            catch
+            {
+                if (fadeObject != null)
+                {
+                    try
+                    {
+                        UnityEngine.Object.Destroy(fadeObject);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                if (fadeMaterial != null)
+                {
+                    try
+                    {
+                        UnityEngine.Object.Destroy(fadeMaterial);
+                    }
+                    catch
+                    {
+                    }
+                }
+
+                record.transitionFadeObject = null;
+                record.transitionFadeRenderer = null;
+                record.transitionFadeMaterial = null;
+                return false;
+            }
+        }
+
+        return TryAlignStandalonePlayerTransitionFadeToBinding(record);
+    }
+
+    private bool TryAlignStandalonePlayerTransitionFadeToBinding(StandalonePlayerRecord record)
+    {
+        if (record == null
+            || record.transitionFadeObject == null
+            || record.binding == null
+            || record.binding.runtimeMediaSurfaceObject == null)
+        {
+            return false;
+        }
+
+        Transform runtimeSurfaceTransform = record.binding.runtimeMediaSurfaceObject.transform;
+        Transform fadeTransform = record.transitionFadeObject.transform;
+        if (runtimeSurfaceTransform == null || fadeTransform == null)
+            return false;
+
+        Transform parent = runtimeSurfaceTransform.parent;
+        if (parent == null)
+            return false;
+
+        fadeTransform.SetParent(parent, false);
+        fadeTransform.localRotation = runtimeSurfaceTransform.localRotation;
+        fadeTransform.localScale = runtimeSurfaceTransform.localScale;
+
+        Vector3 localPosition = runtimeSurfaceTransform.localPosition;
+        Vector3 localScale = runtimeSurfaceTransform.localScale;
+        float fadeGap = Mathf.Max(
+            0.00005f,
+            Mathf.Max(Mathf.Abs(localScale.x), Mathf.Abs(localScale.y)) * 0.0002f);
+        fadeTransform.localPosition = new Vector3(localPosition.x, localPosition.y, localPosition.z + fadeGap);
+        return true;
+    }
+
+    private bool TryCreateStandalonePlayerTransitionFadeMaterial(out Material fadeMaterial)
+    {
+        fadeMaterial = null;
+        string[] shaderCandidates = new[]
+        {
+            "Sprites/Default",
+            "UI/Default",
+            "Unlit/Transparent",
+            "Legacy Shaders/Transparent/Diffuse"
+        };
+
+        try
+        {
+            Shader fadeShader = null;
+            for (int i = 0; i < shaderCandidates.Length; i++)
+            {
+                try
+                {
+                    fadeShader = Shader.Find(shaderCandidates[i]);
+                }
+                catch
+                {
+                    fadeShader = null;
+                }
+
+                if (fadeShader != null)
+                    break;
+            }
+
+            if (fadeShader == null)
+                return false;
+
+            fadeMaterial = new Material(fadeShader);
+            Texture whiteTexture = null;
+            try
+            {
+                whiteTexture = Texture2D.whiteTexture;
+            }
+            catch
+            {
+                whiteTexture = null;
+            }
+
+            if (whiteTexture != null)
+            {
+                TrySetMaterialTexture(fadeMaterial, "_MainTex", whiteTexture);
+                TrySetMaterialTexture(fadeMaterial, "_BaseMap", whiteTexture);
+            }
+
+            TrySetMaterialFloat(fadeMaterial, "_Cull", 0f);
+            TrySetMaterialFloat(fadeMaterial, "_ZWrite", 0f);
+            TrySetMaterialFloat(fadeMaterial, "_Mode", 2f);
+            TrySetMaterialFloat(fadeMaterial, "_Surface", 1f);
+
+            try
+            {
+                fadeMaterial.SetOverrideTag("RenderType", "Transparent");
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                if (fadeMaterial.renderQueue < 3500)
+                    fadeMaterial.renderQueue = 3500;
+            }
+            catch
+            {
+            }
+
+            return true;
+        }
+        catch
+        {
+            if (fadeMaterial != null)
+            {
+                try
+                {
+                    UnityEngine.Object.Destroy(fadeMaterial);
+                }
+                catch
+                {
+                }
+            }
+
+            fadeMaterial = null;
+            return false;
+        }
+    }
+
+    private void TryApplyStandalonePlayerTransitionFadeAlpha(StandalonePlayerRecord record)
+    {
+        if (record == null || record.transitionFadeMaterial == null)
+            return;
+
+        Color fadeColor = new Color(0f, 0f, 0f, Mathf.Clamp01(record.transitionFadeAlpha));
+        TrySetMaterialColor(record.transitionFadeMaterial, "_Color", fadeColor);
+        TrySetMaterialColor(record.transitionFadeMaterial, "_BaseColor", fadeColor);
+        try
+        {
+            record.transitionFadeMaterial.color = fadeColor;
+        }
+        catch
+        {
+        }
+    }
+
+    private void DestroyStandalonePlayerTransitionFade(StandalonePlayerRecord record)
+    {
+        if (record == null)
+            return;
+
+        if (record.transitionFadeObject != null)
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(record.transitionFadeObject);
+            }
+            catch
+            {
+            }
+        }
+
+        if (record.transitionFadeMaterial != null)
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(record.transitionFadeMaterial);
+            }
+            catch
+            {
+            }
+        }
+
+        record.transitionFadeObject = null;
+        record.transitionFadeRenderer = null;
+        record.transitionFadeMaterial = null;
+        record.transitionFadeAlpha = 0f;
+        record.transitionFadeTargetAlpha = 0f;
+        record.transitionFadeLastTickTime = 0f;
+        record.transitionFadeReleaseAfterTime = 0f;
+        record.transitionFadeReleaseRequested = false;
     }
 
     private void CaptureAndHideScreenSurface(InnerPieceScreenSlotRuntimeRecord slot, PlayerScreenBindingRecord binding)
@@ -6619,6 +6966,8 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        bool transitionBetweenVideos = ShouldStartStandalonePlayerTransitionFade(record, mediaPath);
+
         record.instanceId = instance.instanceId;
         record.slotId = slot.slotId;
         record.displayId = slot.displayId;
@@ -6669,7 +7018,15 @@ public partial class FASyncRuntime : MVRScript
         ApplyStandalonePlayerLoopMode(record);
         ApplyStandalonePlayerAudioState(record);
         if (FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath))
+        {
+            DestroyStandalonePlayerTransitionFade(record);
             return TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage);
+        }
+
+        if (transitionBetweenVideos)
+            TryBeginStandalonePlayerTransitionFade(record);
+        else
+            DestroyStandalonePlayerTransitionFade(record);
 
         try
         {
@@ -6696,6 +7053,7 @@ public partial class FASyncRuntime : MVRScript
         }
         catch (Exception ex)
         {
+            DestroyStandalonePlayerTransitionFade(record);
             errorMessage = "player prepare failed: " + ex.Message;
             record.lastError = errorMessage;
             return false;
@@ -7035,6 +7393,8 @@ public partial class FASyncRuntime : MVRScript
             StandalonePlayerRecord record = standalonePlayerTickScratch[i];
             if (record == null)
                 continue;
+
+            TickStandalonePlayerTransitionFade(record);
 
             if (record.mediaIsStillImage)
             {
@@ -8579,6 +8939,7 @@ public partial class FASyncRuntime : MVRScript
         if (!string.IsNullOrEmpty(bindingOwnerAtomUid))
             playerScreenBindings[bindingOwnerAtomUid] = nextBinding;
         record.needsScreenRefresh = false;
+        RequestStandalonePlayerTransitionFadeRelease(record);
         CommitStandalonePlayerPendingImageTexture(record);
         return true;
     }
@@ -9044,6 +9405,7 @@ public partial class FASyncRuntime : MVRScript
             return;
 
         StopStandalonePlayerResize(record);
+        DestroyStandalonePlayerTransitionFade(record);
         if (record.videoPlayer != null)
         {
             try

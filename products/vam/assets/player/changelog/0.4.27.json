@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.27",
+  "title": "Add a deliberate fade-to-black for movie handoffs",
+  "summary": "0.4.27 adds a short black transition overlay for movie-to-movie handoffs so next, previous, and playlist-end advances fade down intentionally instead of showing a harsher abrupt dark gap between videos.",
+  "reasoning": "The current movie transition already contains a dark moment, but it feels accidental. The smallest safe upgrade is a presentation-layer fade that rides on the existing runtime surface without reopening the deeper single-player media pipeline.",
+  "changes": [
+    {
+      "area": "movie-transition-presentation",
+      "summary": "Adds a runtime transition-fade quad that darkens movie-to-movie handoffs and then releases once the next movie binding is ready.",
+      "reasoning": "This makes the handoff feel intentional while staying inside the proven screen-binding seam."
+    },
+    {
+      "area": "hosted-and-scene-player-parity",
+      "summary": "Hooks the fade release into both hosted and non-hosted screen refresh paths.",
+      "reasoning": "The same movie transition behavior should hold whether the player is running on the packaged screen CUA or another supported surface."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.27 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.27.var and contains the 0.4.27 asset, plugin, preset, and demo scene.",
+    "Verify the player plugin compiles after the new transition-fade seam is added."
+  ],
+  "knownIssues": [
+    "This slice is a presentation-layer fade only; it does not change the underlying single-player video handoff model.",
+    "Live VaM proof is still needed to judge whether the 0.25 second fade feels right under real multi-instance load."
+  ]
+}

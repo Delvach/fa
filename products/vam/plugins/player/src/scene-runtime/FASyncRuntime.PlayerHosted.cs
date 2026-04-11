@@ -1859,6 +1859,7 @@ public partial class FASyncRuntime : MVRScript
         record.binding = nextBinding;
         playerScreenBindings[hostAtomUid] = nextBinding;
         record.needsScreenRefresh = false;
+        RequestStandalonePlayerTransitionFadeRelease(record);
         CommitStandalonePlayerPendingImageTexture(record);
         ApplyHostedPlayerPlaceholderVisualState(contract);
         return true;
