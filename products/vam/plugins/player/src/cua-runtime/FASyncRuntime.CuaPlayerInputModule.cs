@@ -78,6 +78,11 @@ public partial class FASyncRuntime : MVRScript
         public bool disableAllNavigationToggle;
         public bool hasDisableGrabNavigationToggle;
         public bool disableGrabNavigationToggle;
+        public bool alwaysEnablePointers;
+        public bool hasRayLineLeft;
+        public bool rayLineLeftEnabled;
+        public bool hasRayLineRight;
+        public bool rayLineRightEnabled;
     }
 
     private struct CuaPlayerStickRead
@@ -277,6 +282,9 @@ public partial class FASyncRuntime : MVRScript
             desired.disableInternalKeyBindings = true;
             desired.disableInternalNavigationKeyBindings = true;
             desired.disableAllNavigationToggle = desired.hasDisableAllNavigationToggle;
+            desired.alwaysEnablePointers = false;
+            desired.rayLineLeftEnabled = false;
+            desired.rayLineRightEnabled = false;
             WriteCuaPlayerNavigationSnapshot(sc, desired);
             cuaPlayerNavigationCaptureActive = true;
             return;
@@ -917,6 +925,11 @@ public partial class FASyncRuntime : MVRScript
         snapshot.disableAllNavigationToggle = snapshot.hasDisableAllNavigationToggle && sc.disableAllNavigationToggle.isOn;
         snapshot.hasDisableGrabNavigationToggle = sc.disableGrabNavigationToggle != null;
         snapshot.disableGrabNavigationToggle = snapshot.hasDisableGrabNavigationToggle && sc.disableGrabNavigationToggle.isOn;
+        snapshot.alwaysEnablePointers = SafeReadBool(delegate { return sc.alwaysEnablePointers; });
+        snapshot.hasRayLineLeft = sc.rayLineLeft != null;
+        snapshot.rayLineLeftEnabled = snapshot.hasRayLineLeft && SafeReadBool(delegate { return sc.rayLineLeft.enabled; });
+        snapshot.hasRayLineRight = sc.rayLineRight != null;
+        snapshot.rayLineRightEnabled = snapshot.hasRayLineRight && SafeReadBool(delegate { return sc.rayLineRight.enabled; });
         return snapshot;
     }
 
@@ -925,10 +938,15 @@ public partial class FASyncRuntime : MVRScript
         sc.disableNavigation = snapshot.disableNavigation;
         sc.disableInternalKeyBindings = snapshot.disableInternalKeyBindings;
         sc.disableInternalNavigationKeyBindings = snapshot.disableInternalNavigationKeyBindings;
+        sc.alwaysEnablePointers = snapshot.alwaysEnablePointers;
         if (sc.disableAllNavigationToggle != null && snapshot.hasDisableAllNavigationToggle)
             sc.disableAllNavigationToggle.isOn = snapshot.disableAllNavigationToggle;
         if (sc.disableGrabNavigationToggle != null && snapshot.hasDisableGrabNavigationToggle)
             sc.disableGrabNavigationToggle.isOn = snapshot.disableGrabNavigationToggle;
+        if (sc.rayLineLeft != null && snapshot.hasRayLineLeft)
+            sc.rayLineLeft.enabled = snapshot.rayLineLeftEnabled;
+        if (sc.rayLineRight != null && snapshot.hasRayLineRight)
+            sc.rayLineRight.enabled = snapshot.rayLineRightEnabled;
     }
 #else
     private void BuildCuaPlayerInputStorables() { }

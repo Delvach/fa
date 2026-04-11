@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.23",
-    "notes":  "0.4.23 stops force-disabling grab navigation during gaze focus capture, keeping the rest of the current player input stack unchanged while the operator interaction model is refined.",
+    "version":  "0.4.24",
+    "notes":  "0.4.24 suppresses the visible controller pointer lines while gaze focus is active by snapshotting and mutating the current VaM pointer state on the existing CUA capture seam.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.23.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.24.json"
 }

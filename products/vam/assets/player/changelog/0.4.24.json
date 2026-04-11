@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.24",
+  "title": "Hide controller pointer lines during gaze focus",
+  "summary": "0.4.24 extends the existing CUA gaze-focus capture seam to suppress the visible controller pointer lines while the player owns focus, then restore the prior pointer state on release.",
+  "reasoning": "The current player interaction model already uses gaze to claim focus. Leaving the controller beams visible during that focused state adds visual noise and competes with the screen-driven interaction flow, so the next bounded improvement is to hide the active pointers only while focus is held.",
+  "changes": [
+    {
+      "area": "cua-input-capture",
+      "summary": "Snapshots VaM pointer visibility state and disables pointer lines while focused gaze capture is active.",
+      "reasoning": "This keeps the change local to the existing input-capture seam and avoids widening into unrelated control or Meta work."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.24 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.24.var and contains the 0.4.24 asset, plugin, preset, and demo scene.",
+    "Verify the CUA player plugin compiles after the pointer snapshot and restore logic is added."
+  ],
+  "knownIssues": [
+    "This slice only targets the currently exposed VaM pointer fields and line renderers; if any runtime still draws a beam from another component, that would be a follow-up seam.",
+    "Live VaM proof is still required to confirm the user-visible beam suppression in VR."
+  ]
+}
