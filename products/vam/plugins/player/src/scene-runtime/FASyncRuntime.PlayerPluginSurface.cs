@@ -94,6 +94,38 @@ public partial class FASyncRuntime
             successStatus);
     }
 
+    private void RunAttachedPlayerSetAbLoopStartAction(string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetAbLoopStartId,
+            "",
+            successStatus);
+    }
+
+    private void RunAttachedPlayerSetAbLoopEndAction(string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetAbLoopEndId,
+            "",
+            successStatus);
+    }
+
+    private void RunAttachedPlayerSetAbLoopEnabledAction(bool enabled, string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetAbLoopEnabledId,
+            "\"enabled\":" + (enabled ? "true" : "false"),
+            successStatus);
+    }
+
+    private void RunAttachedPlayerClearAbLoopAction(string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionClearAbLoopId,
+            "",
+            successStatus);
+    }
+
     private void RunAttachedPlayerPlayPauseAction()
     {
         StandalonePlayerRecord record;

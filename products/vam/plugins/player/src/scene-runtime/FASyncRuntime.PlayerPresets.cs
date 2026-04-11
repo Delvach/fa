@@ -17,7 +17,6 @@ public partial class FASyncRuntime : MVRScript
     private const float PlayerPresetDeferredSeekTimeoutSeconds = 10f;
     private const float PlayerPresetPopupLabelWidth = 80f;
     private const float PlayerPresetPopupPanelHeight = 260f;
-    private const string PlayerPresetSeekToSecondsActionId = "Player.SeekToSeconds";
 
     private sealed class PlayerPresetRecord
     {
@@ -34,6 +33,12 @@ public partial class FASyncRuntime : MVRScript
         public string loopMode = "";
         public bool hasRandomEnabled = false;
         public bool randomEnabled = true;
+        public bool hasAbLoopEnabled = false;
+        public bool abLoopEnabled = false;
+        public bool hasAbLoopStart = false;
+        public float abLoopStartSeconds = 0f;
+        public bool hasAbLoopEnd = false;
+        public float abLoopEndSeconds = 0f;
         public bool playWhenLoaded = true;
     }
 
@@ -522,6 +527,29 @@ public partial class FASyncRuntime : MVRScript
                 TryReadBoolArg(presetJson, out preset.randomEnabled, "randomEnabled", "random");
         }
 
+        if (TryReadBoolArg(presetJson, out bool hasAbLoopEnabled, "hasAbLoopEnabled"))
+        {
+            preset.hasAbLoopEnabled = hasAbLoopEnabled;
+            if (hasAbLoopEnabled)
+                TryReadBoolArg(presetJson, out preset.abLoopEnabled, "abLoopEnabled");
+        }
+
+        if (TryReadBoolArg(presetJson, out bool hasAbLoopStart, "hasAbLoopStart")
+            && hasAbLoopStart
+            && TryExtractJsonFloatField(presetJson, "abLoopStartSeconds", out float abLoopStartSeconds))
+        {
+            preset.hasAbLoopStart = true;
+            preset.abLoopStartSeconds = Mathf.Max(0f, abLoopStartSeconds);
+        }
+
+        if (TryReadBoolArg(presetJson, out bool hasAbLoopEnd, "hasAbLoopEnd")
+            && hasAbLoopEnd
+            && TryExtractJsonFloatField(presetJson, "abLoopEndSeconds", out float abLoopEndSeconds))
+        {
+            preset.hasAbLoopEnd = true;
+            preset.abLoopEndSeconds = Mathf.Max(0f, abLoopEndSeconds);
+        }
+
         if (!TryReadBoolArg(presetJson, out preset.playWhenLoaded, "playWhenLoaded", "desiredPlaying", "play"))
             preset.playWhenLoaded = true;
 
@@ -546,6 +574,12 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"loopMode\":\"").Append(EscapeJsonString(preset.loopMode ?? "")).Append("\",");
         sb.Append("\"hasRandomEnabled\":").Append(preset.hasRandomEnabled ? "true" : "false").Append(',');
         sb.Append("\"randomEnabled\":").Append(preset.randomEnabled ? "true" : "false").Append(',');
+        sb.Append("\"hasAbLoopEnabled\":").Append(preset.hasAbLoopEnabled ? "true" : "false").Append(',');
+        sb.Append("\"abLoopEnabled\":").Append(preset.abLoopEnabled ? "true" : "false").Append(',');
+        sb.Append("\"hasAbLoopStart\":").Append(preset.hasAbLoopStart ? "true" : "false").Append(',');
+        sb.Append("\"abLoopStartSeconds\":").Append(FormatFloat(Mathf.Max(0f, preset.abLoopStartSeconds))).Append(',');
+        sb.Append("\"hasAbLoopEnd\":").Append(preset.hasAbLoopEnd ? "true" : "false").Append(',');
+        sb.Append("\"abLoopEndSeconds\":").Append(FormatFloat(Mathf.Max(0f, preset.abLoopEndSeconds))).Append(',');
         sb.Append("\"playWhenLoaded\":").Append(preset.playWhenLoaded ? "true" : "false").Append(',');
         sb.Append("\"savedAtUtc\":\"").Append(EscapeJsonString(DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture))).Append("\"");
         sb.Append('}');
@@ -712,6 +746,24 @@ public partial class FASyncRuntime : MVRScript
 
             preset.hasTimeSeconds = true;
             preset.timeSeconds = currentTimeSeconds;
+
+            if (record.hasAbLoopStart)
+            {
+                preset.hasAbLoopStart = true;
+                preset.abLoopStartSeconds = Mathf.Max(0f, (float)record.abLoopStartSeconds);
+            }
+
+            if (record.hasAbLoopEnd)
+            {
+                preset.hasAbLoopEnd = true;
+                preset.abLoopEndSeconds = Mathf.Max(0f, (float)record.abLoopEndSeconds);
+            }
+
+            if (record.hasAbLoopStart || record.hasAbLoopEnd || record.abLoopEnabled)
+            {
+                preset.hasAbLoopEnabled = true;
+                preset.abLoopEnabled = record.abLoopEnabled;
+            }
         }
 
         if (storeLoop && record != null)
@@ -742,7 +794,10 @@ public partial class FASyncRuntime : MVRScript
         if (!preset.hasMediaPath
             && !preset.hasHostScale
             && !preset.hasLoopMode
-            && !preset.hasRandomEnabled)
+            && !preset.hasRandomEnabled
+            && !preset.hasAbLoopEnabled
+            && !preset.hasAbLoopStart
+            && !preset.hasAbLoopEnd)
         {
             errorMessage = "preset contains no restorable player state";
             preset = null;
@@ -797,7 +852,7 @@ public partial class FASyncRuntime : MVRScript
 
         string selectorJson = "";
         string playbackKey = "";
-        if (preset.hasMediaPath || preset.hasLoopMode || preset.hasRandomEnabled)
+        if (preset.hasMediaPath || preset.hasLoopMode || preset.hasRandomEnabled || PresetHasAbLoopState(preset))
         {
             if (!TryBuildAttachedPlayerSelectorJson(out selectorJson, out string errorMessage))
             {
@@ -809,6 +864,10 @@ public partial class FASyncRuntime : MVRScript
 
             playbackKey = ExtractJsonArgString(selectorJson, "playbackKey");
         }
+
+        bool needsDeferredPlaybackRestore =
+            !string.IsNullOrEmpty(playbackKey)
+            && (preset.hasTimeSeconds || PresetHasAbLoopState(preset));
 
         string resultJson = "{}";
         string lastError = "";
@@ -875,15 +934,13 @@ public partial class FASyncRuntime : MVRScript
             ? BuildBrokerResult(true, "player_preset_applied", "{\"presetId\":\"" + EscapeJsonString(preset.presetId) + "\"}")
             : resultJson);
 
-        if (preset.hasTimeSeconds && !string.IsNullOrEmpty(playbackKey))
+        if (needsDeferredPlaybackRestore)
         {
             playerPresetDeferredSeekCoroutine = StartCoroutine(
-                RunDeferredPlayerPresetSeekCoroutine(
-                    preset.presetId,
-                    playbackKey,
-                    preset.timeSeconds,
-                    preset.playWhenLoaded));
-            UpdatePlayerPresetStatusField("seeking");
+                RunDeferredPlayerPresetPlaybackRestoreCoroutine(
+                    preset,
+                    playbackKey));
+            UpdatePlayerPresetStatusField(preset.hasTimeSeconds ? "seeking" : "loading");
             RefreshVisiblePlayerDebugFields();
             return;
         }
@@ -908,7 +965,7 @@ public partial class FASyncRuntime : MVRScript
         SetPendingPlayerSelection(selectedMediaPath);
         SetPendingPlayerStateSummary("state=load_requested source=preset");
 
-        bool playImmediately = preset.playWhenLoaded && !preset.hasTimeSeconds;
+        bool playImmediately = preset.playWhenLoaded && !preset.hasTimeSeconds && !PresetShouldStartAtAbLoopStart(preset);
         string extraArgsBody = "\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
             + ",\"play\":" + (playImmediately ? "true" : "false");
@@ -935,11 +992,9 @@ public partial class FASyncRuntime : MVRScript
         return TryExecuteAction(actionId, argsJson, out resultJson, out errorMessage);
     }
 
-    private IEnumerator RunDeferredPlayerPresetSeekCoroutine(
-        string presetId,
-        string playbackKey,
-        float timeSeconds,
-        bool playWhenLoaded)
+    private IEnumerator RunDeferredPlayerPresetPlaybackRestoreCoroutine(
+        PlayerPresetRecord preset,
+        string playbackKey)
     {
         float deadline = Time.unscaledTime + PlayerPresetDeferredSeekTimeoutSeconds;
         while (Time.unscaledTime < deadline)
@@ -948,22 +1003,39 @@ public partial class FASyncRuntime : MVRScript
                 && record != null
                 && record.prepared)
             {
-                string seekArgsJson = "{"
-                    + "\"playbackKey\":\"" + EscapeJsonString(playbackKey) + "\""
-                    + ",\"seconds\":" + FormatFloat(Mathf.Max(0f, timeSeconds))
-                    + "}";
-                if (!TryExecuteAction(PlayerPresetSeekToSecondsActionId, seekArgsJson, out string seekResultJson, out string seekErrorMessage))
+                if (PresetHasAbLoopState(preset))
                 {
-                    SetLastError(seekErrorMessage);
-                    SetLastReceipt(seekResultJson);
-                    UpdatePlayerPresetStatusField("error");
-                    playerPresetDeferredSeekCoroutine = null;
-                    RefreshVisiblePlayerDebugFields();
-                    yield break;
+                    if (!TryApplyStandalonePlayerAbLoopStateFromPreset(record, preset, out string abErrorMessage))
+                    {
+                        SetLastError(abErrorMessage);
+                        SetLastReceipt(BuildBrokerResult(false, abErrorMessage, "{}"));
+                        UpdatePlayerPresetStatusField("error");
+                        playerPresetDeferredSeekCoroutine = null;
+                        RefreshVisiblePlayerDebugFields();
+                        yield break;
+                    }
                 }
 
-                SetLastReceipt(seekResultJson);
-                if (playWhenLoaded)
+                bool shouldSeekToTime = preset.hasTimeSeconds;
+                bool shouldSeekToAbStart = !shouldSeekToTime && PresetShouldStartAtAbLoopStart(preset);
+                if (shouldSeekToTime || shouldSeekToAbStart)
+                {
+                    double targetSeconds = shouldSeekToTime
+                        ? Mathf.Max(0f, preset.timeSeconds)
+                        : Mathf.Max(0f, preset.abLoopStartSeconds);
+                    if (!TrySeekStandalonePlayerRecordToSeconds(record, targetSeconds, preset.playWhenLoaded, out string seekErrorMessage))
+                    {
+                        SetLastError(seekErrorMessage);
+                        SetLastReceipt(BuildBrokerResult(false, seekErrorMessage, "{}"));
+                        UpdatePlayerPresetStatusField("error");
+                        playerPresetDeferredSeekCoroutine = null;
+                        RefreshVisiblePlayerDebugFields();
+                        yield break;
+                    }
+
+                    SetLastReceipt(BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(playbackKey) + "\"}"));
+                }
+                else if (preset.playWhenLoaded && !record.mediaIsStillImage)
                 {
                     string playArgsJson = "{\"playbackKey\":\"" + EscapeJsonString(playbackKey) + "\"}";
                     if (!TryExecuteAction(PlayerActionPlayId, playArgsJson, out string playResultJson, out string playErrorMessage))
@@ -989,12 +1061,67 @@ public partial class FASyncRuntime : MVRScript
             yield return null;
         }
 
-        string timeoutError = "player preset seek timed out: " + presetId;
+        string timeoutError = "player preset restore timed out: " + (preset != null ? preset.presetId : playbackKey);
         SetLastError(timeoutError);
         SetLastReceipt(BuildBrokerResult(false, timeoutError, "{}"));
         UpdatePlayerPresetStatusField("error");
         playerPresetDeferredSeekCoroutine = null;
         RefreshVisiblePlayerDebugFields();
+    }
+
+    private static bool PresetHasAbLoopState(PlayerPresetRecord preset)
+    {
+        return preset != null
+            && (preset.hasAbLoopEnabled || preset.hasAbLoopStart || preset.hasAbLoopEnd);
+    }
+
+    private static bool PresetShouldStartAtAbLoopStart(PlayerPresetRecord preset)
+    {
+        return preset != null
+            && preset.hasAbLoopEnabled
+            && preset.abLoopEnabled
+            && preset.hasAbLoopStart;
+    }
+
+    private bool TryApplyStandalonePlayerAbLoopStateFromPreset(StandalonePlayerRecord record, PlayerPresetRecord preset, out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null || preset == null)
+        {
+            errorMessage = "player preset A-B state missing";
+            return false;
+        }
+
+        if (!PresetHasAbLoopState(preset))
+        {
+            ClearStandalonePlayerAbLoopState(record);
+            return true;
+        }
+
+        double startSeconds = preset.hasAbLoopStart ? Mathf.Max(0f, preset.abLoopStartSeconds) : 0d;
+        double endSeconds = preset.hasAbLoopEnd ? Mathf.Max(0f, preset.abLoopEndSeconds) : 0d;
+        if (preset.hasAbLoopStart
+            && preset.hasAbLoopEnd
+            && endSeconds <= (startSeconds + StandalonePlayerAbLoopMinimumSpanSeconds))
+        {
+            errorMessage = "player preset A-B end must be after start";
+            return false;
+        }
+
+        record.hasAbLoopStart = preset.hasAbLoopStart;
+        record.abLoopStartSeconds = preset.hasAbLoopStart ? startSeconds : 0d;
+        record.hasAbLoopEnd = preset.hasAbLoopEnd;
+        record.abLoopEndSeconds = preset.hasAbLoopEnd ? endSeconds : 0d;
+        record.abLoopEnabled = preset.hasAbLoopEnabled && preset.abLoopEnabled;
+        if (record.abLoopEnabled && !HasValidStandalonePlayerAbLoopRange(record, out _, out _))
+        {
+            errorMessage = "player preset A-B loop requires both points";
+            return false;
+        }
+
+        record.naturalEndHandled = false;
+        record.lastError = "";
+        return true;
     }
 
     private bool TryReadPlayerPresetHostScale(Atom hostAtom, out float hostScale, out string errorMessage)

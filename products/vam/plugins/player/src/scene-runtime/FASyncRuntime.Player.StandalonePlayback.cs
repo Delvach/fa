@@ -309,11 +309,42 @@ public partial class FASyncRuntime : MVRScript
 
         record.desiredPlaying = !record.mediaIsStillImage;
         record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
-        if (!record.mediaIsStillImage && record.prepared && record.videoPlayer != null && !record.videoPlayer.isPlaying)
+        if (!record.mediaIsStillImage && record.prepared && record.videoPlayer != null)
         {
             try
             {
-                record.videoPlayer.Play();
+                if (record.abLoopEnabled
+                    && HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+                {
+                    if (TryReadStandalonePlayerTimeline(record, out double currentTimeSeconds, out _, out string timelineError))
+                    {
+                        if (currentTimeSeconds < (startSeconds - StandalonePlayerPlaybackMotionEpsilonSeconds)
+                            || currentTimeSeconds >= (endSeconds - StandalonePlayerPlaybackMotionEpsilonSeconds))
+                        {
+                            if (!TrySeekStandalonePlayerRecordToSeconds(record, startSeconds, true, out errorMessage))
+                            {
+                                resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                                return false;
+                            }
+                        }
+                        else if (!record.videoPlayer.isPlaying)
+                        {
+                            record.videoPlayer.Play();
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(timelineError))
+                    {
+                        record.lastError = timelineError;
+                    }
+                    else if (!record.videoPlayer.isPlaying)
+                    {
+                        record.videoPlayer.Play();
+                    }
+                }
+                else if (!record.videoPlayer.isPlaying)
+                {
+                    record.videoPlayer.Play();
+                }
             }
             catch (Exception ex)
             {

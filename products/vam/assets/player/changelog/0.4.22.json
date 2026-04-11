@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.22",
+  "title": "Add A-B loop playback and preset persistence",
+  "summary": "0.4.22 adds a bounded A-B loop seam to the standalone player runtime, exposes simple capture and enable buttons in the plugin UI, and persists A-B loop state through player presets for the current media item.",
+  "reasoning": "A-B looping is one of the immediate playback controls needed while the interaction model is still being refined. The player already had the underlying seek, loop, and preset machinery, so this slice focuses on wiring the smallest useful runtime and preset seam instead of widening into larger UI or Meta work.",
+  "changes": [
+    {
+      "area": "runtime-a-b-loop",
+      "summary": "Adds standalone player actions to capture loop start and end points, enable or clear A-B looping, and jump back to A when playback reaches B.",
+      "reasoning": "This keeps the feature bounded to the proven standalone runtime path and avoids dragging unrelated control-surface work into the release."
+    },
+    {
+      "area": "plugin-controls",
+      "summary": "Adds direct plugin buttons for setting A, setting B, enabling A-B loop, and clearing A-B loop.",
+      "reasoning": "The current lane still leans on the plugin panel for operator control, so the feature needs usable buttons even before any future input-core or Meta UI pass."
+    },
+    {
+      "area": "preset-persistence",
+      "summary": "Extends player presets to save and restore A-B loop markers and enabled state alongside media and playback time.",
+      "reasoning": "A-B looping is media-timeline state, and the overnight request explicitly requires that it survive preset save and load."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.22 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.22.var and contains the 0.4.22 asset, plugin, preset, and demo scene.",
+    "Confirm the plugin compiles after adding the A-B runtime actions, plugin buttons, and preset restore path.",
+    "Confirm the standalone player state payload now reports A-B markers and enabled state for debugging."
+  ],
+  "knownIssues": [
+    "This slice adds the bounded plugin-panel controls only; any future controller-input or Meta-surface treatment for A-B loop remains separate work.",
+    "Live VaM proof is still required to judge how seamless the loop feels on real media."
+  ]
+}

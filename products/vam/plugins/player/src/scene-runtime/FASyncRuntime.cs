@@ -137,6 +137,10 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableAction playerLoopPlaylistAction;
     private JSONStorableAction playerRandomOffAction;
     private JSONStorableAction playerRandomOnAction;
+    private JSONStorableAction playerAbLoopStartAction;
+    private JSONStorableAction playerAbLoopEndAction;
+    private JSONStorableAction playerAbLoopEnableAction;
+    private JSONStorableAction playerAbLoopClearAction;
     private JSONStorableAction playerResizeDownAction;
     private JSONStorableAction playerResizeUpAction;
     private JSONStorableString syncLastErrorField;
@@ -505,6 +509,30 @@ public partial class FASyncRuntime : MVRScript
             {
                 RunAttachedPlayerSetRandomAction(true, "Player random enabled");
             });
+        playerAbLoopStartAction = new JSONStorableAction(
+            "Player A-B Set Start",
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopStartAction("Player A-B start set");
+            });
+        playerAbLoopEndAction = new JSONStorableAction(
+            "Player A-B Set End",
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopEndAction("Player A-B end set");
+            });
+        playerAbLoopEnableAction = new JSONStorableAction(
+            "Player A-B Enable",
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopEnabledAction(true, "Player A-B loop enabled");
+            });
+        playerAbLoopClearAction = new JSONStorableAction(
+            "Player A-B Clear",
+            delegate
+            {
+                RunAttachedPlayerClearAbLoopAction("Player A-B loop cleared");
+            });
         playerResizeDownAction = new JSONStorableAction(
             "Player Resize Down",
             delegate
@@ -633,6 +661,10 @@ public partial class FASyncRuntime : MVRScript
         RegisterAction(playerLoopPlaylistAction);
         RegisterAction(playerRandomOffAction);
         RegisterAction(playerRandomOnAction);
+        RegisterAction(playerAbLoopStartAction);
+        RegisterAction(playerAbLoopEndAction);
+        RegisterAction(playerAbLoopEnableAction);
+        RegisterAction(playerAbLoopClearAction);
         RegisterAction(playerResizeDownAction);
         RegisterAction(playerResizeUpAction);
 #if FRAMEANGEL_TEST_SURFACES
@@ -792,6 +824,30 @@ public partial class FASyncRuntime : MVRScript
             delegate
             {
                 RunAttachedPlayerSetRandomAction(true, "Player random enabled");
+            }
+        );
+        CreateButton("Player A-B Set Start").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopStartAction("Player A-B start set");
+            }
+        );
+        CreateButton("Player A-B Set End").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopEndAction("Player A-B end set");
+            }
+        );
+        CreateButton("Player A-B Enable").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopEnabledAction(true, "Player A-B loop enabled");
+            }
+        );
+        CreateButton("Player A-B Clear").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerClearAbLoopAction("Player A-B loop cleared");
             }
         );
 #if FRAMEANGEL_TEST_SURFACES

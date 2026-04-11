@@ -27,6 +27,10 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerActionSetMuteId = "Player.SetMute";
     private const string PlayerActionSetLoopModeId = "Player.SetLoopMode";
     private const string PlayerActionSetRandomId = "Player.SetRandom";
+    private const string PlayerActionSetAbLoopStartId = "Player.SetABLoopStart";
+    private const string PlayerActionSetAbLoopEndId = "Player.SetABLoopEnd";
+    private const string PlayerActionSetAbLoopEnabledId = "Player.SetABLoopEnabled";
+    private const string PlayerActionClearAbLoopId = "Player.ClearABLoop";
     private const string PlayerActionSetAspectModeId = "Player.SetAspectMode";
     private const string PlayerActionSetDisplaySizeId = "Player.SetDisplaySize";
     private const string PlayerActionBindControlSurfaceId = "Player.BindControlSurface";
@@ -57,6 +61,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerVolumeCurveExponent = 2f;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
+    private const double StandalonePlayerAbLoopMinimumSpanSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
     private const int StandalonePlayerRandomHistoryLimit = 64;
 
@@ -172,6 +177,11 @@ public partial class FASyncRuntime : MVRScript
         public double lastObservedPlaybackTimeSeconds = 0d;
         public float lastPlaybackMotionObservedAt = 0f;
         public bool naturalEndHandled = false;
+        public bool hasAbLoopStart = false;
+        public double abLoopStartSeconds = 0d;
+        public bool hasAbLoopEnd = false;
+        public double abLoopEndSeconds = 0d;
+        public bool abLoopEnabled = false;
         public bool runtimeErrorHooked = false;
         public bool runtimeLoopPointHooked = false;
         public GameObject runtimeObject;
@@ -332,6 +342,14 @@ public partial class FASyncRuntime : MVRScript
                 return TrySetStandalonePlayerLoopMode(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetRandom":
                 return TrySetStandalonePlayerRandom(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetABLoopStart":
+                return TrySetStandalonePlayerAbLoopStart(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetABLoopEnd":
+                return TrySetStandalonePlayerAbLoopEnd(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetABLoopEnabled":
+                return TrySetStandalonePlayerAbLoopEnabled(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.ClearABLoop":
+                return TryClearStandalonePlayerAbLoop(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetAspectMode":
                 return TrySetStandalonePlayerAspectMode(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetDisplaySize":
@@ -5813,6 +5831,187 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
+    private bool TrySetStandalonePlayerAbLoopStart(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage) || record == null)
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        double startSeconds;
+        if (!TryReadStandalonePlayerAbLoopPointSeconds(record, argsJson, out startSeconds, out errorMessage))
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.hasAbLoopStart = true;
+        record.abLoopStartSeconds = Math.Max(0d, startSeconds);
+        if (record.hasAbLoopEnd && record.abLoopEndSeconds <= (record.abLoopStartSeconds + StandalonePlayerAbLoopMinimumSpanSeconds))
+        {
+            record.hasAbLoopEnd = false;
+            record.abLoopEndSeconds = 0d;
+            record.abLoopEnabled = false;
+        }
+        else if (!HasValidStandalonePlayerAbLoopRange(record, out _, out _))
+        {
+            record.abLoopEnabled = false;
+        }
+
+        record.naturalEndHandled = false;
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_ab_loop_start ok", payload);
+        EmitRuntimeEvent(
+            "player_ab_loop_start",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
+    private bool TrySetStandalonePlayerAbLoopEnd(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage) || record == null)
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        double endSeconds;
+        if (!TryReadStandalonePlayerAbLoopPointSeconds(record, argsJson, out endSeconds, out errorMessage))
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        endSeconds = Math.Max(0d, endSeconds);
+        if (record.hasAbLoopStart && endSeconds <= (record.abLoopStartSeconds + StandalonePlayerAbLoopMinimumSpanSeconds))
+        {
+            errorMessage = "player A-B end must be after start";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.hasAbLoopEnd = true;
+        record.abLoopEndSeconds = endSeconds;
+        if (!HasValidStandalonePlayerAbLoopRange(record, out _, out _))
+            record.abLoopEnabled = false;
+
+        record.naturalEndHandled = false;
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_ab_loop_end ok", payload);
+        EmitRuntimeEvent(
+            "player_ab_loop_end",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
+    private bool TrySetStandalonePlayerAbLoopEnabled(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage) || record == null)
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        bool enabled;
+        if (!TryReadBoolArg(argsJson, out enabled, "enabled", "abLoopEnabled", "value"))
+        {
+            errorMessage = "enabled is required";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        if (enabled && !HasValidStandalonePlayerAbLoopRange(record, out _, out _))
+        {
+            errorMessage = "player A-B loop requires both points";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.abLoopEnabled = enabled;
+        record.naturalEndHandled = false;
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_ab_loop_enabled ok", payload);
+        EmitRuntimeEvent(
+            "player_ab_loop_enabled",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
+    private bool TryClearStandalonePlayerAbLoop(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage) || record == null)
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        ClearStandalonePlayerAbLoopState(record);
+        record.naturalEndHandled = false;
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_ab_loop_cleared ok", payload);
+        EmitRuntimeEvent(
+            "player_ab_loop_cleared",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
     private bool TrySetStandalonePlayerAspectMode(string actionId, string argsJson, out string resultJson, out string errorMessage)
     {
         resultJson = "{}";
@@ -6115,39 +6314,8 @@ public partial class FASyncRuntime : MVRScript
         }
 
         bool shouldResumePlayback = record.desiredPlaying && !record.mediaIsStillImage;
-        try
+        if (!TrySeekStandalonePlayerRecordToSeconds(record, targetTimeSeconds, shouldResumePlayback, out errorMessage))
         {
-            if (shouldResumePlayback)
-            {
-                try
-                {
-                    record.videoPlayer.Pause();
-                }
-                catch
-                {
-                }
-            }
-
-            record.videoPlayer.time = targetTimeSeconds;
-            ResetStandalonePlayerPlaybackMotionState(record, targetTimeSeconds);
-
-            if (shouldResumePlayback)
-            {
-                record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
-                ApplyStandalonePlayerAudioState(record);
-                record.videoPlayer.Play();
-            }
-            else
-            {
-                TryRefreshStandalonePlayerPausedFrame(record);
-            }
-
-            record.lastError = "";
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "player seek failed: " + ex.Message;
-            record.lastError = errorMessage;
             resultJson = BuildBrokerResult(false, errorMessage, "{}");
             return false;
         }
@@ -6461,6 +6629,7 @@ public partial class FASyncRuntime : MVRScript
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
         record.naturalEndHandled = false;
+        ClearStandalonePlayerAbLoopState(record);
 
         try
         {
@@ -7238,6 +7407,51 @@ public partial class FASyncRuntime : MVRScript
         return false;
     }
 
+    private bool TryReadStandalonePlayerAbLoopPointSeconds(StandalonePlayerRecord record, string argsJson, out double seconds, out string errorMessage)
+    {
+        seconds = 0d;
+        errorMessage = "";
+        if (record == null)
+        {
+            errorMessage = "player runtime missing";
+            return false;
+        }
+
+        if (record.mediaIsStillImage)
+        {
+            errorMessage = "player A-B loop is only available for video";
+            return false;
+        }
+
+        float parsedSeconds;
+        if (TryReadStandalonePlayerSeekSeconds(argsJson, out parsedSeconds))
+        {
+            seconds = Math.Max(0d, parsedSeconds);
+            double knownDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+            if (!double.IsNaN(knownDurationSeconds)
+                && !double.IsInfinity(knownDurationSeconds)
+                && knownDurationSeconds > 0.0001d)
+            {
+                seconds = Math.Min(knownDurationSeconds, seconds);
+            }
+            return true;
+        }
+
+        double currentTimeSeconds;
+        double durationSeconds;
+        if (!TryReadStandalonePlayerTimeline(record, out currentTimeSeconds, out durationSeconds, out errorMessage))
+            return false;
+
+        seconds = Math.Max(0d, currentTimeSeconds);
+        if (!double.IsNaN(durationSeconds)
+            && !double.IsInfinity(durationSeconds)
+            && durationSeconds > 0.0001d)
+        {
+            seconds = Math.Min(durationSeconds, seconds);
+        }
+        return true;
+    }
+
     private bool TryReadStandalonePlayerIntArg(string argsJson, out int value, params string[] keys)
     {
         value = 0;
@@ -7325,6 +7539,9 @@ public partial class FASyncRuntime : MVRScript
         if (record == null || record.videoPlayer == null || !record.desiredPlaying)
             return false;
 
+        if (TryHandleStandalonePlayerAbLoop(record, currentTimeSeconds, out errorMessage))
+            return true;
+
         if (!IsStandalonePlayerAtNaturalEnd(currentTimeSeconds, durationSeconds))
             return false;
 
@@ -7386,6 +7603,113 @@ public partial class FASyncRuntime : MVRScript
             record.lastError = errorMessage;
             return false;
         }
+    }
+
+    private bool TrySeekStandalonePlayerRecordToSeconds(StandalonePlayerRecord record, double targetTimeSeconds, bool shouldResumePlayback, out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null || record.videoPlayer == null)
+        {
+            errorMessage = "player runtime missing";
+            return false;
+        }
+
+        try
+        {
+            targetTimeSeconds = Math.Max(0d, targetTimeSeconds);
+            double durationSeconds = GetStandalonePlayerDurationSeconds(record);
+            if (!double.IsNaN(durationSeconds)
+                && !double.IsInfinity(durationSeconds)
+                && durationSeconds > 0.0001d)
+            {
+                targetTimeSeconds = Math.Min(durationSeconds, targetTimeSeconds);
+            }
+
+            if (shouldResumePlayback)
+            {
+                try
+                {
+                    record.videoPlayer.Pause();
+                }
+                catch
+                {
+                }
+            }
+
+            record.videoPlayer.time = targetTimeSeconds;
+            ResetStandalonePlayerPlaybackMotionState(record, targetTimeSeconds);
+
+            if (shouldResumePlayback)
+            {
+                record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
+                ApplyStandalonePlayerAudioState(record);
+                record.videoPlayer.Play();
+            }
+            else
+            {
+                TryRefreshStandalonePlayerPausedFrame(record);
+            }
+
+            record.lastError = "";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "player seek failed: " + ex.Message;
+            record.lastError = errorMessage;
+            return false;
+        }
+    }
+
+    private void ClearStandalonePlayerAbLoopState(StandalonePlayerRecord record)
+    {
+        if (record == null)
+            return;
+
+        record.hasAbLoopStart = false;
+        record.abLoopStartSeconds = 0d;
+        record.hasAbLoopEnd = false;
+        record.abLoopEndSeconds = 0d;
+        record.abLoopEnabled = false;
+    }
+
+    private bool HasValidStandalonePlayerAbLoopRange(StandalonePlayerRecord record, out double startSeconds, out double endSeconds)
+    {
+        startSeconds = 0d;
+        endSeconds = 0d;
+        if (record == null || !record.hasAbLoopStart || !record.hasAbLoopEnd)
+            return false;
+
+        startSeconds = Math.Max(0d, record.abLoopStartSeconds);
+        endSeconds = Math.Max(0d, record.abLoopEndSeconds);
+        if (double.IsNaN(startSeconds) || double.IsInfinity(startSeconds) || double.IsNaN(endSeconds) || double.IsInfinity(endSeconds))
+            return false;
+
+        return endSeconds > (startSeconds + StandalonePlayerAbLoopMinimumSpanSeconds);
+    }
+
+    private bool TryHandleStandalonePlayerAbLoop(StandalonePlayerRecord record, double currentTimeSeconds, out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null
+            || record.videoPlayer == null
+            || record.mediaIsStillImage
+            || !record.desiredPlaying
+            || !record.abLoopEnabled)
+        {
+            return false;
+        }
+
+        if (!HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+        {
+            record.abLoopEnabled = false;
+            return false;
+        }
+
+        if (currentTimeSeconds + StandalonePlayerPlaybackMotionEpsilonSeconds < endSeconds)
+            return false;
+
+        return TrySeekStandalonePlayerRecordToSeconds(record, startSeconds, true, out errorMessage);
     }
 
     private const int ScreenCoreOverlayBackingRenderQueue = 4495;
@@ -9255,6 +9579,11 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"aspectMode\":\"").Append(EscapeJsonString(record.aspectMode)).Append("\",");
         sb.Append("\"loopMode\":\"").Append(EscapeJsonString(record.loopMode)).Append("\",");
         sb.Append("\"randomEnabled\":").Append(record.randomEnabled ? "true" : "false").Append(',');
+        sb.Append("\"abLoopEnabled\":").Append(record.abLoopEnabled ? "true" : "false").Append(',');
+        sb.Append("\"hasAbLoopStart\":").Append(record.hasAbLoopStart ? "true" : "false").Append(',');
+        sb.Append("\"abLoopStartSeconds\":").Append(record.abLoopStartSeconds.ToString("0.######", CultureInfo.InvariantCulture)).Append(',');
+        sb.Append("\"hasAbLoopEnd\":").Append(record.hasAbLoopEnd ? "true" : "false").Append(',');
+        sb.Append("\"abLoopEndSeconds\":").Append(record.abLoopEndSeconds.ToString("0.######", CultureInfo.InvariantCulture)).Append(',');
         sb.Append("\"prepared\":").Append(record.prepared ? "true" : "false").Append(',');
         sb.Append("\"desiredPlaying\":").Append(record.desiredPlaying ? "true" : "false").Append(',');
         sb.Append("\"isPlaying\":").Append(isPlaying ? "true" : "false").Append(',');
