@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.18",
+  "title": "Stage demo media directly inside the player .var and seed the packaged player to that in-package media root",
+  "summary": "0.4.18 keeps the package-first `.var` seam and extends it so the package can carry a self-contained demo media set. The packaged scene and packaged preset now point at that in-package media folder, which lets us test real `.var`-hosted images and videos without deploying loose runtime media for this slice.",
+  "reasoning": "The next honest launch boundary is not just a packaged asset, plugin, preset, and demo scene. We also need proof that the player can consume internal package media, because the demo and future pro/demo variants will rely on hardcoded in-package files rather than loose Custom directory media. The existing player already resolves VaM-safe runtime paths and already supports a seeded media root through the scene and preset seams, so the clean move is to copy the chosen demo media into the `.var` and seed those existing paths instead of inventing a second loader.",
+  "changes": [
+    {
+      "area": "var-packager",
+      "summary": "Adds an optional packaged demo-media stage that copies a selected source directory into the `.var` under `Custom/Images/FrameAngel/Player/demo_media`, flattens the media files into one browser-friendly root, and records the staged media in the package manifest/report.",
+      "reasoning": "The current player enumerates media from one directory path, not nested package subfolders, so the first packaged-media proof should stage all included demo files into one deterministic in-package folder."
+    },
+    {
+      "area": "packaged-preset-and-scene",
+      "summary": "Seeds the packaged CustomUnityAsset preset and the packaged demo scene to the in-package demo-media root when packaged media is included.",
+      "reasoning": "This keeps the testing seam self-contained and lets `Load Media` start from the package-contained demo set without relying on loose runtime files."
+    },
+    {
+      "area": "foundation-build",
+      "summary": "Threads the packaged demo-media source root through the normal foundation package-build script so the same deterministic path can be reused on later releases.",
+      "reasoning": "The package-first release process should not require manual post-build assembly each time we want a self-contained demo media set."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.18 into `player.version.json` and build the matching player release artifacts through the foundation build in package-only mode.",
+    "Copy the selected test media from `F:/sim/vam/Custom/Images/include` into the `.var` under one packaged demo-media root.",
+    "Confirm the generated package advances to the next `FrameAngel.Player.<n>.var` public release automatically.",
+    "Load the packaged player and demo scene from AddonPackages in live VaM and confirm the package-contained scene, asset, plugin, preset, and demo media load together from the same `.var`.",
+    "Use the packaged player `Load Media` path to confirm the in-package demo-media folder is reachable as the seeded runtime media root."
+  ],
+  "knownIssues": [
+    "The remaining back-mounted panel crossover on the stable player still needs a follow-up cleanup pass.",
+    "Dedicated demo-media shortcuts and richer packaged media browsing can be widened after the first self-contained package-media proof is stable."
+  ]
+}

@@ -12,6 +12,8 @@ param(
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$VarSceneDisplayPolicy = "multi_aspect",
     [int]$VarSceneIncludeManagedControls = 0,
+    [string]$VarDemoMediaSourceRoot = "",
+    [string]$VarDemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$VarCreatorName = "FrameAngel",
     [string]$VarPackageName = "Player",
     [int]$VarPublicRelease = 0,
@@ -432,6 +434,14 @@ if ($BuildVarPackage.IsPresent) {
                 $VarScenePrimaryMediaPath
             )
         }
+    }
+    if (-not [string]::IsNullOrWhiteSpace($VarDemoMediaSourceRoot)) {
+        $varArgs += @(
+            "-DemoMediaSourceRoot",
+            $VarDemoMediaSourceRoot,
+            "-DemoMediaPackageRelativeRoot",
+            $VarDemoMediaPackageRelativeRoot
+        )
     }
     if ($SkipVarDistribute.IsPresent) {
         $varArgs += "-SkipDistribute"

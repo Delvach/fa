@@ -12,6 +12,8 @@ param(
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$SceneDisplayPolicy = "multi_aspect",
     [int]$SceneIncludeManagedControls = 0,
+    [string]$DemoMediaSourceRoot = "",
+    [string]$DemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$DestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipDistribute
 )
@@ -82,6 +84,55 @@ function Copy-FileIntoStage {
     Ensure-Directory -PathValue $targetDirectory
     Copy-Item -LiteralPath $SourcePath -Destination $targetPath -Force
     return $targetPath
+}
+
+function Copy-DemoMediaIntoStageFlat {
+    param(
+        [string]$SourceRoot,
+        [string]$StageRoot,
+        [string]$PackageRelativeRoot,
+        [string]$BasePath
+    )
+
+    $resolvedSourceRoot = Resolve-PathFromBase -PathValue $SourceRoot -BasePath $BasePath -Label "Demo media source root"
+    if (-not (Test-Path -LiteralPath $resolvedSourceRoot -PathType Container)) {
+        throw "Demo media source root is not a directory: $resolvedSourceRoot"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($PackageRelativeRoot)) {
+        throw "Demo media package relative root cannot be empty."
+    }
+
+    $files = Get-ChildItem -LiteralPath $resolvedSourceRoot -Recurse -File | Sort-Object FullName
+    if ($null -eq $files -or $files.Count -le 0) {
+        throw "Demo media source root has no files: $resolvedSourceRoot"
+    }
+
+    $seenFileNames = @{}
+    $stagedFiles = New-Object System.Collections.Generic.List[object]
+    foreach ($file in $files) {
+        $fileKey = $file.Name.ToLowerInvariant()
+        if ($seenFileNames.ContainsKey($fileKey)) {
+            throw ("Demo media flatten collision for file name {0}. Source files: {1} and {2}" -f $file.Name, $seenFileNames[$fileKey], $file.FullName)
+        }
+
+        $seenFileNames[$fileKey] = $file.FullName
+        $relativeSourcePath = $file.FullName.Substring($resolvedSourceRoot.Length).TrimStart('\', '/')
+        $targetRelativePath = Join-Path $PackageRelativeRoot $file.Name
+        [void](Copy-FileIntoStage -SourcePath $file.FullName -StageRoot $StageRoot -RelativePath $targetRelativePath)
+        [void]$stagedFiles.Add([ordered]@{
+            kind = "demo_media"
+            sourcePath = $file.FullName
+            sourceRelativePath = $relativeSourcePath
+            packagedPath = ($targetRelativePath -replace '\\', '/')
+        })
+    }
+
+    return [pscustomobject]@{
+        sourceRoot = $resolvedSourceRoot
+        packagedRoot = ($PackageRelativeRoot -replace '\\', '/')
+        files = $stagedFiles
+    }
 }
 
 function Resolve-VarPublicRelease {
@@ -357,10 +408,27 @@ $packagedPresetPath = ($presetRelativePath -replace '\\', '/')
 $packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedAssetPath
 $packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedPluginPath
 
+$resolvedScenePrimaryMediaPath = $ScenePrimaryMediaPath
+$resolvedPresetPrimaryMediaPath = ""
+$demoMediaPackageRootUrl = ""
+$demoMediaStage = $null
+if (-not [string]::IsNullOrWhiteSpace($DemoMediaSourceRoot)) {
+    $demoMediaStage = Copy-DemoMediaIntoStageFlat `
+        -SourceRoot $DemoMediaSourceRoot `
+        -StageRoot $stageRoot `
+        -PackageRelativeRoot $DemoMediaPackageRelativeRoot `
+        -BasePath $RepoRoot
+    $demoMediaPackageRootUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $demoMediaStage.packagedRoot
+    $resolvedPresetPrimaryMediaPath = $demoMediaPackageRootUrl
+    if ([string]::IsNullOrWhiteSpace($resolvedScenePrimaryMediaPath)) {
+        $resolvedScenePrimaryMediaPath = $demoMediaPackageRootUrl
+    }
+}
+
 [void](Copy-FileIntoStage -SourcePath $assetBundlePath -StageRoot $stageRoot -RelativePath $assetBundleRelativePath)
 [void](Copy-FileIntoStage -SourcePath $pluginDllPath -StageRoot $stageRoot -RelativePath $pluginRelativePath)
 
-$presetObject = New-CustomUnityAssetPreset -AssetUrl $packagedAssetUrl -AssetName $assetName -PluginUrl $packagedPluginUrl -PlayerMediaPath ""
+$presetObject = New-CustomUnityAssetPreset -AssetUrl $packagedAssetUrl -AssetName $assetName -PluginUrl $packagedPluginUrl -PlayerMediaPath $resolvedPresetPrimaryMediaPath
 $presetStagePath = Join-Path $stageRoot $presetRelativePath
 Write-JsonFile -Path $presetStagePath -Value $presetObject
 
@@ -402,10 +470,10 @@ if ($IncludeScene.IsPresent) {
         $SceneIncludeManagedControls,
         "-AllowExistingVersion"
     )
-    if (-not [string]::IsNullOrWhiteSpace($ScenePrimaryMediaPath)) {
+    if (-not [string]::IsNullOrWhiteSpace($resolvedScenePrimaryMediaPath)) {
         $sceneArgs += @(
             "-PrimaryMediaPath",
-            $ScenePrimaryMediaPath
+            $resolvedScenePrimaryMediaPath
         )
     }
 
@@ -469,6 +537,11 @@ if (-not [string]::IsNullOrWhiteSpace($packagedScenePreviewPath)) {
         packagedPath = $packagedScenePreviewPath
     })
 }
+if ($null -ne $demoMediaStage) {
+    foreach ($demoMediaFile in $demoMediaStage.files) {
+        [void]$stagedFiles.Add($demoMediaFile)
+    }
+}
 [void]$stagedFiles.Add([ordered]@{
     kind = "meta_json"
     sourcePath = ""
@@ -492,7 +565,10 @@ $stageManifest = [ordered]@{
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
     authoritySeam = if ($IncludeScene.IsPresent) { "phase_2_package_first_direct_cua_with_packaged_scene" } else { "phase_2_direct_cua_with_packaged_plugin_attach" }
-    note = if ($IncludeScene.IsPresent) {
+    note = if ($IncludeScene.IsPresent -and $null -ne $demoMediaStage) {
+        "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs, a packaged demo media folder under Custom/Images, and a packaged scene that references those same in-package resources and media."
+    }
+    elseif ($IncludeScene.IsPresent) {
         "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs, and a packaged scene that references those same in-package resources."
     }
     else {
@@ -506,17 +582,30 @@ $stageManifest = [ordered]@{
         packagedAssetUrl = $packagedAssetUrl
         packagedPluginUrl = $packagedPluginUrl
         packagedPluginPath = $packagedPluginPath
+        packagedPresetPlayerMediaPath = $resolvedPresetPrimaryMediaPath
     }
     packagedScene = if ($IncludeScene.IsPresent) {
         [ordered]@{
             sceneTemplatePath = $SceneTemplatePath
-            scenePrimaryMediaPath = $ScenePrimaryMediaPath
+            scenePrimaryMediaPath = $resolvedScenePrimaryMediaPath
             sceneDisplayPolicy = $SceneDisplayPolicy
             sceneIncludeManagedControls = ($SceneIncludeManagedControls -ne 0)
             sourceScenePath = $generatedScenePath
             sourceScenePreviewPath = if (Test-Path -LiteralPath $generatedScenePreviewPath) { $generatedScenePreviewPath } else { "" }
             packagedScenePath = $packagedScenePath
             packagedScenePreviewPath = $packagedScenePreviewPath
+        }
+    }
+    else {
+        $null
+    }
+    demoMedia = if ($null -ne $demoMediaStage) {
+        [ordered]@{
+            sourceRoot = $demoMediaStage.sourceRoot
+            packagedRoot = $demoMediaStage.packagedRoot
+            packagedRootUrl = $demoMediaPackageRootUrl
+            fileCount = $demoMediaStage.files.Count
+            files = $demoMediaStage.files
         }
     }
     else {
@@ -570,8 +659,10 @@ $report = [ordered]@{
     assetBundleAssetName = $assetName
     packagedAssetUrl = $packagedAssetUrl
     packagedPluginUrl = $packagedPluginUrl
+    packagedPresetPlayerMediaPath = $resolvedPresetPrimaryMediaPath
     packagedScenePath = $packagedScenePath
     packagedScenePreviewPath = $packagedScenePreviewPath
+    packagedDemoMediaRootUrl = $demoMediaPackageRootUrl
     distribution = $distribution
 }
 Write-JsonFile -Path $reportPath -Value $report
@@ -588,6 +679,8 @@ Write-JsonFile -Path $reportPath -Value $report
     distributedPackagePath = $distribution.distributedPackagePath
     packagedAssetUrl = $packagedAssetUrl
     packagedPluginUrl = $packagedPluginUrl
+    packagedPresetPlayerMediaPath = $resolvedPresetPrimaryMediaPath
     packagedScenePath = $packagedScenePath
+    packagedDemoMediaRootUrl = $demoMediaPackageRootUrl
     presetStagePath = $presetStagePath
 }
