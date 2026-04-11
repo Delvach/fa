@@ -3,7 +3,13 @@ param(
     [string]$VamManagedDir = "F:\sim\vam\VaM_Data\Managed",
     [string]$Version = "",
     [switch]$AllowExistingVersion,
-    [switch]$SkipLiveDeploy
+    [switch]$SkipLiveDeploy,
+    [switch]$BuildVarPackage,
+    [string]$VarCreatorName = "FrameAngel",
+    [string]$VarPackageName = "Player",
+    [int]$VarPublicRelease = 1,
+    [string]$VarDestinationAddonPackages = "F:\sim\vam\AddonPackages",
+    [switch]$SkipVarDistribute
 )
 
 $ErrorActionPreference = "Stop"
@@ -183,6 +189,7 @@ $liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("fa_pla
 $livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_cua_player.{0}.dll" -f $resolvedVersion)
 $manifestPath = Join-Path $releaseRoot "foundation_release_manifest.json"
 $validatorScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Validate-PlayerScreenCoreRelease.ps1"
+$varPackagerScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerVarPackage.ps1"
 $pluginBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerResource.ps1"
 $assetBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerAssetBundle.ps1"
 $changelogSourcePath = if (($resolvedVersion -eq $versionState.Version) -and -not [string]::IsNullOrWhiteSpace($versionState.ChangelogPath)) {
@@ -371,6 +378,37 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     livePluginPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $livePluginPath }
 })
 
+$varPackageReport = $null
+if ($BuildVarPackage.IsPresent) {
+    $varArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $varPackagerScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-ReleaseManifestPath",
+        $manifestPath,
+        "-CreatorName",
+        $VarCreatorName,
+        "-PackageName",
+        $VarPackageName,
+        "-PublicRelease",
+        $VarPublicRelease,
+        "-DestinationAddonPackages",
+        $VarDestinationAddonPackages
+    )
+    if ($SkipVarDistribute.IsPresent) {
+        $varArgs += "-SkipDistribute"
+    }
+
+    $varPackageReport = & powershell @varArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Build-CuaPlayerVarPackage.ps1 failed."
+    }
+}
+
 [pscustomobject]@{
     version = $resolvedVersion
     releaseRoot = $releaseRoot
@@ -382,4 +420,5 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     changelogJsonPath = $releaseChangelogJsonPath
     changelogMarkdownPath = $releaseChangelogMarkdownPath
     latestManifestPath = $latestManifestPath
+    varPackage = $varPackageReport
 }
