@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.27",
-    "notes":  "0.4.27 adds a short transition fade overlay for movie-to-movie handoffs so next, previous, and natural-end playlist advances darken intentionally instead of flashing a harsher black gap.",
+    "version":  "0.4.28",
+    "notes":  "0.4.28 adds a trigger modifier to the joystick transport seam so held-trigger horizontal motion switches movies by previous/next and speeds up image stepping.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.27.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.28.json"
 }

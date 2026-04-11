@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.28",
+  "title": "Add a trigger-modified transport mode for joystick navigation",
+  "summary": "0.4.28 adds a held-trigger modifier to the CUA joystick transport seam so horizontal input switches from video scrubbing to previous/next stepping, while image stepping repeats at double the prior speed.",
+  "reasoning": "The existing joystick focus and stick arbitration are already working well. The smallest safe interaction upgrade is to branch the horizontal transport behavior inside the same input lane, instead of inventing a second navigation model or reopening UI control wiring.",
+  "changes": [
+    {
+      "area": "cua-input-modifier",
+      "summary": "Reads a trigger modifier from the current joystick surface and exposes that state in the player input status field.",
+      "reasoning": "That keeps the operator-facing interaction simple while making the new transport mode visible during testing."
+    },
+    {
+      "area": "transport-branching",
+      "summary": "When trigger is held, movies step by previous/next instead of scrub, and image stepping repeats at half the old delay values.",
+      "reasoning": "This preserves the current default behavior while adding a faster, more decisive transport mode for focused navigation."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.28 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.28.var and contains the 0.4.28 asset, plugin, preset, and demo scene.",
+    "Verify the player plugin compiles after the trigger-modifier transport changes."
+  ],
+  "knownIssues": [
+    "This slice uses the current aggregate trigger axis and does not yet differentiate left and right trigger ownership.",
+    "Live VaM proof is still needed to tune whether movie stepping should repeat at the current cadence or a slower dedicated cadence."
+  ]
+}
