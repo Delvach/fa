@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.19",
+  "title": "Remove the leftover back-mounted control slab from the stable packaged player export",
+  "summary": "0.4.19 keeps the package-first `.var` path and leaves packaged demo media opt-in only, but changes the stable player asset export so it no longer authors the older baked `control_surface` slab into the screen-core prefab by default. The stable packaged player should now load without the leftover translucent panel riding on the back of the screen.",
+  "reasoning": "The remaining visible crossover on the stable packaged player was not a return to external `PluginData` JSON and not a scene-template helper. The packaged scene was already clean. The hitchhiker was the baked `control_surface` subtree still being authored into the stable screen-core asset even though the packaged CUA path no longer needs that authored slab. The clean fix is to stop exporting it for the stable player by default and keep any future control-surface experiments behind an explicit exporter flag instead of in the shipping baseline.",
+  "changes": [
+    {
+      "area": "stable-player-export",
+      "summary": "Adds an explicit `IncludeControlSurface` exporter option and makes the stable player asset bundle path default to excluding the authored `control_surface` subtree.",
+      "reasoning": "The stable player should keep the screen, anchors, and playback behavior without carrying the older back-mounted control slab."
+    },
+    {
+      "area": "foundation-build-defaults",
+      "summary": "Leaves packaged demo media opt-in only; the normal foundation/package build no longer receives demo media unless a source root is passed explicitly.",
+      "reasoning": "We want clean stable-player test packages by default, and only include the `include` media set when we are intentionally building a demo-media package."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.19 into `player.version.json` and build the matching player release artifacts through the foundation build in package-only mode without passing a demo-media source root.",
+    "Confirm the generated package advances to the next `FrameAngel.Player.<n>.var` public release automatically.",
+    "Load the packaged player from AddonPackages in live VaM and confirm the leftover translucent back-mounted control panel is gone.",
+    "Verify the packaged player asset, plugin, preset, and scene still load together correctly from the `.var`."
+  ],
+  "knownIssues": [
+    "Packaged demo-media inclusion remains available as an explicit opt-in path for demo builds.",
+    "Further Meta proof assets and richer in-package media browsing remain separate follow-on slices."
+  ]
+}

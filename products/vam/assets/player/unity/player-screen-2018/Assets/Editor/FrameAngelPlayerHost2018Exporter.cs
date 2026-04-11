@@ -26,6 +26,7 @@ public static class FrameAngelPlayerHost2018Exporter
         public string PresetFileName = DefaultPresetFileName;
         public bool Deploy = true;
         public bool WritePreset = true;
+        public bool IncludeControlSurface = false;
     }
 
     [Serializable]
@@ -70,6 +71,7 @@ public static class FrameAngelPlayerHost2018Exporter
         options.PresetFileName = GetArg(args, "-faPresetFileName", options.PresetFileName);
         options.Deploy = GetBoolArg(args, "-faDeploy", true);
         options.WritePreset = GetBoolArg(args, "-faWritePreset", true);
+        options.IncludeControlSurface = GetBoolArg(args, "-faIncludeControlSurface", options.IncludeControlSurface);
         return options;
     }
 
@@ -109,7 +111,8 @@ public static class FrameAngelPlayerHost2018Exporter
             controlPanelMaterial,
             controlRailMaterial,
             controlButtonMaterial,
-            controlAccentMaterial);
+            controlAccentMaterial,
+            options.IncludeControlSurface);
 
         try
         {
@@ -221,7 +224,8 @@ public static class FrameAngelPlayerHost2018Exporter
         Material controlPanelMaterial,
         Material controlRailMaterial,
         Material controlButtonMaterial,
-        Material controlAccentMaterial)
+        Material controlAccentMaterial,
+        bool includeControlSurface)
     {
         GameObject root = new GameObject("fa_player_screen_core");
 
@@ -235,13 +239,16 @@ public static class FrameAngelPlayerHost2018Exporter
             new Vector3(0f, 0.45f, 0.0068f), new Vector2(1.6f, 0.9f), screenMaterial);
         CreateQuad(root.transform, "disconnect_surface",
             new Vector3(0f, 0.45f, 0.0060f), new Vector2(1.6f, 0.9f), disconnectMaterial);
-        CreatePlayerControlSurface(
-            root.transform,
-            new Vector3(0f, -0.205f, 0.0105f),
-            controlPanelMaterial,
-            controlRailMaterial,
-            controlButtonMaterial,
-            controlAccentMaterial);
+        if (includeControlSurface)
+        {
+            CreatePlayerControlSurface(
+                root.transform,
+                new Vector3(0f, -0.205f, 0.0105f),
+                controlPanelMaterial,
+                controlRailMaterial,
+                controlButtonMaterial,
+                controlAccentMaterial);
+        }
 
         CreateAnchor(root.transform, "bottom_anchor", new Vector3(0f, 0f, 0.008f));
         CreateAnchor(root.transform, "controls_anchor", new Vector3(0f, -0.205f, 0.0105f));

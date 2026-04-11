@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.18",
-    "notes":  "0.4.18 keeps the package-first player var seam and now stages demo images and videos directly into the .var, seeds the packaged preset and scene to that in-package media root, and preserves the rolling public release number so VaM cache does not muddy testing.",
+    "version":  "0.4.19",
+    "notes":  "0.4.19 keeps the package-first player var seam, leaves packaged demo media opt-in only, and removes the authored back-mounted control slab from the stable player asset export so the packaged player no longer carries the leftover Meta crossover panel.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.18.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.19.json"
 }

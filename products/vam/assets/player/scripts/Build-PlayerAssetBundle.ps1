@@ -3,6 +3,7 @@ param(
     [string]$Version = "",
     [string]$UnityEditorPath = "C:\Program Files\Unity\Hub\Editor\2018.1.9f2\Editor\Unity.exe",
     [string]$DeployAssetsRoot = "F:\sim\vam\Custom\Assets\FrameAngel\Player",
+    [switch]$IncludeControlSurface,
     [switch]$SkipDeploy,
     [switch]$AllowExistingVersion
 )
@@ -134,7 +135,8 @@ $unityArgs = @(
     "-faDeployAssetsRoot", $DeployAssetsRoot,
     "-faDeployPresetRoot", "F:\sim\vam\Custom\Atom\CustomUnityAsset",
     "-faDeploy", $deployFlag,
-    "-faWritePreset", "false"
+    "-faWritePreset", "false",
+    "-faIncludeControlSurface", $(if ($IncludeControlSurface.IsPresent) { "true" } else { "false" })
 )
 
 $process = Start-Process -FilePath $UnityEditorPath -ArgumentList $unityArgs -PassThru -Wait
