@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.25",
+  "title": "Trim always-on runtime overhead",
+  "summary": "0.4.25 focuses on the hottest always-on playback paths by removing unconditional per-frame audio reapply work, reusing scratch lists in the main player ticks, and reducing redundant play-state polling.",
+  "reasoning": "The current stability goal is smoother playback, especially when multiple instances are active. The safest first pass is to reduce repeated update costs and avoid per-frame work that is already covered by explicit mutation paths.",
+  "changes": [
+    {
+      "area": "standalone-player-tick",
+      "summary": "Reuses a scratch list for the standalone player runtime tick and stops reapplying audio state every frame.",
+      "reasoning": "These are pure maintenance reductions in the highest-frequency loop and should improve multi-instance cost without changing the user-facing playback contract."
+    },
+    {
+      "area": "control-surface-relative-tick",
+      "summary": "Reuses a scratch list for control-surface relative binding refresh instead of allocating a new list each tick.",
+      "reasoning": "This removes avoidable allocation churn from another always-on maintenance loop."
+    },
+    {
+      "area": "play-state-polling",
+      "summary": "Reuses the already-read play state inside the main player tick instead of re-querying `VideoPlayer.isPlaying` multiple times in the same pass.",
+      "reasoning": "This keeps the hot loop a little leaner and avoids duplicate runtime checks."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.25 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.25.var and contains the 0.4.25 asset, plugin, preset, and demo scene.",
+    "Verify the player plugin compiles after the tick-path maintenance changes."
+  ],
+  "knownIssues": [
+    "This slice is intentionally bounded to the existing hot loops and does not yet change larger media-transition behavior or input-path design.",
+    "Live VaM proof is still needed to judge how much the maintenance pass improves multi-instance playback."
+  ]
+}

@@ -200,6 +200,10 @@ public partial class FASyncRuntime : MVRScript
         new Dictionary<string, PlayerControlSurfaceBindingRecord>(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, StandalonePlayerRecord> standalonePlayerRecords =
         new Dictionary<string, StandalonePlayerRecord>(StringComparer.OrdinalIgnoreCase);
+    private readonly List<PlayerControlSurfaceBindingRecord> playerControlSurfaceBindingScratch =
+        new List<PlayerControlSurfaceBindingRecord>();
+    private readonly List<StandalonePlayerRecord> standalonePlayerTickScratch =
+        new List<StandalonePlayerRecord>();
 
     private bool TryGetPlayerState(string actionId, string argsJson, out string resultJson, out string errorMessage)
     {
@@ -1357,9 +1361,12 @@ public partial class FASyncRuntime : MVRScript
         if (playerControlSurfaceBindings.Count == 0)
             return;
 
-        List<PlayerControlSurfaceBindingRecord> bindings = new List<PlayerControlSurfaceBindingRecord>(playerControlSurfaceBindings.Values);
-        for (int i = 0; i < bindings.Count; i++)
-            RefreshPlayerControlSurfaceRelativeBinding(bindings[i]);
+        playerControlSurfaceBindingScratch.Clear();
+        foreach (KeyValuePair<string, PlayerControlSurfaceBindingRecord> kvp in playerControlSurfaceBindings)
+            playerControlSurfaceBindingScratch.Add(kvp.Value);
+
+        for (int i = 0; i < playerControlSurfaceBindingScratch.Count; i++)
+            RefreshPlayerControlSurfaceRelativeBinding(playerControlSurfaceBindingScratch[i]);
     }
 
     private void RefreshPlayerControlSurfaceRelativeBinding(PlayerControlSurfaceBindingRecord binding)
@@ -7018,14 +7025,15 @@ public partial class FASyncRuntime : MVRScript
         if (standalonePlayerRecords.Count <= 0)
             return;
 
-        List<StandalonePlayerRecord> records = new List<StandalonePlayerRecord>(standalonePlayerRecords.Values);
-        for (int i = 0; i < records.Count; i++)
+        standalonePlayerTickScratch.Clear();
+        foreach (KeyValuePair<string, StandalonePlayerRecord> kvp in standalonePlayerRecords)
+            standalonePlayerTickScratch.Add(kvp.Value);
+
+        for (int i = 0; i < standalonePlayerTickScratch.Count; i++)
         {
-            StandalonePlayerRecord record = records[i];
+            StandalonePlayerRecord record = standalonePlayerTickScratch[i];
             if (record == null)
                 continue;
-
-            ApplyStandalonePlayerAudioState(record);
 
             if (record.mediaIsStillImage)
             {
@@ -7163,7 +7171,7 @@ public partial class FASyncRuntime : MVRScript
                     {
                         try
                         {
-                            if (!record.videoPlayer.isPlaying
+                            if (!isPlayingNow
                                 && Time.unscaledTime >= record.nextPlaybackStateApplyTime)
                             {
                                 record.videoPlayer.Play();
@@ -7179,7 +7187,7 @@ public partial class FASyncRuntime : MVRScript
                     {
                         try
                         {
-                            if (record.videoPlayer.isPlaying
+                            if (isPlayingNow
                                 && Time.unscaledTime >= record.nextPlaybackStateApplyTime)
                             {
                                 record.videoPlayer.Pause();
