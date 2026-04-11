@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.32",
-    "notes":  "0.4.32 keeps the current transport and diagnostics scene work, and adds a built-in wide placeholder texture so player startup binds against a deterministic front-facing image instead of a transient square eager render texture while video media is still preparing.",
+    "version":  "0.4.33",
+    "notes":  "0.4.33 keeps the current transport, diagnostics scene, and built-in startup placeholder work, and changes scrub seek resume so problematic media is allowed to complete seek before audio/playback resume is released.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.32.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.33.json"
 }

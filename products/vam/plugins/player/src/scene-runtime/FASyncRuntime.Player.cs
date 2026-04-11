@@ -56,6 +56,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerDefaultSkipSeconds = 10f;
     private const float StandalonePlayerPlaybackRetryIntervalSeconds = 0.20f;
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
+    private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
@@ -162,6 +163,9 @@ public partial class FASyncRuntime : MVRScript
         public float prepareStartedAt = 0f;
         public bool desiredPlaying = true;
         public float nextPlaybackStateApplyTime = 0f;
+        public bool seekResumePending = false;
+        public double seekResumeTargetSeconds = 0d;
+        public float seekResumeRequestedAt = 0f;
         public bool muted = false;
         public float volume = 1f;
         public float storedVolume = 1f;
@@ -7031,6 +7035,9 @@ public partial class FASyncRuntime : MVRScript
         record.prepared = false;
         record.preparePending = false;
         record.prepareStartedAt = 0f;
+        record.seekResumePending = false;
+        record.seekResumeTargetSeconds = 0d;
+        record.seekResumeRequestedAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
@@ -7477,6 +7484,8 @@ public partial class FASyncRuntime : MVRScript
                 continue;
 
             TickStandalonePlayerTransitionFade(record);
+            if (!record.seekResumePending)
+                ApplyStandalonePlayerAudioState(record);
 
             if (record.mediaIsStillImage)
             {
@@ -7538,6 +7547,9 @@ public partial class FASyncRuntime : MVRScript
             {
                 record.preparePending = false;
                 record.prepareStartedAt = 0f;
+                record.seekResumePending = false;
+                record.seekResumeTargetSeconds = 0d;
+                record.seekResumeRequestedAt = 0f;
                 record.lastError = "player media did not prepare; file may be unsupported or unplayable";
                 LogStandalonePlayerDiagnostics(record, "prepare_timeout", record.lastError);
             }
@@ -7593,6 +7605,36 @@ public partial class FASyncRuntime : MVRScript
                     if (!hasTimeline && !string.IsNullOrEmpty(timelineError))
                         record.lastError = timelineError;
 
+                    if (record.seekResumePending)
+                    {
+                        bool releasePendingSeek = false;
+                        bool releaseFromTimeout = false;
+                        if (record.seekResumeRequestedAt > 0f
+                            && (Time.unscaledTime - record.seekResumeRequestedAt) >= StandalonePlayerSeekResumeTimeoutSeconds)
+                        {
+                            releasePendingSeek = true;
+                            releaseFromTimeout = true;
+                        }
+                        else if (hasTimeline
+                            && Math.Abs(currentTimeSeconds - record.seekResumeTargetSeconds) <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+                        {
+                            releasePendingSeek = true;
+                        }
+
+                        if (releasePendingSeek)
+                        {
+                            record.seekResumePending = false;
+                            record.seekResumeRequestedAt = 0f;
+                            record.nextPlaybackStateApplyTime = Time.unscaledTime;
+                            LogStandalonePlayerDiagnostics(
+                                record,
+                                "seek_resume_released",
+                                "timeout=" + (releaseFromTimeout ? "true" : "false")
+                                    + " target=" + record.seekResumeTargetSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                                    + " " + BuildStandalonePlayerDiagnosticsSnapshot(record));
+                        }
+                    }
+
                     bool isPlayingNow = false;
                     try
                     {
@@ -7618,7 +7660,7 @@ public partial class FASyncRuntime : MVRScript
                         }
                     }
 
-                    if (record.desiredPlaying)
+                    if (record.desiredPlaying && !record.seekResumePending)
                     {
                         try
                         {
@@ -8113,12 +8155,23 @@ public partial class FASyncRuntime : MVRScript
 
             if (shouldResumePlayback)
             {
+                record.seekResumePending = true;
+                record.seekResumeTargetSeconds = targetTimeSeconds;
+                record.seekResumeRequestedAt = Time.unscaledTime;
                 record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
-                ApplyStandalonePlayerAudioState(record);
-                record.videoPlayer.Play();
+                record.desiredPlaying = true;
+                LogStandalonePlayerDiagnostics(
+                    record,
+                    "seek_resume_pending",
+                    "target=" + targetTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
+                        + " " + BuildStandalonePlayerDiagnosticsSnapshot(record));
             }
             else
             {
+                record.seekResumePending = false;
+                record.seekResumeTargetSeconds = 0d;
+                record.seekResumeRequestedAt = 0f;
+                record.desiredPlaying = false;
                 TryRefreshStandalonePlayerPausedFrame(record);
             }
 
@@ -8504,6 +8557,9 @@ public partial class FASyncRuntime : MVRScript
 
                 record.preparePending = false;
                 record.prepareStartedAt = 0f;
+                record.seekResumePending = false;
+                record.seekResumeTargetSeconds = 0d;
+                record.seekResumeRequestedAt = 0f;
                 record.prepared = false;
                 record.needsScreenRefresh = true;
                 record.lastError = string.IsNullOrEmpty(message)
@@ -8556,10 +8612,19 @@ public partial class FASyncRuntime : MVRScript
         {
             record.videoPlayer.seekCompleted += delegate(VideoPlayer source)
             {
+                bool releasedPendingSeek = record != null && record.seekResumePending;
+                if (record != null)
+                {
+                    record.seekResumePending = false;
+                    record.seekResumeRequestedAt = 0f;
+                    record.nextPlaybackStateApplyTime = Time.unscaledTime;
+                }
+
                 LogStandalonePlayerDiagnostics(
                     record,
                     "seek_completed",
-                    BuildStandalonePlayerDiagnosticsSnapshot(record));
+                    "releasedPending=" + (releasedPendingSeek ? "true" : "false")
+                        + " " + BuildStandalonePlayerDiagnosticsSnapshot(record));
             };
             record.runtimeSeekCompletedHooked = true;
         }
@@ -8759,6 +8824,9 @@ public partial class FASyncRuntime : MVRScript
             record.prepared = true;
             record.preparePending = false;
             record.prepareStartedAt = 0f;
+            record.seekResumePending = false;
+            record.seekResumeTargetSeconds = 0d;
+            record.seekResumeRequestedAt = 0f;
             record.desiredPlaying = false;
             record.nextPlaybackStateApplyTime = 0f;
             record.lastError = "";

@@ -386,6 +386,9 @@ public partial class FASyncRuntime : MVRScript
         }
 
         record.desiredPlaying = false;
+        record.seekResumePending = false;
+        record.seekResumeTargetSeconds = 0d;
+        record.seekResumeRequestedAt = 0f;
         record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
         if (record.videoPlayer != null)
         {

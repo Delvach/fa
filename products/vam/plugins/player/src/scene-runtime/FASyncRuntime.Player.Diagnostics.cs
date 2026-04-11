@@ -201,6 +201,12 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("prepared=").Append(record.prepared ? "true" : "false");
         sb.Append(" preparePending=").Append(record.preparePending ? "true" : "false");
         sb.Append(" desiredPlaying=").Append(record.desiredPlaying ? "true" : "false");
+        sb.Append(" seekResumePending=").Append(record.seekResumePending ? "true" : "false");
+        if (record.seekResumePending)
+        {
+            sb.Append(" seekTarget=")
+                .Append(record.seekResumeTargetSeconds.ToString("0.###", CultureInfo.InvariantCulture));
+        }
         sb.Append(" kind=").Append(record.mediaIsStillImage ? "image" : "video");
         sb.Append(" loop=").Append(NormalizeStandalonePlayerLoopMode(record.loopMode));
         sb.Append(" random=").Append(record.randomEnabled ? "on" : "off");

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.33",
+  "title": "Let seek finish before playback resumes on problematic media",
+  "summary": "0.4.33 publishes `Fa.Player.14.var` with the current transport, diagnostics scene, and startup placeholder work intact, and changes scrub seek resume so playback is released after seek completion instead of forcing audio and play immediately on the same frame.",
+  "reasoning": "Live testing narrowed the remaining freeze seam sharply. Startup presentation improved, Alien tolerated aggressive scrub input, and The Fifth Element still froze after only a few scrubs. Media inspection showed that The Fifth Element is the outlier: H.264 video paired with 5.1 HE-AAC audio at 22050 Hz, while Alien uses ordinary stereo AAC-LC at 48000 Hz. The previous seek path paused, changed time, reapplied audio, and called Play immediately, which is exactly the kind of sequence that can fight a fragile decoder. This slice keeps the broader player untouched and only changes post-seek resume timing.",
+  "changes": [
+    {
+      "area": "scrub-resume",
+      "summary": "Seek now enters a short pending-resume state instead of immediately reapplying audio and calling Play on the same frame.",
+      "reasoning": "Problem media is given a chance to finish seek cleanly before playback resumes."
+    },
+    {
+      "area": "tick-audio",
+      "summary": "Per-frame audio-state reapply is skipped while a seek resume is still pending.",
+      "reasoning": "This avoids fighting the decoder during the narrow post-seek window that appears fragile on Fifth Element."
+    },
+    {
+      "area": "diagnostics",
+      "summary": "Diagnostics snapshots and seek-completion logs now report the pending seek-resume state and when it is released.",
+      "reasoning": "If Fifth Element still freezes, the normal VaM log can now show whether playback is stuck before or after seek completion."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.33 into player.version.json and BuildRuntimeInfo.cs, then build `Fa.Player.14.var` with the diagnostics scene still included.",
+    "Load The Fifth Element, scrub repeatedly, and confirm whether playback keeps recovering instead of freezing after a few seeks.",
+    "If the freeze persists, load the diagnostics scene and capture `[FA.PlayerDiag]` lines around `seek_resume_pending`, `seek_completed`, and `seek_resume_released`."
+  ],
+  "knownIssues": [
+    "This slice targets the remaining Fifth Element seek seam and does not yet claim to solve all unusual multichannel or low-sample-rate media combinations.",
+    "Future pro audio work still needs a broader speaker/profile architecture beyond the current single AudioSource path."
+  ]
+}
