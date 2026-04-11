@@ -21,6 +21,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
     private sealed class ExportOptions
     {
         public string SummaryPath = DefaultSummaryPath;
+        public string PackageRootPath = "";
         public string OutputRoot = DefaultOutputRoot;
         public string DeployAssetsRoot = DefaultDeployAssetsRoot;
         public string DeployPresetRoot = DefaultDeployPresetRoot;
@@ -68,6 +69,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
     {
         public string controlSurfaceId = "";
         public string controlSurfaceLabel = "";
+        public string controlFamilyId = "";
         public string controlThemeId = "";
         public string controlThemeLabel = "";
         public string controlThemeVariantId = "";
@@ -78,7 +80,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
     [Serializable]
     private sealed class ExportSummary
     {
-        public string schemaVersion = "frameangel_meta_video_player_2018_export_summary_v1";
+        public string schemaVersion = "frameangel_meta_control_surface_2018_export_summary_v1";
         public string generatedAtUtc = "";
         public string unityVersion = "";
         public string sourceSummaryPath = "";
@@ -128,6 +130,7 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
         string[] args = Environment.GetCommandLineArgs();
         ExportOptions options = CreateDefaultOptions();
         options.SummaryPath = GetArg(args, "-faSummaryPath", options.SummaryPath);
+        options.PackageRootPath = GetArg(args, "-faPackageRootPath", options.PackageRootPath);
         options.OutputRoot = GetArg(args, "-faOutputRoot", options.OutputRoot);
         options.DeployAssetsRoot = GetArg(args, "-faDeployAssetsRoot", options.DeployAssetsRoot);
         options.DeployPresetRoot = GetArg(args, "-faDeployPresetRoot", options.DeployPresetRoot);
@@ -141,11 +144,18 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
 
     private static void BuildAndDeploy(ExportOptions options)
     {
-        string resolvedSummaryPath = Path.GetFullPath(options.SummaryPath);
-        ToolkitSummary toolkitSummary = ReadJson<ToolkitSummary>(resolvedSummaryPath, "toolkit summary");
-        SurfaceSummary surface = FindVideoPlayerSurface(toolkitSummary);
+        string resolvedSummaryPath = IsNullOrWhiteSpaceCompat(options.SummaryPath)
+            ? string.Empty
+            : Path.GetFullPath(options.SummaryPath);
+        string resolvedPackageRootPath = IsNullOrWhiteSpaceCompat(options.PackageRootPath)
+            ? string.Empty
+            : Path.GetFullPath(options.PackageRootPath);
+        SurfaceSummary surface = ResolveSurface(resolvedSummaryPath, resolvedPackageRootPath);
         if (surface == null)
-            throw new InvalidOperationException("FrameAngelMetaVideoPlayer2018Exporter: no meta_ui_video_player surface was found in the toolkit summary.");
+        {
+            throw new InvalidOperationException(
+                "FrameAngelMetaVideoPlayer2018Exporter: no eligible surface package could be resolved.");
+        }
 
         string resolvedMaterialsPath = Path.GetFullPath(surface.materialsPath);
         string resolvedControlsPath = Path.GetFullPath(surface.controlsPath);
@@ -242,7 +252,9 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
             summary.assetUrl = assetUrl;
             summary.controlSurfaceId = controlsDoc.controlSurfaceId ?? surface.controlSurfaceId ?? "";
             summary.controlSurfaceLabel = controlsDoc.controlSurfaceLabel ?? surface.exportDisplayName ?? "";
-            summary.controlFamilyId = surface.controlFamilyId ?? "";
+            summary.controlFamilyId = !string.IsNullOrEmpty(surface.controlFamilyId)
+                ? surface.controlFamilyId
+                : (controlsDoc.controlFamilyId ?? "");
             summary.controlThemeId = controlsDoc.controlThemeId ?? "";
             summary.controlThemeLabel = controlsDoc.controlThemeLabel ?? "";
             summary.controlThemeVariantId = controlsDoc.controlThemeVariantId ?? "";
@@ -267,6 +279,47 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
+    }
+
+    private static SurfaceSummary ResolveSurface(string resolvedSummaryPath, string resolvedPackageRootPath)
+    {
+        if (!string.IsNullOrEmpty(resolvedPackageRootPath))
+        {
+            return BuildSurfaceSummaryFromPackageRoot(resolvedPackageRootPath);
+        }
+
+        ToolkitSummary toolkitSummary = ReadJson<ToolkitSummary>(resolvedSummaryPath, "toolkit summary");
+        SurfaceSummary surface = FindVideoPlayerSurface(toolkitSummary);
+        if (surface == null)
+        {
+            throw new InvalidOperationException(
+                "FrameAngelMetaVideoPlayer2018Exporter: no meta_ui_video_player surface was found in the toolkit summary.");
+        }
+
+        return surface;
+    }
+
+    private static SurfaceSummary BuildSurfaceSummaryFromPackageRoot(string packageRootPath)
+    {
+        if (string.IsNullOrEmpty(packageRootPath) || !Directory.Exists(packageRootPath))
+        {
+            throw new DirectoryNotFoundException(
+                "FrameAngelMetaVideoPlayer2018Exporter: surface package root was not found: " + packageRootPath);
+        }
+
+        string controlsPath = Path.Combine(packageRootPath, "controls.innerpiece.json");
+        string materialsPath = Path.Combine(packageRootPath, "materials.innerpiece.json");
+        ControlsDoc controlsDoc = ReadJson<ControlsDoc>(controlsPath, "controls doc");
+
+        return new SurfaceSummary
+        {
+            controlSurfaceId = controlsDoc.controlSurfaceId ?? "",
+            exportDisplayName = controlsDoc.controlSurfaceLabel ?? "",
+            controlFamilyId = controlsDoc.controlFamilyId ?? "",
+            packageRootPath = packageRootPath,
+            materialsPath = materialsPath,
+            controlsPath = controlsPath
+        };
     }
 
     private static SurfaceSummary FindVideoPlayerSurface(ToolkitSummary toolkitSummary)
@@ -451,6 +504,11 @@ public static class FrameAngelMetaVideoPlayer2018Exporter
         }
 
         return defaultValue;
+    }
+
+    private static bool IsNullOrWhiteSpaceCompat(string value)
+    {
+        return string.IsNullOrEmpty(value) || value.Trim().Length == 0;
     }
 
     private static bool GetBoolArg(string[] args, string name, bool defaultValue)
