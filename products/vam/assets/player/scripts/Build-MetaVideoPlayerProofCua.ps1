@@ -98,9 +98,9 @@ function Resolve-UnityEditorPathForProject {
 
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
-$unityProjectPath = Join-Path $laneRoots.AssetsPlayerUnityRoot "ghost_training_export_clone"
+$unityProjectPath = $laneRoots.PlayerScreenUnityProjectRoot
 $UnityEditorPath = Resolve-UnityEditorPathForProject -ProjectPath $unityProjectPath -RequestedUnityEditorPath $UnityEditorPath
-$exportMethod = "GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch"
+$exportMethod = "FrameAngelMetaVideoPlayer2018Exporter.BuildAndDeployBatch"
 $resolvedOutputRoot = if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
     Join-Path $laneRoots.AssetsPlayerBuildRoot "meta_proof_cua"
 }
@@ -145,10 +145,14 @@ $unityArgs = @(
     "-projectPath", $unityProjectPath,
     "-logFile", $logPath,
     "-executeMethod", $exportMethod,
+    "-faSummaryPath", (Join-Path $laneRoots.AssetsPlayerBuildRoot "meta_toolkit_catalog\theme_00\ghost_meta_ui_toolkit_export_summary_theme_00.json"),
     "-faOutputRoot", $resolvedOutputRoot,
+    "-faResourceId", "fa_meta_video_player_proof",
+    "-faBundleFileName", "fa_meta_video_player_proof.assetbundle",
+    "-faPresetFileName", '"Preset_FA Meta Video Player Proof.vap"',
+    "-faSummaryFileName", "meta_video_player_proof_cua_export_summary.json",
     "-faDeployAssetsRoot", $DeployAssetsRoot,
     "-faDeployPresetRoot", $DeployPresetRoot,
-    "-faBuildProfile", $BuildProfile,
     "-faDeploy", $deployFlag
 )
 

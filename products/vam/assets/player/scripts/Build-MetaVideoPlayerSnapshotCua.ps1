@@ -58,9 +58,9 @@ function Resolve-UnityEditorPathForProject {
 
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
-$unityProjectPath = Join-Path $laneRoots.AssetsPlayerUnityRoot "ghost_training_export_clone"
+$unityProjectPath = $laneRoots.PlayerScreenUnityProjectRoot
 $UnityEditorPath = Resolve-UnityEditorPathForProject -ProjectPath $unityProjectPath -RequestedUnityEditorPath $UnityEditorPath
-$exportMethod = "GhostMetaVideoPlayerSnapshotCuaExporter.ExportMetaVideoPlayerSnapshotCuaBatch"
+$exportMethod = "FrameAngelMetaVideoPlayer2018Exporter.BuildAndDeployBatch"
 $resolvedSummaryPath = if ([string]::IsNullOrWhiteSpace($SummaryPath)) { Join-Path $laneRoots.AssetsPlayerBuildRoot "meta_toolkit_catalog\theme_00\ghost_meta_ui_toolkit_export_summary_theme_00.json" } else { $SummaryPath }
 $resolvedSummaryPath = [System.IO.Path]::GetFullPath($resolvedSummaryPath)
 $resolvedOutputRoot = if ([string]::IsNullOrWhiteSpace($OutputRoot)) { Join-Path $laneRoots.AssetsPlayerBuildRoot "meta_snapshot_cua" } else { $OutputRoot }
@@ -93,9 +93,12 @@ $unityArgs = @(
     "-executeMethod", $exportMethod,
     "-faSummaryPath", $resolvedSummaryPath,
     "-faOutputRoot", $resolvedOutputRoot,
+    "-faResourceId", "fa_meta_video_player_snapshot",
+    "-faBundleFileName", "fa_meta_video_player_snapshot.assetbundle",
+    "-faPresetFileName", '"Preset_FA Meta Video Player Snapshot.vap"',
+    "-faSummaryFileName", "meta_video_player_snapshot_cua_export_summary.json",
     "-faDeployAssetsRoot", $DeployAssetsRoot,
     "-faDeployPresetRoot", $DeployPresetRoot,
-    "-faBuildProfile", $BuildProfile,
     "-faDeploy", $deployFlag
 )
 
