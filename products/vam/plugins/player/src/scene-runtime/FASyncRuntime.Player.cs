@@ -61,6 +61,8 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
     private const float StandalonePlayerTransitionFadeDurationSeconds = 0.25f;
     private const float StandalonePlayerVolumeCurveExponent = 2f;
+    private const int StandalonePlayerPlaceholderWidth = 256;
+    private const int StandalonePlayerPlaceholderHeight = 144;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
     private const double StandalonePlayerAbLoopMinimumSpanSeconds = 0.05d;
@@ -218,6 +220,7 @@ public partial class FASyncRuntime : MVRScript
         new List<PlayerControlSurfaceBindingRecord>();
     private readonly List<StandalonePlayerRecord> standalonePlayerTickScratch =
         new List<StandalonePlayerRecord>();
+    private Texture2D standalonePlayerPlaceholderTexture;
 
     private bool IsPlayerBoundControlFamily(string controlFamilyId)
     {
@@ -7671,6 +7674,19 @@ public partial class FASyncRuntime : MVRScript
         for (int i = 0; i < records.Count; i++)
             DestroyStandalonePlayerRecord(records[i]);
         standalonePlayerRecords.Clear();
+
+        if (standalonePlayerPlaceholderTexture != null)
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(standalonePlayerPlaceholderTexture);
+            }
+            catch
+            {
+            }
+
+            standalonePlayerPlaceholderTexture = null;
+        }
     }
 
     private bool HasStandalonePlayerSelector(string argsJson)
@@ -8841,6 +8857,64 @@ public partial class FASyncRuntime : MVRScript
         }
     }
 
+    private Texture2D GetOrCreateStandalonePlayerPlaceholderTexture()
+    {
+        if (standalonePlayerPlaceholderTexture != null)
+            return standalonePlayerPlaceholderTexture;
+
+        try
+        {
+            Texture2D texture = new Texture2D(
+                StandalonePlayerPlaceholderWidth,
+                StandalonePlayerPlaceholderHeight,
+                TextureFormat.RGBA32,
+                false);
+            texture.name = "FAPlayerPlaceholder";
+            texture.wrapMode = TextureWrapMode.Clamp;
+            texture.filterMode = FilterMode.Bilinear;
+
+            Color topColor = new Color32(78, 108, 164, 255);
+            Color bottomColor = new Color32(20, 24, 34, 255);
+            Color horizonColor = new Color32(214, 153, 88, 255);
+            Color accentColor = new Color32(246, 219, 174, 255);
+            int width = texture.width;
+            int height = texture.height;
+            Color[] pixels = new Color[width * height];
+
+            for (int y = 0; y < height; y++)
+            {
+                float normalizedY = height <= 1 ? 0f : (float)y / (float)(height - 1);
+                Color baseColor = Color.Lerp(bottomColor, topColor, normalizedY);
+
+                float horizonBand = Mathf.Clamp01(1f - Mathf.Abs(normalizedY - 0.38f) / 0.16f);
+                baseColor = Color.Lerp(baseColor, horizonColor, horizonBand * 0.45f);
+
+                float vignette = Mathf.Clamp01(1f - Mathf.Abs(normalizedY - 0.52f) / 0.65f);
+                baseColor *= (0.88f + (0.12f * vignette));
+
+                for (int x = 0; x < width; x++)
+                {
+                    float normalizedX = width <= 1 ? 0f : (float)x / (float)(width - 1);
+                    Color pixel = baseColor;
+                    float glow = Mathf.Clamp01(1f - Vector2.Distance(
+                        new Vector2(normalizedX, normalizedY),
+                        new Vector2(0.76f, 0.68f)) / 0.28f);
+                    pixel = Color.Lerp(pixel, accentColor, glow * 0.22f);
+                    pixels[(y * width) + x] = pixel;
+                }
+            }
+
+            texture.SetPixels(pixels);
+            texture.Apply(false, false);
+            standalonePlayerPlaceholderTexture = texture;
+            return standalonePlayerPlaceholderTexture;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private void ApplyStandalonePlayerAudioState(StandalonePlayerRecord record)
     {
         if (record == null || record.videoPlayer == null || record.audioSource == null)
@@ -8919,6 +8993,24 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.renderTexture != null)
         {
+            bool shouldUsePlaceholder =
+                !record.mediaIsStillImage
+                && (!record.prepared
+                    || record.preparePending
+                    || record.textureWidth <= 0
+                    || record.textureHeight <= 0
+                    || (record.renderTexture.width <= 16 && record.renderTexture.height <= 16));
+            if (shouldUsePlaceholder)
+            {
+                Texture2D placeholderTexture = GetOrCreateStandalonePlayerPlaceholderTexture();
+                if (placeholderTexture != null)
+                {
+                    sourceTexture = placeholderTexture;
+                    sourceName = "StandalonePlayer.placeholderTexture";
+                    return true;
+                }
+            }
+
             sourceTexture = record.renderTexture;
             sourceName = "VideoPlayer.targetTexture";
             return true;

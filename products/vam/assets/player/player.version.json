@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.31",
-    "notes":  "0.4.31 keeps the 0.4.30 transport fix and adds a packaged diagnostics scene variant that pre-enables the hidden player diagnostics probe, so Fifth Element witness runs can capture prepare, seek, skip, audio, and resync events with no manual scene editing.",
+    "version":  "0.4.32",
+    "notes":  "0.4.32 keeps the current transport and diagnostics scene work, and adds a built-in wide placeholder texture so player startup binds against a deterministic front-facing image instead of a transient square eager render texture while video media is still preparing.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.31.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.32.json"
 }
