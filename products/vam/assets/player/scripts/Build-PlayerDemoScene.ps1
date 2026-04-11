@@ -3,6 +3,8 @@ param(
     [string]$Version = "",
     [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$OutputDirectory = "F:\sim\vam\Saves\scene",
+    [string]$AssetUrl = "",
+    [string]$PluginPath = "",
     [string]$PrimaryMediaPath = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$DisplayPolicy = "multi_aspect",
@@ -547,14 +549,32 @@ if ((Test-Path -LiteralPath $sceneOutputPath) -and -not $AllowExistingVersion.Is
 $liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
 $livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_cua_player.{0}.dll" -f $resolvedVersion)
 
-foreach ($requiredPath in @($liveAssetPath, $livePluginPath)) {
-    if (-not (Test-Path -LiteralPath $requiredPath)) {
-        throw "Required live player artifact not found: $requiredPath"
+if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
+    if (-not (Test-Path -LiteralPath $liveAssetPath)) {
+        throw "Required live player asset not found: $liveAssetPath"
     }
 }
 
-$assetUrl = "Custom/Assets/FrameAngel/Player/fa_player_asset.{0}.assetbundle" -f $resolvedVersion
-$pluginPath = "Custom/Plugins/fa_cua_player.{0}.dll" -f $resolvedVersion
+if ([string]::IsNullOrWhiteSpace($PluginPath)) {
+    if (-not (Test-Path -LiteralPath $livePluginPath)) {
+        throw "Required live player plugin not found: $livePluginPath"
+    }
+}
+
+$assetUrl = if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
+    "Custom/Assets/FrameAngel/Player/fa_player_asset.{0}.assetbundle" -f $resolvedVersion
+}
+else {
+    $AssetUrl.Trim()
+}
+
+$pluginPath = if ([string]::IsNullOrWhiteSpace($PluginPath)) {
+    "Custom/Plugins/fa_cua_player.{0}.dll" -f $resolvedVersion
+}
+else {
+    $PluginPath.Trim()
+}
+
 $assetName = Resolve-PlayerAssetName -LaneRoots $laneRoots -ResolvedVersion $resolvedVersion
 
 $scene = Get-Content -LiteralPath $resolvedTemplatePath -Raw | ConvertFrom-Json

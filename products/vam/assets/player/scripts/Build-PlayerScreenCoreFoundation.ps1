@@ -5,6 +5,12 @@ param(
     [switch]$AllowExistingVersion,
     [switch]$SkipLiveDeploy,
     [switch]$BuildVarPackage,
+    [switch]$PackageOnlyDeploy,
+    [switch]$IncludeVarScene,
+    [string]$VarSceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
+    [string]$VarScenePrimaryMediaPath = "",
+    [ValidateSet("single_display_fit", "multi_aspect")]
+    [string]$VarSceneDisplayPolicy = "multi_aspect",
     [string]$VarCreatorName = "FrameAngel",
     [string]$VarPackageName = "Player",
     [int]$VarPublicRelease = 1,
@@ -174,6 +180,13 @@ function Convert-PlayerReleaseChangelogToMarkdown {
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
 $versionState = Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot
+
+if ($PackageOnlyDeploy.IsPresent) {
+    $SkipLiveDeploy = $true
+    $BuildVarPackage = $true
+}
+
+$effectiveIncludeVarScene = $IncludeVarScene.IsPresent -or $PackageOnlyDeploy.IsPresent
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
     $versionState.Version
 }
@@ -349,10 +362,13 @@ $manifest = [ordered]@{
         pluginBuildScript = $pluginBuildScript
         assetBuildScript = $assetBuildScript
         validatorScript = $validatorScript
-        deploysVersionedPlugin = $true
-        deploysVersionedAssetbundle = $true
-        removesLegacyPresetDrift = $true
-        removesAssetSideDllDrift = $true
+        deploysVersionedPlugin = -not $SkipLiveDeploy.IsPresent
+        deploysVersionedAssetbundle = -not $SkipLiveDeploy.IsPresent
+        removesLegacyPresetDrift = -not $SkipLiveDeploy.IsPresent
+        removesAssetSideDllDrift = -not $SkipLiveDeploy.IsPresent
+        packageOnlyDeploy = $PackageOnlyDeploy.IsPresent
+        buildsVarPackage = $BuildVarPackage.IsPresent
+        includesPackagedScene = $effectiveIncludeVarScene
     }
     changelog = [ordered]@{
         sourcePath = $changelogSourcePath
@@ -399,6 +415,21 @@ if ($BuildVarPackage.IsPresent) {
         "-DestinationAddonPackages",
         $VarDestinationAddonPackages
     )
+    if ($effectiveIncludeVarScene) {
+        $varArgs += @(
+            "-IncludeScene",
+            "-SceneTemplatePath",
+            $VarSceneTemplatePath,
+            "-SceneDisplayPolicy",
+            $VarSceneDisplayPolicy
+        )
+        if (-not [string]::IsNullOrWhiteSpace($VarScenePrimaryMediaPath)) {
+            $varArgs += @(
+                "-ScenePrimaryMediaPath",
+                $VarScenePrimaryMediaPath
+            )
+        }
+    }
     if ($SkipVarDistribute.IsPresent) {
         $varArgs += "-SkipDistribute"
     }

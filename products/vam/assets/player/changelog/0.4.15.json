@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.15",
+  "title": "Ship the player as a package-first var with a packaged scene and cleaner ordinary startup",
+  "summary": "0.4.15 turns the current player var into a real package-first testing seam. The packager now stages the versioned player assetbundle, the matching packaged plugin under `Custom/Scripts`, a package-contained CustomUnityAsset preset that auto-attaches that packaged plugin, and a packaged demo scene that targets those same in-package resource URLs. The foundation build also gains an explicit package-only path so we can distribute the var to `AddonPackages` without deploying the same version into raw `Custom` folders. On the runtime side, ordinary player startup no longer refreshes legacy Meta proof defaults during rig-state snapshots, which keeps stale Meta proof state outside the normal stable player init path.",
+  "reasoning": "The user is now testing at the package boundary, and raw `Custom` deployment of the same version creates ambiguity about which asset or plugin is actually live. At the same time, even after the earlier Meta hardening, the normal startup loop still touched the Meta proof hydrator through rig-state refresh. This slice makes the var the clean testing surface and tightens the stable player path so legacy Meta proof defaults stay opt-in instead of ambient.",
+  "changes": [
+    {
+      "area": "var-packaging",
+      "summary": "Extends the player var packager so the package-contained CUA preset now targets the packaged asset URL and auto-attaches the packaged player plugin URL.",
+      "reasoning": "A package-first test seam should not require a second manual plugin attach step if the package already contains the correct plugin."
+    },
+    {
+      "area": "packaged-scene",
+      "summary": "Stages a packaged demo scene inside the player var and rewrites its scene asset and plugin references to the same in-package URLs used by the packaged preset.",
+      "reasoning": "Scene testing needs to happen at the same package boundary as the asset and plugin so we can validate AddonPackages behavior honestly."
+    },
+    {
+      "area": "release-process",
+      "summary": "Adds a package-only release path to the foundation build so a version can build repo artifacts, validate, package the var, and distribute only through `AddonPackages` without copying that same version into raw live `Custom` folders.",
+      "reasoning": "Avoiding side-by-side raw and packaged copies of the same version removes a major source of testing ambiguity."
+    },
+    {
+      "area": "player-init-cleanup",
+      "summary": "Stops ordinary rig-state refresh from hydrating Meta proof defaults, leaving the remaining Meta proof hydration seam available only to explicit Meta proof and demo flows.",
+      "reasoning": "Legacy Meta proof state should not be brushed during normal player startup in the stable product lane."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.15 into `player.version.json` and build the matching `fa_cua_player.0.4.15.dll` plus `fa_player_asset.0.4.15.assetbundle` through the player foundation script.",
+    "Run the foundation build in package-only mode with var packaging enabled and confirm the distributed package lands in `F:/sim/vam/AddonPackages`.",
+    "Open the built var or its staging receipt and confirm it contains the versioned player assetbundle, packaged plugin, packaged preset, and packaged scene JSON.",
+    "Confirm the packaged preset points at the packaged asset URL and packaged plugin URL, not raw `Custom` paths.",
+    "In live VaM, load the packaged player surface and confirm ordinary startup no longer depends on stale Meta proof defaults during init."
+  ],
+  "knownIssues": [
+    "The packaged scene still originates from the existing external buttons scene template path and should eventually be moved to a repo-local canonical template seam.",
+    "The current built-in control slab beneath the player screen is still the intended local authored player control surface promoted in 0.4.12, not a Meta proof witness.",
+    "Further standalone Meta proof polish, A-B playback, and build-flavor assembly remain separate follow-on slices."
+  ]
+}

@@ -6,6 +6,11 @@ param(
     [string]$PackageName = "Player",
     [int]$PublicRelease = 1,
     [string]$OutputRoot = "",
+    [switch]$IncludeScene,
+    [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
+    [string]$ScenePrimaryMediaPath = "",
+    [ValidateSet("single_display_fit", "multi_aspect")]
+    [string]$SceneDisplayPolicy = "multi_aspect",
     [string]$DestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipDistribute
 )
@@ -187,58 +192,74 @@ function Resolve-PlayerAssetName {
 function New-CustomUnityAssetPreset {
     param(
         [string]$AssetUrl,
-        [string]$AssetName
+        [string]$AssetName,
+        [string]$PluginUrl = "",
+        [string]$PlayerMediaPath = ""
     )
+
+    $plugins = [ordered]@{}
+    if (-not [string]::IsNullOrWhiteSpace($PluginUrl)) {
+        $plugins["plugin#0"] = $PluginUrl
+    }
+
+    $storables = New-Object System.Collections.Generic.List[object]
+    [void]$storables.Add([ordered]@{
+        id = "PhysicsMaterialControl"
+        dynamicFriction = "0.6"
+        staticFriction = "0.6"
+        bounciness = "0"
+        frictionCombine = "Average"
+        bounceCombine = "Average"
+    })
+    [void]$storables.Add([ordered]@{
+        id = "CollisionTrigger"
+        triggerEnabled = "false"
+        invertAtomFilter = "false"
+        useRelativeVelocityFilter = "false"
+        invertRelativeVelocityFilter = "false"
+        relativeVelocityFilter = "1"
+        trigger = [ordered]@{
+            startActions = @()
+            transitionActions = @()
+            endActions = @()
+        }
+    })
+    [void]$storables.Add([ordered]@{
+        id = "scale"
+        scale = "1"
+    })
+    [void]$storables.Add([ordered]@{
+        id = "asset"
+        importLightmaps = "true"
+        importLightProbes = "true"
+        registerCanvases = "false"
+        showCanvases = "true"
+        loadDll = "true"
+        assetName = $AssetName
+        assetUrl = $AssetUrl
+        assetDllUrl = ""
+    })
+    [void]$storables.Add([ordered]@{
+        id = "PluginManager"
+        plugins = $plugins
+    })
+
+    if (-not [string]::IsNullOrWhiteSpace($PluginUrl)) {
+        [void]$storables.Add([ordered]@{
+            id = "plugin#0_FASyncRuntime"
+            "Player Media Path" = $PlayerMediaPath
+        })
+    }
 
     return [ordered]@{
         setUnlistedParamsToDefault = "true"
-        storables = @(
-            [ordered]@{
-                id = "PhysicsMaterialControl"
-                dynamicFriction = "0.6"
-                staticFriction = "0.6"
-                bounciness = "0"
-                frictionCombine = "Average"
-                bounceCombine = "Average"
-            },
-            [ordered]@{
-                id = "CollisionTrigger"
-                triggerEnabled = "false"
-                invertAtomFilter = "false"
-                useRelativeVelocityFilter = "false"
-                invertRelativeVelocityFilter = "false"
-                relativeVelocityFilter = "1"
-                trigger = [ordered]@{
-                    startActions = @()
-                    transitionActions = @()
-                    endActions = @()
-                }
-            },
-            [ordered]@{
-                id = "scale"
-                scale = "1"
-            },
-            [ordered]@{
-                id = "asset"
-                importLightmaps = "true"
-                importLightProbes = "true"
-                registerCanvases = "false"
-                showCanvases = "true"
-                loadDll = "true"
-                assetName = $AssetName
-                assetUrl = $AssetUrl
-                assetDllUrl = ""
-            },
-            [ordered]@{
-                id = "PluginManager"
-                plugins = [ordered]@{}
-            }
-        )
+        storables = $storables
     }
 }
 
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
+$sceneBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerDemoScene.ps1"
 
 $release = Resolve-ReleaseManifest -LaneRoots $laneRoots -ExplicitVersion $Version -ExplicitReleaseManifestPath $ReleaseManifestPath
 $resolvedVersion = $release.Version
@@ -295,13 +316,79 @@ $packagedAssetPath = ($assetBundleRelativePath -replace '\\', '/')
 $packagedPluginPath = ($pluginRelativePath -replace '\\', '/')
 $packagedPresetPath = ($presetRelativePath -replace '\\', '/')
 $packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $PublicRelease, $packagedAssetPath
+$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $PublicRelease, $packagedPluginPath
 
 [void](Copy-FileIntoStage -SourcePath $assetBundlePath -StageRoot $stageRoot -RelativePath $assetBundleRelativePath)
 [void](Copy-FileIntoStage -SourcePath $pluginDllPath -StageRoot $stageRoot -RelativePath $pluginRelativePath)
 
-$presetObject = New-CustomUnityAssetPreset -AssetUrl $packagedAssetUrl -AssetName $assetName
+$presetObject = New-CustomUnityAssetPreset -AssetUrl $packagedAssetUrl -AssetName $assetName -PluginUrl $packagedPluginUrl -PlayerMediaPath ""
 $presetStagePath = Join-Path $stageRoot $presetRelativePath
 Write-JsonFile -Path $presetStagePath -Value $presetObject
+
+$generatedScenePath = ""
+$generatedScenePreviewPath = ""
+$packagedScenePath = ""
+$packagedScenePreviewPath = ""
+if ($IncludeScene.IsPresent) {
+    if (-not (Test-Path -LiteralPath $sceneBuildScript)) {
+        throw "Scene build script not found: $sceneBuildScript"
+    }
+
+    $sceneSourceOutputRoot = Join-Path $resourceRoot "scene_source"
+    if (Test-Path -LiteralPath $sceneSourceOutputRoot) {
+        Remove-Item -LiteralPath $sceneSourceOutputRoot -Recurse -Force
+    }
+
+    $sceneArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $sceneBuildScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-Version",
+        $resolvedVersion,
+        "-SceneTemplatePath",
+        $SceneTemplatePath,
+        "-OutputDirectory",
+        $sceneSourceOutputRoot,
+        "-AssetUrl",
+        $packagedAssetUrl,
+        "-PluginPath",
+        $packagedPluginUrl,
+        "-DisplayPolicy",
+        $SceneDisplayPolicy,
+        "-AllowExistingVersion"
+    )
+    if (-not [string]::IsNullOrWhiteSpace($ScenePrimaryMediaPath)) {
+        $sceneArgs += @(
+            "-PrimaryMediaPath",
+            $ScenePrimaryMediaPath
+        )
+    }
+
+    & powershell @sceneArgs | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+        throw "Build-PlayerDemoScene.ps1 failed while staging the packaged scene."
+    }
+
+    $generatedScenePath = Join-Path $sceneSourceOutputRoot ("fa_scene.{0}.json" -f $resolvedVersion)
+    if (-not (Test-Path -LiteralPath $generatedScenePath)) {
+        throw "Packaged scene output not found: $generatedScenePath"
+    }
+
+    $generatedScenePreviewPath = [System.IO.Path]::ChangeExtension($generatedScenePath, ".jpg")
+    $sceneRelativePath = Join-Path "Saves\scene\FrameAngel\Player" ("fa_player_demo_scene.{0}.json" -f $resolvedVersion)
+    $packagedScenePath = ($sceneRelativePath -replace '\\', '/')
+    [void](Copy-FileIntoStage -SourcePath $generatedScenePath -StageRoot $stageRoot -RelativePath $sceneRelativePath)
+
+    if (Test-Path -LiteralPath $generatedScenePreviewPath) {
+        $scenePreviewRelativePath = [System.IO.Path]::ChangeExtension($sceneRelativePath, ".jpg")
+        $packagedScenePreviewPath = ($scenePreviewRelativePath -replace '\\', '/')
+        [void](Copy-FileIntoStage -SourcePath $generatedScenePreviewPath -StageRoot $stageRoot -RelativePath $scenePreviewRelativePath)
+    }
+}
 
 $meta = [ordered]@{
     licenseType = "FC"
@@ -310,6 +397,47 @@ $meta = [ordered]@{
     description = "FrameAngel player direct CUA package"
 }
 Write-JsonFile -Path $metaPath -Value $meta
+
+$stagedFiles = New-Object System.Collections.Generic.List[object]
+[void]$stagedFiles.Add([ordered]@{
+    kind = "assetbundle"
+    sourcePath = $assetBundlePath
+    packagedPath = $packagedAssetPath
+})
+[void]$stagedFiles.Add([ordered]@{
+    kind = "plugin_dll"
+    sourcePath = $pluginDllPath
+    packagedPath = $packagedPluginPath
+})
+[void]$stagedFiles.Add([ordered]@{
+    kind = "custom_unity_asset_preset"
+    sourcePath = ""
+    packagedPath = $packagedPresetPath
+})
+if (-not [string]::IsNullOrWhiteSpace($packagedScenePath)) {
+    [void]$stagedFiles.Add([ordered]@{
+        kind = "scene_json"
+        sourcePath = $generatedScenePath
+        packagedPath = $packagedScenePath
+    })
+}
+if (-not [string]::IsNullOrWhiteSpace($packagedScenePreviewPath)) {
+    [void]$stagedFiles.Add([ordered]@{
+        kind = "scene_preview"
+        sourcePath = $generatedScenePreviewPath
+        packagedPath = $packagedScenePreviewPath
+    })
+}
+[void]$stagedFiles.Add([ordered]@{
+    kind = "meta_json"
+    sourcePath = ""
+    packagedPath = "meta.json"
+})
+[void]$stagedFiles.Add([ordered]@{
+    kind = "frameangel_player_var_manifest"
+    sourcePath = ""
+    packagedPath = "frameangel_player_var_manifest.json"
+})
 
 $stageManifest = [ordered]@{
     schemaVersion = "frameangel_player_var_manifest_v1"
@@ -322,43 +450,37 @@ $stageManifest = [ordered]@{
     packageFileName = $packageFileName
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
-    authoritySeam = "phase_1_direct_cua_plus_manual_packaged_plugin_attach"
-    note = "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, and a package-contained CustomUnityAsset preset that targets the packaged asset URL."
+    authoritySeam = if ($IncludeScene.IsPresent) { "phase_2_package_first_direct_cua_with_packaged_scene" } else { "phase_2_direct_cua_with_packaged_plugin_attach" }
+    note = if ($IncludeScene.IsPresent) {
+        "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs, and a packaged scene that references those same in-package resources."
+    }
+    else {
+        "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, and a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs."
+    }
     directCua = [ordered]@{
         assetBundlePath = $assetBundlePath
         assetBundleAssetName = $assetName
         pluginDllPath = $pluginDllPath
         presetFileName = $presetFileName
         packagedAssetUrl = $packagedAssetUrl
+        packagedPluginUrl = $packagedPluginUrl
         packagedPluginPath = $packagedPluginPath
     }
-    stagedFiles = @(
+    packagedScene = if ($IncludeScene.IsPresent) {
         [ordered]@{
-            kind = "assetbundle"
-            sourcePath = $assetBundlePath
-            packagedPath = $packagedAssetPath
-        },
-        [ordered]@{
-            kind = "plugin_dll"
-            sourcePath = $pluginDllPath
-            packagedPath = $packagedPluginPath
-        },
-        [ordered]@{
-            kind = "custom_unity_asset_preset"
-            sourcePath = ""
-            packagedPath = $packagedPresetPath
-        },
-        [ordered]@{
-            kind = "meta_json"
-            sourcePath = ""
-            packagedPath = "meta.json"
-        },
-        [ordered]@{
-            kind = "frameangel_player_var_manifest"
-            sourcePath = ""
-            packagedPath = "frameangel_player_var_manifest.json"
+            sceneTemplatePath = $SceneTemplatePath
+            scenePrimaryMediaPath = $ScenePrimaryMediaPath
+            sceneDisplayPolicy = $SceneDisplayPolicy
+            sourceScenePath = $generatedScenePath
+            sourceScenePreviewPath = if (Test-Path -LiteralPath $generatedScenePreviewPath) { $generatedScenePreviewPath } else { "" }
+            packagedScenePath = $packagedScenePath
+            packagedScenePreviewPath = $packagedScenePreviewPath
         }
-    )
+    }
+    else {
+        $null
+    }
+    stagedFiles = $stagedFiles
 }
 Write-JsonFile -Path $stageManifestPath -Value $stageManifest
 
@@ -405,6 +527,9 @@ $report = [ordered]@{
     presetStagePath = $presetStagePath
     assetBundleAssetName = $assetName
     packagedAssetUrl = $packagedAssetUrl
+    packagedPluginUrl = $packagedPluginUrl
+    packagedScenePath = $packagedScenePath
+    packagedScenePreviewPath = $packagedScenePreviewPath
     distribution = $distribution
 }
 Write-JsonFile -Path $reportPath -Value $report
@@ -420,5 +545,7 @@ Write-JsonFile -Path $reportPath -Value $report
     distributed = $distribution.distributed
     distributedPackagePath = $distribution.distributedPackagePath
     packagedAssetUrl = $packagedAssetUrl
+    packagedPluginUrl = $packagedPluginUrl
+    packagedScenePath = $packagedScenePath
     presetStagePath = $presetStagePath
 }

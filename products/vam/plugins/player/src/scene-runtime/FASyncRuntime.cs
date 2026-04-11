@@ -4643,7 +4643,6 @@ public partial class FASyncRuntime : MVRScript
         if (syncLastRigStateField != null)
             syncLastRigStateField.val = BuildRigStateJson();
 #endif
-        TryHydrateMetaProofDefaults();
     }
 
     private string BuildRigStateJson()

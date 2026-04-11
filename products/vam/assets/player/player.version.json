@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.14",
-    "notes":  "0.4.14 stops ordinary player init from hydrating stale Meta proof state from dead PluginData paths, preserves a clean stable player startup even when historical Meta configs linger, and replaces the blank search-bar witness with a curated self-contained Meta proof built from the current local Unity lane.",
+    "version":  "0.4.15",
+    "notes":  "0.4.15 makes package-first testing real: the player `.var` now stages the versioned assetbundle, packaged plugin, packaged preset with packaged plugin auto-attach, and a packaged demo scene, while ordinary player startup stops refreshing legacy Meta proof defaults during rig-state snapshots.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.14.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.15.json"
 }
