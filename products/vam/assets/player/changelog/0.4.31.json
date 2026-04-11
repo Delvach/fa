@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.31",
+  "title": "Package a diagnostics scene for media-specific seek witness runs",
+  "summary": "0.4.31 publishes `Fa.Player.12.var` with the 0.4.30 transport fix intact and adds a second packaged demo scene that turns on the hidden diagnostics probe by default, so Fifth Element scrub and skip failures can be captured from the normal VaM log without manual scene editing.",
+  "reasoning": "The broad transport seam is now healthy for normal media, but Fifth Element still behaves like a special specimen. The fastest honest next step is not another blind runtime rewrite. It is a cleaner witness surface. This slice extends the existing scene builder and var packager so a diagnostics-enabled scene rides alongside the normal demo scene in the same package, using the same player and packaged assets.",
+  "changes": [
+    {
+      "area": "scene-builder",
+      "summary": "Adds optional scene-build parameters that preload the hidden `FA Player Diagnostics Enabled` and `FA Player Diagnostics Filter` plugin storables into generated player demo scenes.",
+      "reasoning": "The diagnostics probe was already designed to be hidden but restorable, so scene JSON is the cleanest deterministic carrier."
+    },
+    {
+      "area": "packaging",
+      "summary": "Extends the var packager and foundation wrapper so a packaged diagnostics scene variant can ship beside the normal demo scene.",
+      "reasoning": "Operators need a low-friction witness path. Shipping a second scene in the same `.var` avoids manual scene editing and keeps the normal demo scene available."
+    },
+    {
+      "area": "release-boundary",
+      "summary": "Publishes the diagnostics-scene candidate under a fresh semantic version and `Fa.Player.12.var` package identity.",
+      "reasoning": "A new rung keeps the witness clear and distinguishes packaging/test-harness improvements from the previous transport-only fix."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.31 into player.version.json and BuildRuntimeInfo.cs, then build `Fa.Player.12.var` with the diagnostics scene variant included.",
+    "Verify the package contains the 0.4.31 assetbundle, plugin, preset, the normal demo scene, and `fa_player_demo_scene_diagnostics.0.4.31.json`.",
+    "Load the diagnostics scene from `Fa.Player.12.var`, reproduce the Fifth Element scrub freeze, and copy the normal VaM log output for the probe events."
+  ],
+  "knownIssues": [
+    "This slice does not yet change the Fifth Element runtime behavior directly; it improves the witness surface so the next fix can be evidence-driven.",
+    "The normal packaged demo scene remains non-diagnostics by default."
+  ]
+}

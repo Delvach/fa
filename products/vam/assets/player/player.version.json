@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.30",
-    "notes":  "0.4.30 routes skip-forward and skip-backward through the same stable seek helper as scrub, and adds skip boundary diagnostics, so transport jumps no longer rely on a narrower direct time-set path.",
+    "version":  "0.4.31",
+    "notes":  "0.4.31 keeps the 0.4.30 transport fix and adds a packaged diagnostics scene variant that pre-enables the hidden player diagnostics probe, so Fifth Element witness runs can capture prepare, seek, skip, audio, and resync events with no manual scene editing.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.30.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.31.json"
 }

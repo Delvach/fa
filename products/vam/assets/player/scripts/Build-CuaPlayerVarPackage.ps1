@@ -10,6 +10,8 @@ param(
     [switch]$IncludeScene,
     [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$ScenePrimaryMediaPath = "",
+    [switch]$IncludeDiagnosticsScene,
+    [string]$DiagnosticsSceneFilter = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$SceneDisplayPolicy = "multi_aspect",
     [int]$SceneIncludeManagedControls = 0,
@@ -429,6 +431,12 @@ $generatedScenePath = ""
 $generatedScenePreviewPath = ""
 $packagedScenePath = ""
 $packagedScenePreviewPath = ""
+$generatedScenePath = ""
+$generatedScenePreviewPath = ""
+$packagedDiagnosticsScenePath = ""
+$packagedDiagnosticsScenePreviewPath = ""
+$generatedDiagnosticsScenePath = ""
+$generatedDiagnosticsScenePreviewPath = ""
 if ($IncludeScene.IsPresent) {
     if (-not (Test-Path -LiteralPath $sceneBuildScript)) {
         throw "Scene build script not found: $sceneBuildScript"
@@ -453,6 +461,10 @@ if ($IncludeScene.IsPresent) {
         $SceneTemplatePath,
         "-OutputDirectory",
         $sceneSourceOutputRoot,
+        "-OutputSceneBaseName",
+        "fa_scene",
+        "-ReceiptLabel",
+        "player_demo_scene_build",
         "-AssetUrl",
         $packagedAssetUrl,
         "-PluginPath",
@@ -489,6 +501,76 @@ if ($IncludeScene.IsPresent) {
         $scenePreviewRelativePath = [System.IO.Path]::ChangeExtension($sceneRelativePath, ".jpg")
         $packagedScenePreviewPath = ($scenePreviewRelativePath -replace '\\', '/')
         [void](Copy-FileIntoStage -SourcePath $generatedScenePreviewPath -StageRoot $stageRoot -RelativePath $scenePreviewRelativePath)
+    }
+
+    if ($IncludeDiagnosticsScene.IsPresent) {
+        $sceneDiagnosticsOutputRoot = Join-Path $resourceRoot "scene_source_diagnostics"
+        if (Test-Path -LiteralPath $sceneDiagnosticsOutputRoot) {
+            Remove-Item -LiteralPath $sceneDiagnosticsOutputRoot -Recurse -Force
+        }
+
+        $diagnosticsSceneArgs = @(
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            $sceneBuildScript,
+            "-RepoRoot",
+            $RepoRoot,
+            "-Version",
+            $resolvedVersion,
+            "-SceneTemplatePath",
+            $SceneTemplatePath,
+            "-OutputDirectory",
+            $sceneDiagnosticsOutputRoot,
+            "-OutputSceneBaseName",
+            "fa_scene_diagnostics",
+            "-ReceiptLabel",
+            "player_demo_scene_diagnostics_build",
+            "-AssetUrl",
+            $packagedAssetUrl,
+            "-PluginPath",
+            $packagedPluginUrl,
+            "-DisplayPolicy",
+            $SceneDisplayPolicy,
+            "-IncludeManagedControls",
+            $SceneIncludeManagedControls,
+            "-EnablePlayerDiagnostics",
+            "-AllowExistingVersion"
+        )
+        if (-not [string]::IsNullOrWhiteSpace($resolvedScenePrimaryMediaPath)) {
+            $diagnosticsSceneArgs += @(
+                "-PrimaryMediaPath",
+                $resolvedScenePrimaryMediaPath
+            )
+        }
+        if (-not [string]::IsNullOrWhiteSpace($DiagnosticsSceneFilter)) {
+            $diagnosticsSceneArgs += @(
+                "-PlayerDiagnosticsFilter",
+                $DiagnosticsSceneFilter
+            )
+        }
+
+        & powershell @diagnosticsSceneArgs | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Build-PlayerDemoScene.ps1 failed while staging the packaged diagnostics scene."
+        }
+
+        $generatedDiagnosticsScenePath = Join-Path $sceneDiagnosticsOutputRoot ("fa_scene_diagnostics.{0}.json" -f $resolvedVersion)
+        if (-not (Test-Path -LiteralPath $generatedDiagnosticsScenePath)) {
+            throw "Packaged diagnostics scene output not found: $generatedDiagnosticsScenePath"
+        }
+
+        $generatedDiagnosticsScenePreviewPath = [System.IO.Path]::ChangeExtension($generatedDiagnosticsScenePath, ".jpg")
+        $diagnosticsSceneRelativePath = Join-Path "Saves\scene\FrameAngel\Player" ("fa_player_demo_scene_diagnostics.{0}.json" -f $resolvedVersion)
+        $packagedDiagnosticsScenePath = ($diagnosticsSceneRelativePath -replace '\\', '/')
+        [void](Copy-FileIntoStage -SourcePath $generatedDiagnosticsScenePath -StageRoot $stageRoot -RelativePath $diagnosticsSceneRelativePath)
+
+        if (Test-Path -LiteralPath $generatedDiagnosticsScenePreviewPath) {
+            $diagnosticsScenePreviewRelativePath = [System.IO.Path]::ChangeExtension($diagnosticsSceneRelativePath, ".jpg")
+            $packagedDiagnosticsScenePreviewPath = ($diagnosticsScenePreviewRelativePath -replace '\\', '/')
+            [void](Copy-FileIntoStage -SourcePath $generatedDiagnosticsScenePreviewPath -StageRoot $stageRoot -RelativePath $diagnosticsScenePreviewRelativePath)
+        }
     }
 }
 
@@ -528,6 +610,20 @@ if (-not [string]::IsNullOrWhiteSpace($packagedScenePreviewPath)) {
         kind = "scene_preview"
         sourcePath = $generatedScenePreviewPath
         packagedPath = $packagedScenePreviewPath
+    })
+}
+if (-not [string]::IsNullOrWhiteSpace($packagedDiagnosticsScenePath)) {
+    [void]$stagedFiles.Add([ordered]@{
+        kind = "diagnostics_scene_json"
+        sourcePath = $generatedDiagnosticsScenePath
+        packagedPath = $packagedDiagnosticsScenePath
+    })
+}
+if (-not [string]::IsNullOrWhiteSpace($packagedDiagnosticsScenePreviewPath)) {
+    [void]$stagedFiles.Add([ordered]@{
+        kind = "diagnostics_scene_preview"
+        sourcePath = $generatedDiagnosticsScenePreviewPath
+        packagedPath = $packagedDiagnosticsScenePreviewPath
     })
 }
 if ($null -ne $demoMediaStage) {
@@ -588,6 +684,18 @@ $stageManifest = [ordered]@{
             sourceScenePreviewPath = if (Test-Path -LiteralPath $generatedScenePreviewPath) { $generatedScenePreviewPath } else { "" }
             packagedScenePath = $packagedScenePath
             packagedScenePreviewPath = $packagedScenePreviewPath
+        }
+    }
+    else {
+        $null
+    }
+    packagedDiagnosticsScene = if ($IncludeDiagnosticsScene.IsPresent) {
+        [ordered]@{
+            diagnosticsFilter = $DiagnosticsSceneFilter
+            sourceScenePath = $generatedDiagnosticsScenePath
+            sourceScenePreviewPath = if (Test-Path -LiteralPath $generatedDiagnosticsScenePreviewPath) { $generatedDiagnosticsScenePreviewPath } else { "" }
+            packagedScenePath = $packagedDiagnosticsScenePath
+            packagedScenePreviewPath = $packagedDiagnosticsScenePreviewPath
         }
     }
     else {

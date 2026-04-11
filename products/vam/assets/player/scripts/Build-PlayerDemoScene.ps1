@@ -3,9 +3,13 @@ param(
     [string]$Version = "",
     [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$OutputDirectory = "F:\sim\vam\Saves\scene",
+    [string]$OutputSceneBaseName = "fa_scene",
+    [string]$ReceiptLabel = "player_demo_scene_build",
     [string]$AssetUrl = "",
     [string]$PluginPath = "",
     [string]$PrimaryMediaPath = "",
+    [switch]$EnablePlayerDiagnostics,
+    [string]$PlayerDiagnosticsFilter = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$DisplayPolicy = "multi_aspect",
     [int]$IncludeManagedControls = 1,
@@ -539,7 +543,26 @@ else {
 $resolvedOutputDirectory = Normalize-PathValue -PathValue $OutputDirectory
 Ensure-Directory -PathValue $resolvedOutputDirectory
 
-$sceneOutputPath = Join-Path $resolvedOutputDirectory ("fa_scene.{0}.json" -f $resolvedVersion)
+$resolvedOutputSceneBaseName = if ([string]::IsNullOrWhiteSpace($OutputSceneBaseName)) {
+    "fa_scene"
+}
+else {
+    $OutputSceneBaseName.Trim()
+}
+$resolvedReceiptLabel = if ([string]::IsNullOrWhiteSpace($ReceiptLabel)) {
+    "player_demo_scene_build"
+}
+else {
+    $ReceiptLabel.Trim()
+}
+$resolvedPlayerDiagnosticsFilter = if ([string]::IsNullOrWhiteSpace($PlayerDiagnosticsFilter)) {
+    ""
+}
+else {
+    $PlayerDiagnosticsFilter.Trim()
+}
+
+$sceneOutputPath = Join-Path $resolvedOutputDirectory ("{0}.{1}.json" -f $resolvedOutputSceneBaseName, $resolvedVersion)
 $previewSourcePath = [System.IO.Path]::ChangeExtension($resolvedTemplatePath, ".jpg")
 $previewOutputPath = [System.IO.Path]::ChangeExtension($sceneOutputPath, ".jpg")
 
@@ -617,6 +640,8 @@ Remove-StorableByPredicate -Storables $screenStorables -Predicate {
 [void]$screenStorables.Add([pscustomobject]@{
     id = "plugin#0_FASyncRuntime"
     "Player Media Path" = $resolvedPrimaryMediaPath
+    "FA Player Diagnostics Enabled" = if ($EnablePlayerDiagnostics.IsPresent) { "true" } else { "false" }
+    "FA Player Diagnostics Filter" = $resolvedPlayerDiagnosticsFilter
 })
 $screenAtom.storables = $screenStorables
 
@@ -869,6 +894,8 @@ $receipt = [pscustomobject]@{
     assetName = $assetName
     pluginPath = $pluginPath
     primaryMediaPath = $resolvedPrimaryMediaPath
+    playerDiagnosticsEnabled = $EnablePlayerDiagnostics.IsPresent
+    playerDiagnosticsFilter = $resolvedPlayerDiagnosticsFilter
     displayPolicy = $DisplayPolicy
     includeManagedControls = $includeManagedControlsEnabled
     includeDebugConsole = $IncludeDebugConsole.IsPresent
@@ -902,8 +929,8 @@ $receipt = [pscustomobject]@{
     )
 }
 
-$receiptPath = Join-Path $receiptRoot "player_demo_scene_build_receipt.json"
-$summaryPath = Join-Path $receiptRoot "player_demo_scene_build_receipt.md"
+$receiptPath = Join-Path $receiptRoot ("{0}_receipt.json" -f $resolvedReceiptLabel)
+$summaryPath = Join-Path $receiptRoot ("{0}_receipt.md" -f $resolvedReceiptLabel)
 Write-JsonFile -Path $receiptPath -Value $receipt
 
 $markdownLines = [System.Collections.Generic.List[string]]::new()
@@ -918,6 +945,8 @@ $markdownLines.Add("- Raw Asset: $($receipt.assetUrl)")
 $markdownLines.Add("- Plugin: $($receipt.pluginPath)")
 $markdownLines.Add("- Asset Name: $($receipt.assetName)")
 $markdownLines.Add("- Primary Media Path: $($receipt.primaryMediaPath)")
+$markdownLines.Add("- Player Diagnostics Enabled: $($receipt.playerDiagnosticsEnabled)")
+$markdownLines.Add("- Player Diagnostics Filter: $($receipt.playerDiagnosticsFilter)")
 $markdownLines.Add("- Display Policy: $($receipt.displayPolicy)")
 $markdownLines.Add("- Include Managed Controls: $($receipt.includeManagedControls)")
 $markdownLines.Add("- Control Offset: ($($receipt.controlOffset.x), $($receipt.controlOffset.y), $($receipt.controlOffset.z))")

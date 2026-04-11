@@ -7,8 +7,10 @@ param(
     [switch]$BuildVarPackage,
     [switch]$PackageOnlyDeploy,
     [switch]$IncludeVarScene,
+    [switch]$IncludeVarDiagnosticsScene,
     [string]$VarSceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$VarScenePrimaryMediaPath = "",
+    [string]$VarSceneDiagnosticsFilter = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$VarSceneDisplayPolicy = "multi_aspect",
     [int]$VarSceneIncludeManagedControls = 0,
@@ -432,6 +434,15 @@ if ($BuildVarPackage.IsPresent) {
             $varArgs += @(
                 "-ScenePrimaryMediaPath",
                 $VarScenePrimaryMediaPath
+            )
+        }
+        if ($IncludeVarDiagnosticsScene.IsPresent) {
+            $varArgs += "-IncludeDiagnosticsScene"
+        }
+        if (-not [string]::IsNullOrWhiteSpace($VarSceneDiagnosticsFilter)) {
+            $varArgs += @(
+                "-DiagnosticsSceneFilter",
+                $VarSceneDiagnosticsFilter
             )
         }
     }
