@@ -14,6 +14,11 @@ products/vam/assets/player/unity/player-screen-2018/Logs/
 products/vam/assets/player/unity/player-screen-2018/Temp/
 products/vam/assets/player/unity/player-screen-2018/Obj/
 products/vam/assets/player/unity/player-screen-2018/UserSettings/
+products/vam/assets/player/unity/player-screen-2018/.vscode/
+products/vam/assets/player/unity/player-screen-2018/.vsconfig
+products/vam/assets/player/unity/player-screen-2018/*.csproj
+products/vam/assets/player/unity/player-screen-2018/*.sln
+products/vam/assets/player/unity/player-screen-2018/ProjectSettings/NetworkManager.asset
 products/vam/assets/player/unity/ghost_training_export_clone/Library/
 products/vam/assets/player/unity/ghost_training_export_clone/Logs/
 products/vam/assets/player/unity/ghost_training_export_clone/Temp/

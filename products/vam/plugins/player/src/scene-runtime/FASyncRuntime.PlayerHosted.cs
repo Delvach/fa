@@ -1598,6 +1598,13 @@ public partial class FASyncRuntime : MVRScript
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
         record.naturalEndHandled = false;
+        LogStandalonePlayerDiagnostics(
+            record,
+            "load_request",
+            "path=" + mediaPath
+                + " resolved=" + resolvedMediaPath
+                + " desiredPlaying=" + (record.desiredPlaying ? "true" : "false")
+                + " hosted=true");
 
         DestroyStandalonePlayerImageTexture(record);
 
@@ -1654,10 +1661,26 @@ public partial class FASyncRuntime : MVRScript
         record.needsScreenRefresh = true;
         ApplyStandalonePlayerLoopMode(record);
         ApplyStandalonePlayerAudioState(record);
+        LogStandalonePlayerDiagnostics(
+            record,
+            "audio_apply",
+            "reason=load " + BuildStandalonePlayerDiagnosticsAudioSummary(record));
 
         bool loadStillImage = FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
-        if (loadStillImage && !TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage))
-            return false;
+        if (loadStillImage)
+        {
+            if (!TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage))
+            {
+                if (!string.IsNullOrEmpty(errorMessage))
+                    LogStandalonePlayerDiagnostics(record, "image_load_failed", errorMessage);
+                return false;
+            }
+
+            LogStandalonePlayerDiagnostics(
+                record,
+                "image_loaded",
+                BuildStandalonePlayerDiagnosticsSnapshot(record));
+        }
 
         // If the host surface is already present when load is invoked, bind immediately to the
         // authored screen instead of waiting for a later refresh tick to discover it.
@@ -1722,6 +1745,10 @@ public partial class FASyncRuntime : MVRScript
                 record.videoPlayer.Prepare();
                 record.preparePending = true;
                 record.prepareStartedAt = Time.unscaledTime;
+                LogStandalonePlayerDiagnostics(
+                    record,
+                    "prepare_request",
+                    "path=" + mediaPath + " resolved=" + resolvedMediaPath);
                 if (record.binding == null && string.IsNullOrEmpty(record.lastError))
                 {
                     // Starting Prepare() only proves the runtime accepted the source; the hosted
@@ -1736,6 +1763,7 @@ public partial class FASyncRuntime : MVRScript
         {
             errorMessage = "player prepare failed: " + ex.Message;
             record.lastError = errorMessage;
+            LogStandalonePlayerDiagnostics(record, "prepare_failed", errorMessage);
             return false;
         }
 
