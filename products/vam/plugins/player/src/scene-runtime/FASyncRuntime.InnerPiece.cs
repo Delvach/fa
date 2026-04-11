@@ -2531,7 +2531,7 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"selectionByIndex\":").Append(isSelectorSurface ? "true" : "false").Append(',');
         sb.Append("\"dialogChoice\":").Append(isDialogSurface ? "true" : "false").Append(',');
         sb.Append("\"playerBinding\":").Append(
-            string.Equals(controlSurface.controlFamilyId ?? "", "meta_ui_video_player", StringComparison.OrdinalIgnoreCase)
+            IsPlayerBoundControlFamily(controlSurface.controlFamilyId)
                 ? "true"
                 : "false");
         sb.Append("},");

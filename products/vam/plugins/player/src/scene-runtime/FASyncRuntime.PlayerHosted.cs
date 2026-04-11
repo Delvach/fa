@@ -1082,7 +1082,7 @@ public partial class FASyncRuntime : MVRScript
         FAInnerPieceControlSurfaceData controlSurface = new FAInnerPieceControlSurfaceData();
         controlSurface.controlSurfaceId = "fa_player_screen_core_controls_v1";
         controlSurface.controlSurfaceLabel = "FA Player Screen Core Controls";
-        controlSurface.controlFamilyId = "meta_ui_video_player";
+        controlSurface.controlFamilyId = PlayerScreenCoreControlFamilyId;
         controlSurface.layoutSource = "screen_core_authored_controls_v1";
         controlSurface.targetDisplayIds = new[] { "player_main" };
         controlSurface.defaultTargetDisplayId = "player_main";

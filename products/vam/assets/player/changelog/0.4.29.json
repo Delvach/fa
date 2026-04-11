@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.29",
+  "title": "Retag the built-in screen-core controls as FA-native",
+  "summary": "0.4.29 stops labeling the built-in screen-core player controls as Meta and retags that contract as FA-native, while leaving the older authored Meta fallback and archived runtime-json seams untouched.",
+  "reasoning": "The packaged screen-core controls are already driven by native player actions. Keeping their control family tagged as Meta blurs the product boundary and makes the stable path look more experimental than it really is.",
+  "changes": [
+    {
+      "area": "screen-core-control-contract",
+      "summary": "Changes the built-in screen-core control family id from the Meta video-player family to an FA-native family id.",
+      "reasoning": "That keeps the stable packaged controls clearly separated from the older authored Meta fallback."
+    },
+    {
+      "area": "player-binding-debug-state",
+      "summary": "Updates the player-binding debug summary so the retagged screen-core controls still report as player-bound.",
+      "reasoning": "The contract label is changing, but the operator-visible role of those controls is not."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.29 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Verify the packaged artifact is named FrameAngel.Player.0.4.29.var and contains the 0.4.29 asset, plugin, preset, and demo scene.",
+    "Verify the player plugin compiles after the screen-core control-family retag."
+  ],
+  "knownIssues": [
+    "This slice deliberately does not reopen the archived Meta-authored fallback contract or the external meta runtime json seam.",
+    "Any larger Meta toolkit integration work should stay a separate follow-up from this contract cleanup."
+  ]
+}

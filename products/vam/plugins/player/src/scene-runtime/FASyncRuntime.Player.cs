@@ -39,6 +39,7 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerStateFieldName = "FA Player Session State Json";
     private const string PlayerCommandFieldName = "FA Player Session Command Json";
     private const string PlayerLastReceiptFieldName = "FA Player Session Last Receipt";
+    private const string PlayerScreenCoreControlFamilyId = "fa_player_screen_core_controls";
     private const string GhostScreenRoundedFixedResourceId = "ghost_prototype_screen_only_66de1ff3432e";
     private const string GhostScreenRectFixedResourceId = "ghost_prototype_screen_rect_f6b49ee33cdb";
     private const string GhostScreenRectShellId = "ghost_prototype_screen_rect";
@@ -214,6 +215,12 @@ public partial class FASyncRuntime : MVRScript
         new List<PlayerControlSurfaceBindingRecord>();
     private readonly List<StandalonePlayerRecord> standalonePlayerTickScratch =
         new List<StandalonePlayerRecord>();
+
+    private bool IsPlayerBoundControlFamily(string controlFamilyId)
+    {
+        return string.Equals(controlFamilyId ?? "", "meta_ui_video_player", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(controlFamilyId ?? "", PlayerScreenCoreControlFamilyId, StringComparison.OrdinalIgnoreCase);
+    }
 
     private bool TryGetPlayerState(string actionId, string argsJson, out string resultJson, out string errorMessage)
     {
