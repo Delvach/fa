@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.21",
+  "title": "Reset from multiscreen and switch packaged var identity to full player versions",
+  "summary": "0.4.21 removes the hosted multiscreen mirror-bank slice from the stable player runtime and changes the packaged `.var` identity to use the actual player version string, such as `FrameAngel.Player.0.4.21.var`, instead of a separate single-digit public release number.",
+  "reasoning": "The multiscreen mirror-bank experiment successfully proved that neighboring screens can be created and arranged, but it is not currently worth carrying forward because the mirrors do not yet play correctly and the extra runtime work may be hurting performance. At the same time, using the actual player version in the package identity removes guesswork and makes each overnight test package self-identifying.",
+  "changes": [
+    {
+      "area": "runtime-reset",
+      "summary": "Removes the hosted multiscreen mirror-bank runtime file, its compile hook, its plugin UI controls, and its debug/status summaries from the stable player lane.",
+      "reasoning": "This keeps the proof in history but gets the next release ladder back onto the simpler known-good playback path."
+    },
+    {
+      "area": "var-package-identity",
+      "summary": "Changes the packaged `.var` file name and in-package resource URLs to use the full player version string by default.",
+      "reasoning": "A package like `FrameAngel.Player.0.4.21.var` is easier to test and reason about than a separate incrementing single-digit package number."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.21 into player.version.json and BuildRuntimeInfo.cs, then build the player release in package-only mode.",
+    "Confirm the new packaged artifact is named `FrameAngel.Player.0.4.21.var` and its packaged asset/plugin URLs use `FrameAngel.Player.0.4.21:/...`.",
+    "Verify the package still contains the player asset, plugin, preset, and scene together with no loose deploy required for this version.",
+    "Verify the player plugin compiles after removing the multiscreen runtime hooks."
+  ],
+  "knownIssues": [
+    "The multiscreen proof-of-concept remains in git history and can be revived later if the playback and performance tradeoff becomes worth another pass.",
+    "The next ladder slices still need live VaM proof for A-B loop, grab-nav behavior, and the remaining interaction seams."
+  ]
+}

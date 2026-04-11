@@ -4,6 +4,7 @@ param(
     [string]$ReleaseManifestPath = "",
     [string]$CreatorName = "FrameAngel",
     [string]$PackageName = "Player",
+    [string]$PackageVersionTag = "",
     [int]$PublicRelease = 0,
     [string]$OutputRoot = "",
     [switch]$IncludeScene,
@@ -135,37 +136,28 @@ function Copy-DemoMediaIntoStageFlat {
     }
 }
 
-function Resolve-VarPublicRelease {
+function Resolve-VarPackageVersionTag {
     param(
-        [string]$ResolvedCreatorName,
-        [string]$ResolvedPackageName,
+        [string]$ResolvedVersion,
+        [string]$RequestedPackageVersionTag,
         [int]$RequestedPublicRelease,
-        [string[]]$SearchDirectories
+        [string]$ResolvedCreatorName,
+        [string]$ResolvedPackageName
     )
 
+    if (-not [string]::IsNullOrWhiteSpace($RequestedPackageVersionTag)) {
+        return $RequestedPackageVersionTag.Trim()
+    }
+
     if ($RequestedPublicRelease -gt 0) {
-        return $RequestedPublicRelease
+        return $RequestedPublicRelease.ToString()
     }
 
-    $pattern = '^{0}\.{1}\.(\d+)\.var$' -f [Regex]::Escape($ResolvedCreatorName), [Regex]::Escape($ResolvedPackageName)
-    $maxRelease = 0
-    foreach ($directory in @($SearchDirectories)) {
-        if ([string]::IsNullOrWhiteSpace($directory) -or -not (Test-Path -LiteralPath $directory)) {
-            continue
-        }
-
-        Get-ChildItem -LiteralPath $directory -File -Filter "$ResolvedCreatorName.$ResolvedPackageName.*.var" -ErrorAction SilentlyContinue | ForEach-Object {
-            $match = [Regex]::Match($_.Name, $pattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
-            if ($match.Success) {
-                $candidateRelease = 0
-                if ([int]::TryParse($match.Groups[1].Value, [ref]$candidateRelease) -and $candidateRelease -gt $maxRelease) {
-                    $maxRelease = $candidateRelease
-                }
-            }
-        }
+    if ([string]::IsNullOrWhiteSpace($ResolvedVersion)) {
+        throw ("Could not resolve package version tag for {0}.{1}." -f $ResolvedCreatorName, $ResolvedPackageName)
     }
 
-    return ($maxRelease + 1)
+    return $ResolvedVersion.Trim()
 }
 
 function Write-ZipArchiveFromStageRoot {
@@ -369,13 +361,14 @@ else {
 $resourceRoot = $resolvedOutputRoot
 $stageRoot = Join-Path $resourceRoot "source"
 $packagesRoot = Join-Path $resourceRoot "packages"
-$resolvedPublicRelease = Resolve-VarPublicRelease `
-    -ResolvedCreatorName $CreatorName `
-    -ResolvedPackageName $PackageName `
+$resolvedPackageVersionTag = Resolve-VarPackageVersionTag `
+    -ResolvedVersion $resolvedVersion `
+    -RequestedPackageVersionTag $PackageVersionTag `
     -RequestedPublicRelease $PublicRelease `
-    -SearchDirectories @($packagesRoot, $DestinationAddonPackages)
-$packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $resolvedPublicRelease
-$packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $resolvedPublicRelease
+    -ResolvedCreatorName $CreatorName `
+    -ResolvedPackageName $PackageName
+$packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
+$packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
 $zipPath = Join-Path $packagesRoot $packageZipName
 $varPath = Join-Path $packagesRoot $packageFileName
 $metaPath = Join-Path $stageRoot "meta.json"
@@ -405,8 +398,8 @@ $presetRelativePath = Join-Path "Custom\Atom\CustomUnityAsset" $presetFileName
 $packagedAssetPath = ($assetBundleRelativePath -replace '\\', '/')
 $packagedPluginPath = ($pluginRelativePath -replace '\\', '/')
 $packagedPresetPath = ($presetRelativePath -replace '\\', '/')
-$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedAssetPath
-$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $packagedPluginPath
+$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedAssetPath
+$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedPluginPath
 
 $resolvedScenePrimaryMediaPath = $ScenePrimaryMediaPath
 $resolvedPresetPrimaryMediaPath = ""
@@ -418,7 +411,7 @@ if (-not [string]::IsNullOrWhiteSpace($DemoMediaSourceRoot)) {
         -StageRoot $stageRoot `
         -PackageRelativeRoot $DemoMediaPackageRelativeRoot `
         -BasePath $RepoRoot
-    $demoMediaPackageRootUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPublicRelease, $demoMediaStage.packagedRoot
+    $demoMediaPackageRootUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $demoMediaStage.packagedRoot
     $resolvedPresetPrimaryMediaPath = $demoMediaPackageRootUrl
     if ([string]::IsNullOrWhiteSpace($resolvedScenePrimaryMediaPath)) {
         $resolvedScenePrimaryMediaPath = $demoMediaPackageRootUrl
@@ -560,7 +553,8 @@ $stageManifest = [ordered]@{
     packageMode = "direct_cua"
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $resolvedPublicRelease
+    publicRelease = $PublicRelease
+    packageVersionTag = $resolvedPackageVersionTag
     packageFileName = $packageFileName
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
@@ -645,7 +639,8 @@ $report = [ordered]@{
     version = $resolvedVersion
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $resolvedPublicRelease
+    publicRelease = $PublicRelease
+    packageVersionTag = $resolvedPackageVersionTag
     packageMode = "direct_cua"
     packageFileName = $packageFileName
     packagePath = $varPath
@@ -671,7 +666,8 @@ Write-JsonFile -Path $reportPath -Value $report
     version = $resolvedVersion
     creatorName = $CreatorName
     packageName = $PackageName
-    publicRelease = $resolvedPublicRelease
+    publicRelease = $PublicRelease
+    packageVersionTag = $resolvedPackageVersionTag
     packageMode = "direct_cua"
     packagePath = $varPath
     reportPath = $reportPath

@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.20",
-    "notes":  "0.4.20 keeps the package-first player var seam and the stable no-meta export, then integrates the hosted multiscreen mirror-bank slice so the current player can fan out mirrored neighboring screens in grid or circular layouts for live testing.",
+    "version":  "0.4.21",
+    "notes":  "0.4.21 keeps the stable package-first player seam, changes packaged var identity to use the full player version string, and rolls back the hosted multiscreen mirror-bank experiment so the overnight ladder continues from the simpler proven playback path.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.20.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.21.json"
 }
