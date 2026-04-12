@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.32",
+  "title": "Give startup a built-in wide placeholder instead of a square eager bind",
+  "summary": "0.4.32 publishes `Fa.Player.13.var` with the existing transport and diagnostics scene hardening intact, and adds a generated built-in placeholder texture so startup binds use a deterministic wide front-facing image while video media is still preparing.",
+  "reasoning": "Live testing showed an additional startup inconsistency: some loads came in with the screen at the expected wide aspect, while others appeared square or visually rear-only before media had fully bound. The current code already admits that the eager `16x16` render texture can produce a transient square bind. This slice avoids adding any external placeholder file by generating a small in-plugin gradient texture and using it only until a real still image or prepared video texture is ready.",
+  "changes": [
+    {
+      "area": "startup-presentation",
+      "summary": "Adds a shared generated placeholder texture with a wide aspect ratio for standalone video startup.",
+      "reasoning": "A deterministic in-plugin placeholder keeps the player free of new external file dependencies and avoids square first-bind presentation."
+    },
+    {
+      "area": "screen-binding",
+      "summary": "Uses the built-in placeholder texture as the temporary screen source until real media dimensions and textures are available.",
+      "reasoning": "The player can now bind a stable front-facing wide image immediately, then refresh cleanly to the real video surface when preparation completes."
+    },
+    {
+      "area": "release-boundary",
+      "summary": "Publishes the presentation-hardening candidate under a fresh semantic version and `Fa.Player.13.var` package identity.",
+      "reasoning": "A new rung keeps startup-presentation evidence separate from the earlier transport and diagnostics-scene slices."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.32 into player.version.json and BuildRuntimeInfo.cs, then build `Fa.Player.13.var` with the diagnostics scene variant still included.",
+    "Verify the package contains the 0.4.32 assetbundle, plugin, preset, the normal demo scene, and the packaged diagnostics scene.",
+    "Load the player repeatedly and confirm the screen starts with a deterministic wide front-facing placeholder instead of a square transient bind before real media appears."
+  ],
+  "knownIssues": [
+    "This slice hardens startup presentation but does not yet claim to solve the Fifth Element media-specific freeze.",
+    "The diagnostics scene remains the preferred witness surface for the next Fifth Element log capture."
+  ]
+}

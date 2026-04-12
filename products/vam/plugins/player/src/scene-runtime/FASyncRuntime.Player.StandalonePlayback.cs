@@ -352,6 +352,11 @@ public partial class FASyncRuntime : MVRScript
             }
         }
 
+        LogStandalonePlayerDiagnostics(
+            record,
+            "play_request",
+            BuildStandalonePlayerDiagnosticsSnapshot(record));
+
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_play ok", payload);
         EmitRuntimeEvent(
@@ -381,6 +386,9 @@ public partial class FASyncRuntime : MVRScript
         }
 
         record.desiredPlaying = false;
+        record.seekResumePending = false;
+        record.seekResumeTargetSeconds = 0d;
+        record.seekResumeRequestedAt = 0f;
         record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
         if (record.videoPlayer != null)
         {
@@ -393,6 +401,11 @@ public partial class FASyncRuntime : MVRScript
                 record.lastError = "player pause failed: " + ex.Message;
             }
         }
+
+        LogStandalonePlayerDiagnostics(
+            record,
+            "pause_request",
+            BuildStandalonePlayerDiagnosticsSnapshot(record));
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_pause ok", payload);

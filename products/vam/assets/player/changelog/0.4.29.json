@@ -23,6 +23,7 @@
   ],
   "knownIssues": [
     "This slice deliberately does not reopen the archived Meta-authored fallback contract or the external meta runtime json seam.",
-    "Any larger Meta toolkit integration work should stay a separate follow-up from this contract cleanup."
+    "Any larger Meta toolkit integration work should stay a separate follow-up from this contract cleanup.",
+    "Image-directory scrub on the shared slider remains a future slice: it should drag across the full ordered or shuffled image range, and when next/previous flips through the list it should wrap back to the beginning cleanly instead of inventing a second slider meaning."
   ]
 }

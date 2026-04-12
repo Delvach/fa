@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.4.34",
+  "title": "Make the packaged diagnostics scene actually enable the player probe",
+  "summary": "0.4.34 publishes `Fa.Player.15.var` with the current startup placeholder and seek-resume hardening intact, and fixes the diagnostics probe so hidden scene-restored storables actually turn logging on in the packaged diagnostics scene.",
+  "reasoning": "Live testing showed the diagnostics scene loaded but emitted no `[FA.PlayerDiag]` lines, which blocked the next decision on the Fifth Element edge case. The diagnostics scene JSON was already packaging the expected hidden storables, so the likely seam was local probe state rather than packaging. The probe had been reading backing fields that could stay stale if VaM restored the hidden storables without firing the callback. This slice makes the probe read the current storable values directly.",
+  "changes": [
+    {
+      "area": "diagnostics-probe",
+      "summary": "Player diagnostics now resolve the enabled flag and filter value from the current JSONStorable values when available.",
+      "reasoning": "Scene-restored hidden storables can now activate the probe even if VaM restore does not invoke the callback path."
+    },
+    {
+      "area": "diagnostics-scene",
+      "summary": "Keeps the packaged diagnostics scene contract unchanged while making it effective in practice.",
+      "reasoning": "This gives the Fifth Element lane one real log witness run without widening playback logic again."
+    },
+    {
+      "area": "release-boundary",
+      "summary": "Publishes the diagnostics-activation correction under a fresh semantic version and `Fa.Player.15.var` identity.",
+      "reasoning": "A clean package rung removes cache ambiguity and keeps the diagnostics witness separate from the earlier seek-resume change."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.4.34 into player.version.json and BuildRuntimeInfo.cs, then build `Fa.Player.15.var` with the diagnostics scene still included.",
+    "Load the packaged diagnostics scene and confirm normal VaM log output now includes `[FA.PlayerDiag]` lines.",
+    "Reproduce the Fifth Element scrub freeze once more and capture the resulting diagnostics lines for the next stop-or-fix decision."
+  ],
+  "knownIssues": [
+    "This slice does not itself claim to fix the Fifth Element freeze; it restores the missing witness path needed to judge the next move honestly.",
+    "If Fifth Element still freezes after one diagnostics-enabled witness run and one media-normalization witness run, the next healthy move is to classify it as a compatibility edge case rather than continue blind runtime churn."
+  ]
+}

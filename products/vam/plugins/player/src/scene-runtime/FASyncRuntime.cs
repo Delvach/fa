@@ -347,6 +347,7 @@ public partial class FASyncRuntime : MVRScript
         ConfigureTransientField(playerRuntimePlaylistField, false);
 
         BuildPlayerPresetStorables();
+        BuildPlayerDiagnosticsStorables();
 
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         BuildCuaPlayerInputStorables();
@@ -634,6 +635,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterString(playerRuntimeTimelineField);
         RegisterString(playerRuntimePlaylistField);
         RegisterPlayerPresetStorables();
+        RegisterPlayerDiagnosticsStorables();
 #if FRAMEANGEL_CUA_PLAYER && FRAMEANGEL_FEATURE_PLAYER_INPUT
         RegisterCuaPlayerInputStorables();
 #endif
