@@ -10,11 +10,11 @@ using UnityEngine.SceneManagement;
 
 public static class GhostPlayerHostCustomUnityAssetExporter
 {
-    private const string ScenePath = "Assets/Scenes/GhostMetaUiSetVideoPlayerProof.unity";
+    private const string ScenePath = "Assets/Scenes/SampleScene.unity";
     private const string DefaultOutputRoot = "C:/projects/frameangel/products/vam/plugins/player/build/cua_customunityassets";
     private const string DefaultDeployAssetsRoot = "F:/sim/vam/Custom/Assets/FrameAngel/Player";
     private const string DefaultDeployPresetRoot = "F:/sim/vam/Custom/Atom/CustomUnityAsset";
-    private const string TempPrefabFolder = "Assets/__FrameAngelTemp/PlayerHostCua";
+    private const string TempPrefabFolder = "Assets/FrameAngel/PlayerHostCua";
     private const string SummaryFileName = "ghost_player_host_cua_export_summary.json";
 
     [Serializable]
@@ -60,7 +60,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "player_host",
-            rootObjectSuffix = "g007.player_host",
+            rootObjectSuffix = ".player_host",
             displayName = "FA CUA Player Host",
             resourceId = "fa_cua_player_host",
             presetFileName = "Preset_FA CUA Player Host.vap",
@@ -79,7 +79,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "mcbrooke_laptop",
-            rootObjectSuffix = "g007.mcbrooke_laptop",
+            rootObjectSuffix = ".mcbrooke_laptop",
             displayName = "FA CUA Player Laptop",
             resourceId = "fa_cua_player_laptop",
             presetFileName = "Preset_FA CUA Player Laptop.vap",
@@ -88,7 +88,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "ivone_phone",
-            rootObjectSuffix = "g007.ivone_phone",
+            rootObjectSuffix = ".ivone_phone",
             displayName = "FA CUA Player Phone",
             resourceId = "fa_cua_player_phone",
             presetFileName = "Preset_FA CUA Player Phone.vap",
@@ -97,7 +97,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "ivad_tablet",
-            rootObjectSuffix = "g007.ivad_tablet",
+            rootObjectSuffix = ".ivad_tablet",
             displayName = "FA CUA Player Tablet",
             resourceId = "fa_cua_player_tablet",
             presetFileName = "Preset_FA CUA Player Tablet.vap",
@@ -106,7 +106,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "modern_tv",
-            rootObjectSuffix = "g007.modern_tv",
+            rootObjectSuffix = ".modern_tv",
             displayName = "FA CUA Player Modern TV",
             resourceId = "fa_cua_player_modern_tv",
             presetFileName = "Preset_FA CUA Player Modern TV.vap",
@@ -115,7 +115,7 @@ public static class GhostPlayerHostCustomUnityAssetExporter
         new ShellEntry
         {
             shellKey = "retro_tv",
-            rootObjectSuffix = "g007.retro_tv",
+            rootObjectSuffix = ".retro_tv",
             displayName = "FA CUA Player Retro TV",
             resourceId = "fa_cua_player_retro_tv",
             presetFileName = "Preset_FA CUA Player Retro TV.vap",

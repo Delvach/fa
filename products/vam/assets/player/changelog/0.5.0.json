@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.5.0",
+  "title": "Promote the recovered shell family into the normal package path",
+  "summary": "0.5.0 starts the shell lane by turning the recovered laptop, phone, tablet, modern TV, and retro TV variants into first-class packaged assets with packaged presets, instead of leaving them as adjacent recovery artifacts.",
+  "reasoning": "The shell family is already real in the repo, but it has not been part of the normal shipping-style package path. The smallest useful 0.5.0 step is to package those shells cleanly and give them stable self-contained preset identity so future shell validation and release work rides the same process as the main player.",
+  "changes": [
+    {
+      "area": "shell-family-packaging",
+      "summary": "Adds optional shell-family staging to the normal var packager so recovered phone, tablet, laptop, and TV shell assets can ship beside the main player asset in the same package.",
+      "reasoning": "This promotes the shell family into the real product path instead of keeping it as a separate recovery lane."
+    },
+    {
+      "area": "shell-preset-self-containment",
+      "summary": "Generates shell presets with var-scoped asset URLs and the packaged player plugin attached, rather than copying raw Custom-path presets into the package.",
+      "reasoning": "A packaged shell should behave like a self-contained product asset, not a leftover dev preset."
+    },
+    {
+      "area": "shell-asset-identity",
+      "summary": "Moves shell export prefabs off the temporary Unity asset path so bundled shell asset names are cleaner and more stable.",
+      "reasoning": "This reduces temp-path leakage into bundled asset identity and aligns the shell lane with the leaner packaging direction."
+    }
+  ],
+  "verification": [
+    "Re-export the CUA shell family from the current ghost training Unity project and confirm the summary points at the current repo lane with non-temp bundled asset names.",
+    "Build the player package with shell-family inclusion enabled and verify the var contains shell assetbundles and packaged shell presets under Custom/Assets/FrameAngel/Player and Custom/Atom/CustomUnityAsset.",
+    "Confirm the packaged shell presets reference var-scoped asset URLs and the packaged player plugin instead of raw Custom paths."
+  ],
+  "knownIssues": [
+    "This slice packages the recovered shell family but does not add new shell-specific runtime behaviors like phone or tablet swipe handling.",
+    "The composed host package path still does not carry a real screen aperture node because the current recovered shell exports leave that field empty."
+  ]
+}

@@ -8,6 +8,8 @@ param(
     [switch]$PackageOnlyDeploy,
     [switch]$IncludeVarScene,
     [switch]$IncludeVarDiagnosticsScene,
+    [switch]$IncludeVarShellFamily,
+    [string]$VarShellKeysCsv = "",
     [string]$VarSceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
     [string]$VarScenePrimaryMediaPath = "",
     [string]$VarSceneDiagnosticsFilter = "",
@@ -374,6 +376,7 @@ $manifest = [ordered]@{
         packageOnlyDeploy = $PackageOnlyDeploy.IsPresent
         buildsVarPackage = $BuildVarPackage.IsPresent
         includesPackagedScene = $effectiveIncludeVarScene
+        includesPackagedShellFamily = $IncludeVarShellFamily.IsPresent
     }
     changelog = [ordered]@{
         sourcePath = $changelogSourcePath
@@ -443,6 +446,15 @@ if ($BuildVarPackage.IsPresent) {
             $varArgs += @(
                 "-DiagnosticsSceneFilter",
                 $VarSceneDiagnosticsFilter
+            )
+        }
+    }
+    if ($IncludeVarShellFamily.IsPresent) {
+        $varArgs += "-IncludeShellFamily"
+        if (-not [string]::IsNullOrWhiteSpace($VarShellKeysCsv)) {
+            $varArgs += @(
+                "-ShellKeysCsv",
+                $VarShellKeysCsv
             )
         }
     }

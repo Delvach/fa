@@ -31,5 +31,9 @@ products/vam/assets/player/unity/ghost_training_export_clone/*.sln
 products/vam/assets/player/unity/ghost_training_export_clone/ProjectSettings/NetworkManager.asset
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/__FrameAngelTemp/
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/__FrameAngelTemp.meta
+products/vam/assets/player/unity/ghost_training_export_clone/Assets/FrameAngel/PlayerHostCua/
+products/vam/assets/player/unity/ghost_training_export_clone/Assets/FrameAngel/PlayerHostCua.meta
+products/vam/assets/player/unity/ghost_training_export_clone/Assets/FrameAngel/PlayerHostPackageCua/
+products/vam/assets/player/unity/ghost_training_export_clone/Assets/FrameAngel/PlayerHostPackageCua.meta
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/TextMesh Pro/Examples & Extras/
 products/vam/assets/player/unity/ghost_training_export_clone/Assets/TextMesh Pro/Examples & Extras.meta

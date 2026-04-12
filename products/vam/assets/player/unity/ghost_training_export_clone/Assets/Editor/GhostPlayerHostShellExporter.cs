@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 
 public static class GhostPlayerHostShellExporter
 {
-    private const string ScenePath = "Assets/Scenes/GhostMetaUiSetVideoPlayerProof.unity";
+    private const string ScenePath = "Assets/Scenes/SampleScene.unity";
     private const string DefaultOutputRoot = "C:/projects/frameangel/products/vam/plugins/player/build/host_shell_exports";
 
     [Serializable]
@@ -118,7 +118,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "player_host",
-            rootObjectSuffix = "g007.player_host",
+            rootObjectSuffix = ".player_host",
             hostDisplayName = "FA CUA Player Host",
             hostResourceId = "fa_cua_player_host_v1",
             hostPackageId = "faipe_fa_cua_player_host_v1",
@@ -132,7 +132,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "mcbrooke_laptop",
-            rootObjectSuffix = "g007.mcbrooke_laptop",
+            rootObjectSuffix = ".mcbrooke_laptop",
             hostDisplayName = "FA CUA Player Laptop",
             hostResourceId = "fa_cua_player_laptop_v1",
             hostPackageId = "faipe_fa_cua_player_laptop_v1",
@@ -146,7 +146,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "ivone_phone",
-            rootObjectSuffix = "g007.ivone_phone",
+            rootObjectSuffix = ".ivone_phone",
             hostDisplayName = "FA CUA Player Phone",
             hostResourceId = "fa_cua_player_phone_v1",
             hostPackageId = "faipe_fa_cua_player_phone_v1",
@@ -160,7 +160,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "ivad_tablet",
-            rootObjectSuffix = "g007.ivad_tablet",
+            rootObjectSuffix = ".ivad_tablet",
             hostDisplayName = "FA CUA Player Tablet",
             hostResourceId = "fa_cua_player_tablet_v1",
             hostPackageId = "faipe_fa_cua_player_tablet_v1",
@@ -174,7 +174,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "modern_tv",
-            rootObjectSuffix = "g007.modern_tv",
+            rootObjectSuffix = ".modern_tv",
             hostDisplayName = "FA CUA Player Modern TV",
             hostResourceId = "fa_cua_player_modern_tv_v1",
             hostPackageId = "faipe_fa_cua_player_modern_tv_v1",
@@ -188,7 +188,7 @@ public static class GhostPlayerHostShellExporter
         new ShellExportEntry
         {
             shellKey = "retro_tv",
-            rootObjectSuffix = "g007.retro_tv",
+            rootObjectSuffix = ".retro_tv",
             hostDisplayName = "FA CUA Player Retro TV",
             hostResourceId = "fa_cua_player_retro_tv_v1",
             hostPackageId = "faipe_fa_cua_player_retro_tv_v1",

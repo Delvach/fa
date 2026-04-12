@@ -12,6 +12,9 @@ param(
     [string]$ScenePrimaryMediaPath = "",
     [switch]$IncludeDiagnosticsScene,
     [string]$DiagnosticsSceneFilter = "",
+    [switch]$IncludeShellFamily,
+    [string]$ShellExportSummaryPath = "",
+    [string]$ShellKeysCsv = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$SceneDisplayPolicy = "multi_aspect",
     [int]$SceneIncludeManagedControls = 0,
@@ -268,6 +271,76 @@ function Resolve-PlayerAssetName {
     return "assets/frameangel/playerscreen/fa_player_screen.prefab"
 }
 
+function Resolve-ShellFamilySummaryPath {
+    param(
+        [pscustomobject]$LaneRoots,
+        [string]$ExplicitPath,
+        [string]$BasePath
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($ExplicitPath)) {
+        return Resolve-PathFromBase -PathValue $ExplicitPath -BasePath $BasePath -Label "Shell export summary"
+    }
+
+    $defaultPath = Join-Path $LaneRoots.AssetsPlayerBuildRoot "cua_shell_family\ghost_player_host_cua_export_summary.json"
+    if (-not (Test-Path -LiteralPath $defaultPath)) {
+        throw "Shell export summary not found: $defaultPath"
+    }
+
+    return [System.IO.Path]::GetFullPath($defaultPath)
+}
+
+function Resolve-ShellFamilyStage {
+    param(
+        [string]$SummaryPath,
+        [string]$RequestedShellKeysCsv
+    )
+
+    $summary = Get-Content -LiteralPath $SummaryPath -Raw | ConvertFrom-Json
+    if ($null -eq $summary -or $null -eq $summary.exports -or @($summary.exports).Count -le 0) {
+        throw "Shell export summary does not contain any exports: $SummaryPath"
+    }
+
+    $requestedKeys = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::OrdinalIgnoreCase)
+    if (-not [string]::IsNullOrWhiteSpace($RequestedShellKeysCsv)) {
+        foreach ($value in ($RequestedShellKeysCsv.Split(',') | ForEach-Object { $_.Trim() })) {
+            if (-not [string]::IsNullOrWhiteSpace($value)) {
+                [void]$requestedKeys.Add($value)
+            }
+        }
+    }
+
+    $entries = New-Object System.Collections.Generic.List[object]
+    foreach ($entry in @($summary.exports)) {
+        $shellKey = [string]$entry.shellKey
+        if ([string]::IsNullOrWhiteSpace($shellKey)) {
+            continue
+        }
+
+        if ($requestedKeys.Count -gt 0) {
+            if ($requestedKeys.Contains($shellKey)) {
+                $entries.Add($entry)
+            }
+            continue
+        }
+
+        if (-not [string]::Equals($shellKey, "player_host", [System.StringComparison]::OrdinalIgnoreCase) -and
+            -not [string]::Equals($shellKey, "baseline_control", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $entries.Add($entry)
+        }
+    }
+
+    if ($entries.Count -le 0) {
+        throw "No shell family exports matched the requested shell keys from summary: $SummaryPath"
+    }
+
+    return [pscustomobject]@{
+        summaryPath = $SummaryPath
+        summary = $summary
+        entries = $entries.ToArray()
+    }
+}
+
 function New-CustomUnityAssetPreset {
     param(
         [string]$AssetUrl,
@@ -420,12 +493,56 @@ if (-not [string]::IsNullOrWhiteSpace($DemoMediaSourceRoot)) {
     }
 }
 
+$shellFamilyStage = $null
+if ($IncludeShellFamily.IsPresent) {
+    $resolvedShellSummaryPath = Resolve-ShellFamilySummaryPath -LaneRoots $laneRoots -ExplicitPath $ShellExportSummaryPath -BasePath $RepoRoot
+    $shellFamilyStage = Resolve-ShellFamilyStage -SummaryPath $resolvedShellSummaryPath -RequestedShellKeysCsv $ShellKeysCsv
+}
+
 [void](Copy-FileIntoStage -SourcePath $assetBundlePath -StageRoot $stageRoot -RelativePath $assetBundleRelativePath)
 [void](Copy-FileIntoStage -SourcePath $pluginDllPath -StageRoot $stageRoot -RelativePath $pluginRelativePath)
 
 $presetObject = New-CustomUnityAssetPreset -AssetUrl $packagedAssetUrl -AssetName $assetName -PluginUrl $packagedPluginUrl -PlayerMediaPath $resolvedPresetPrimaryMediaPath
 $presetStagePath = Join-Path $stageRoot $presetRelativePath
 Write-JsonFile -Path $presetStagePath -Value $presetObject
+
+$shellFamilyEntries = New-Object System.Collections.Generic.List[object]
+if ($null -ne $shellFamilyStage) {
+    foreach ($shellEntry in @($shellFamilyStage.entries)) {
+        $shellBundleSourcePath = Resolve-PathFromBase -PathValue ([string]$shellEntry.bundlePath) -BasePath $RepoRoot -Label ("Shell assetbundle for " + [string]$shellEntry.shellKey)
+        $shellBundleFileName = [System.IO.Path]::GetFileName($shellBundleSourcePath)
+        $shellBundleRelativePath = Join-Path "Custom\Assets\FrameAngel\Player" $shellBundleFileName
+        $packagedShellBundlePath = ($shellBundleRelativePath -replace '\\', '/')
+        $packagedShellAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedShellBundlePath
+        [void](Copy-FileIntoStage -SourcePath $shellBundleSourcePath -StageRoot $stageRoot -RelativePath $shellBundleRelativePath)
+
+        $shellPresetFileName = [System.IO.Path]::GetFileName([string]$shellEntry.presetPath)
+        if ([string]::IsNullOrWhiteSpace($shellPresetFileName)) {
+            $shellPresetFileName = "Preset_{0}.vap" -f ([string]$shellEntry.displayName)
+        }
+
+        $shellPresetRelativePath = Join-Path "Custom\Atom\CustomUnityAsset" $shellPresetFileName
+        $shellPresetObject = New-CustomUnityAssetPreset `
+            -AssetUrl $packagedShellAssetUrl `
+            -AssetName ([string]$shellEntry.assetName) `
+            -PluginUrl $packagedPluginUrl `
+            -PlayerMediaPath $resolvedPresetPrimaryMediaPath
+        $shellPresetStagePath = Join-Path $stageRoot $shellPresetRelativePath
+        Write-JsonFile -Path $shellPresetStagePath -Value $shellPresetObject
+
+        [void]$shellFamilyEntries.Add([ordered]@{
+            shellKey = [string]$shellEntry.shellKey
+            displayName = [string]$shellEntry.displayName
+            resourceId = [string]$shellEntry.resourceId
+            sourceBundlePath = $shellBundleSourcePath
+            sourceAssetName = [string]$shellEntry.assetName
+            packagedAssetPath = $packagedShellBundlePath
+            packagedAssetUrl = $packagedShellAssetUrl
+            packagedPresetPath = ($shellPresetRelativePath -replace '\\', '/')
+            presetFileName = $shellPresetFileName
+        })
+    }
+}
 
 $generatedScenePath = ""
 $generatedScenePreviewPath = ""
@@ -626,6 +743,22 @@ if (-not [string]::IsNullOrWhiteSpace($packagedDiagnosticsScenePreviewPath)) {
         packagedPath = $packagedDiagnosticsScenePreviewPath
     })
 }
+if ($shellFamilyEntries.Count -gt 0) {
+    foreach ($shellFamilyEntry in $shellFamilyEntries) {
+        [void]$stagedFiles.Add([ordered]@{
+            kind = "shell_assetbundle"
+            sourcePath = $shellFamilyEntry.sourceBundlePath
+            packagedPath = $shellFamilyEntry.packagedAssetPath
+            shellKey = $shellFamilyEntry.shellKey
+        })
+        [void]$stagedFiles.Add([ordered]@{
+            kind = "shell_custom_unity_asset_preset"
+            sourcePath = ""
+            packagedPath = $shellFamilyEntry.packagedPresetPath
+            shellKey = $shellFamilyEntry.shellKey
+        })
+    }
+}
 if ($null -ne $demoMediaStage) {
     foreach ($demoMediaFile in $demoMediaStage.files) {
         [void]$stagedFiles.Add($demoMediaFile)
@@ -701,6 +834,17 @@ $stageManifest = [ordered]@{
     else {
         $null
     }
+    shellFamily = if ($shellFamilyEntries.Count -gt 0) {
+        [ordered]@{
+            summaryPath = $shellFamilyStage.summaryPath
+            shellCount = $shellFamilyEntries.Count
+            shellKeys = @($shellFamilyEntries | ForEach-Object { [string]$_.shellKey })
+            entries = $shellFamilyEntries
+        }
+    }
+    else {
+        $null
+    }
     demoMedia = if ($null -ne $demoMediaStage) {
         [ordered]@{
             sourceRoot = $demoMediaStage.sourceRoot
@@ -766,6 +910,7 @@ $report = [ordered]@{
     packagedScenePath = $packagedScenePath
     packagedScenePreviewPath = $packagedScenePreviewPath
     packagedDemoMediaRootUrl = $demoMediaPackageRootUrl
+    packagedShellFamily = if ($shellFamilyEntries.Count -gt 0) { $shellFamilyEntries } else { $null }
     distribution = $distribution
 }
 Write-JsonFile -Path $reportPath -Value $report

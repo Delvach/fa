@@ -14,7 +14,7 @@ public static class GhostPlayerHostPackageCustomUnityAssetExporter
     private const string DefaultOutputRoot = "C:/projects/staging/frameangel-player-split/products/vam/plugins/player/build/locked_cua_exports";
     private const string DefaultDeployAssetsRoot = "F:/sim/vam/Custom/Assets/FrameAngel/Player";
     private const string DefaultDeployPresetRoot = "F:/sim/vam/Custom/Atom/CustomUnityAsset";
-    private const string TempAssetRoot = "Assets/__FrameAngelTemp/PlayerHostCua";
+    private const string TempAssetRoot = "Assets/FrameAngel/PlayerHostPackageCua";
     private const string MeshesRoot = TempAssetRoot + "/Meshes";
     private const string MaterialsRoot = TempAssetRoot + "/Materials";
     private const string TexturesRoot = TempAssetRoot + "/Textures";
