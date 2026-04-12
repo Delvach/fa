@@ -1,7 +1,7 @@
 {
-    "version":  "0.4.33",
-    "notes":  "0.4.33 keeps the current transport, diagnostics scene, and built-in startup placeholder work, and changes scrub seek resume so problematic media is allowed to complete seek before audio/playback resume is released.",
+    "version":  "0.4.34",
+    "notes":  "0.4.34 keeps the current transport, diagnostics scene, startup placeholder, and seek-resume hardening work, and fixes the diagnostics probe so scene-restored hidden storables actually enable log output in the packaged diagnostics scene.",
     "branch":  "main",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.4.33.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.4.34.json"
 }

@@ -17,6 +17,21 @@ public partial class FASyncRuntime : MVRScript
     private bool playerDiagnosticsEnabled = false;
     private string playerDiagnosticsFilter = "";
 
+    private bool IsPlayerDiagnosticsEnabled()
+    {
+        return playerDiagnosticsEnabledField != null
+            ? playerDiagnosticsEnabledField.val
+            : playerDiagnosticsEnabled;
+    }
+
+    private string GetPlayerDiagnosticsFilterValue()
+    {
+        string value = playerDiagnosticsFilterField != null
+            ? playerDiagnosticsFilterField.val
+            : playerDiagnosticsFilter;
+        return string.IsNullOrEmpty(value) ? "" : value.Trim();
+    }
+
     private void BuildPlayerDiagnosticsStorables()
     {
         playerDiagnosticsEnabledField = new JSONStorableBool("FA Player Diagnostics Enabled", playerDiagnosticsEnabled);
@@ -35,7 +50,7 @@ public partial class FASyncRuntime : MVRScript
         playerDiagnosticsFilterField.setCallbackFunction = delegate(string value)
         {
             playerDiagnosticsFilter = string.IsNullOrEmpty(value) ? "" : value.Trim();
-            if (playerDiagnosticsEnabled)
+            if (IsPlayerDiagnosticsEnabled())
             {
                 LogStandalonePlayerDiagnostics(
                     null,
@@ -66,7 +81,8 @@ public partial class FASyncRuntime : MVRScript
 
     private string BuildStandalonePlayerDiagnosticsFilterSummary()
     {
-        return string.IsNullOrEmpty(playerDiagnosticsFilter) ? "(all)" : playerDiagnosticsFilter;
+        string filter = GetPlayerDiagnosticsFilterValue();
+        return string.IsNullOrEmpty(filter) ? "(all)" : filter;
     }
 
     private void DumpStandalonePlayerDiagnostics()
@@ -137,10 +153,10 @@ public partial class FASyncRuntime : MVRScript
         if (force)
             return true;
 
-        if (!playerDiagnosticsEnabled)
+        if (!IsPlayerDiagnosticsEnabled())
             return false;
 
-        string filter = string.IsNullOrEmpty(playerDiagnosticsFilter) ? "" : playerDiagnosticsFilter.Trim();
+        string filter = GetPlayerDiagnosticsFilterValue();
         if (string.IsNullOrEmpty(filter))
             return true;
 
