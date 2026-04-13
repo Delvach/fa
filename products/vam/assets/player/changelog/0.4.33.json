@@ -27,6 +27,7 @@
     "If the freeze persists, load the diagnostics scene and capture `[FA.PlayerDiag]` lines around `seek_resume_pending`, `seek_completed`, and `seek_resume_released`."
   ],
   "knownIssues": [
+    "Historical note added in 0.6.9: 0.4.33 fixed the immediate post-seek resume seam, but it did not add periodic audio/video correction; 0.5.0 and the 0.6.0 reset baseline carried that partial fix forward unchanged.",
     "This slice targets the remaining Fifth Element seek seam and does not yet claim to solve all unusual multichannel or low-sample-rate media combinations.",
     "Future pro audio work still needs a broader speaker/profile architecture beyond the current single AudioSource path."
   ]

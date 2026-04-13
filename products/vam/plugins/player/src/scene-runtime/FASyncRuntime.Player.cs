@@ -57,6 +57,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackRetryIntervalSeconds = 0.20f;
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
+    private const float StandalonePlayerPeriodicAvSyncIntervalSeconds = 1.0f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
@@ -66,6 +67,7 @@ public partial class FASyncRuntime : MVRScript
     private const int StandalonePlayerPlaceholderHeight = 144;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
+    private const double StandalonePlayerPeriodicAvSyncThresholdSeconds = 0.20d;
     private const double StandalonePlayerAbLoopMinimumSpanSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
     private const int StandalonePlayerRandomHistoryLimit = 64;
@@ -163,6 +165,7 @@ public partial class FASyncRuntime : MVRScript
         public float prepareStartedAt = 0f;
         public bool desiredPlaying = true;
         public float nextPlaybackStateApplyTime = 0f;
+        public float nextAudioVideoSyncCheckTime = 0f;
         public bool seekResumePending = false;
         public double seekResumeTargetSeconds = 0d;
         public float seekResumeRequestedAt = 0f;
@@ -6952,6 +6955,35 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
+    private bool TryReadStandalonePlayerAudioTimeline(
+        StandalonePlayerRecord record,
+        out double audioTimeSeconds,
+        out string errorMessage)
+    {
+        audioTimeSeconds = 0d;
+        errorMessage = "";
+        if (record == null || record.audioSource == null)
+        {
+            errorMessage = "player audio runtime missing";
+            return false;
+        }
+
+        try
+        {
+            audioTimeSeconds = Math.Max(0d, record.audioSource.time);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "player audio timeline read failed: " + ex.Message;
+            return false;
+        }
+
+        if (double.IsNaN(audioTimeSeconds) || double.IsInfinity(audioTimeSeconds))
+            audioTimeSeconds = 0d;
+
+        return true;
+    }
+
     private bool TryLoadStandalonePlayerRecordPath(
         StandalonePlayerRecord record,
         InnerPieceInstanceRecord instance,
@@ -6994,6 +7026,7 @@ public partial class FASyncRuntime : MVRScript
         record.seekResumePending = false;
         record.seekResumeTargetSeconds = 0d;
         record.seekResumeRequestedAt = 0f;
+        record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
@@ -7571,6 +7604,16 @@ public partial class FASyncRuntime : MVRScript
                                 record.lastError = naturalEndError;
                             continue;
                         }
+
+                        string avSyncError = "";
+                        if (TryHandleStandalonePlayerPeriodicAvSync(record, currentTimeSeconds, durationSeconds, isPlayingNow, out avSyncError))
+                        {
+                            if (!string.IsNullOrEmpty(avSyncError))
+                                record.lastError = avSyncError;
+                            else
+                                record.lastError = "";
+                            continue;
+                        }
                     }
 
                     if (record.desiredPlaying && !record.seekResumePending)
@@ -8028,6 +8071,7 @@ public partial class FASyncRuntime : MVRScript
             record.videoPlayer.Play();
             record.desiredPlaying = true;
             record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
+            record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
             record.hasObservedPlaybackTime = false;
             record.lastObservedPlaybackTimeSeconds = 0d;
             record.lastPlaybackMotionObservedAt = Time.unscaledTime;
@@ -8084,6 +8128,7 @@ public partial class FASyncRuntime : MVRScript
                 record.seekResumeTargetSeconds = targetTimeSeconds;
                 record.seekResumeRequestedAt = Time.unscaledTime;
                 record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
+                record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
                 record.desiredPlaying = true;
             }
             else
@@ -8091,6 +8136,7 @@ public partial class FASyncRuntime : MVRScript
                 record.seekResumePending = false;
                 record.seekResumeTargetSeconds = 0d;
                 record.seekResumeRequestedAt = 0f;
+                record.nextAudioVideoSyncCheckTime = 0f;
                 record.desiredPlaying = false;
                 TryRefreshStandalonePlayerPausedFrame(record);
             }
@@ -8155,6 +8201,50 @@ public partial class FASyncRuntime : MVRScript
             return false;
 
         return TrySeekStandalonePlayerRecordToSeconds(record, startSeconds, true, out errorMessage);
+    }
+
+    private bool TryHandleStandalonePlayerPeriodicAvSync(
+        StandalonePlayerRecord record,
+        double currentTimeSeconds,
+        double durationSeconds,
+        bool isPlayingNow,
+        out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null
+            || record.mediaIsStillImage
+            || record.videoPlayer == null
+            || record.audioSource == null
+            || !record.prepared
+            || !record.desiredPlaying
+            || record.seekResumePending
+            || !isPlayingNow)
+        {
+            return false;
+        }
+
+        if (Time.unscaledTime < record.nextAudioVideoSyncCheckTime)
+            return false;
+
+        record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+
+        double audioTimeSeconds = 0d;
+        string audioTimelineError = "";
+        if (!TryReadStandalonePlayerAudioTimeline(record, out audioTimeSeconds, out audioTimelineError))
+        {
+            if (!string.IsNullOrEmpty(audioTimelineError))
+                errorMessage = audioTimelineError;
+            return false;
+        }
+
+        if (durationSeconds > 0.0001d)
+            audioTimeSeconds = Math.Min(durationSeconds, Math.Max(0d, audioTimeSeconds));
+
+        double driftSeconds = Math.Abs(currentTimeSeconds - audioTimeSeconds);
+        if (driftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds)
+            return false;
+
+        return TrySeekStandalonePlayerRecordToSeconds(record, audioTimeSeconds, true, out errorMessage);
     }
 
     private const int ScreenCoreOverlayBackingRenderQueue = 4495;
@@ -8506,6 +8596,7 @@ public partial class FASyncRuntime : MVRScript
                     record.seekResumePending = false;
                     record.seekResumeRequestedAt = 0f;
                     record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
+                    record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
                 }
             };
             record.runtimeSeekCompletedHooked = true;
@@ -8701,6 +8792,7 @@ public partial class FASyncRuntime : MVRScript
             record.seekResumeRequestedAt = 0f;
             record.desiredPlaying = false;
             record.nextPlaybackStateApplyTime = 0f;
+            record.nextAudioVideoSyncCheckTime = 0f;
             record.lastError = "";
             record.needsScreenRefresh = true;
             TryResolveTextureDimensions(loadedTexture, out record.textureWidth, out record.textureHeight);

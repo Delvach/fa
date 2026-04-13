@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.9",
+  "title": "Add conservative once-per-second movie audio/video correction",
+  "summary": "0.6.9 keeps the 0.6.8 image/video load rule intact and adds one bounded playback-quality change: once per second, playing movies measure audio/video drift and only trigger correction when the delta is meaningfully large.",
+  "reasoning": "0.6.8 restored the product rule that fresh image loads pause while fresh video loads play, and live testing reported that the old speed-up symptom was gone. The remaining quality note was that some media still drifts out of sync more easily than others. Repo history already showed the right lesson in 0.4.33 and 0.6.6: stay inside the hardened seek-resume seam instead of inventing a second playback path. This slice therefore adds a low-frequency correction pass that compares video timeline time to audio output time and only intervenes when drift is large enough to matter.",
+  "changes": [
+    {
+      "area": "periodic-av-sync",
+      "summary": "Playing movies now perform one audio/video drift check per second and only trigger correction when measured drift exceeds a conservative threshold.",
+      "reasoning": "This adds active correction without turning the hot playback tick back into a constant resync loop."
+    },
+    {
+      "area": "sync-path",
+      "summary": "Periodic correction reuses the existing seek-and-resume seam instead of forcing ad hoc audio writes or a second resume path.",
+      "reasoning": "The repo already proved that post-seek timing is the safe place to stabilize fragile media; reusing that seam reduces the risk of reintroducing decoder fights."
+    },
+    {
+      "area": "history-note",
+      "summary": "The changelog trail now records that 0.4.33 was a partial real fix rather than a never-implemented idea.",
+      "reasoning": "Future threads can follow the repo record cleanly: 0.4.33 fixed immediate post-seek resume, 0.6.6 delayed same-tick resume, and 0.6.9 adds periodic correction."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.9 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and package the DevPlayer lane from C:\\projects\\fa using the deterministic package-first build path, then deploy the next FrameAngel.DevPlayer.<n>.var to AddonPackages.",
+    "In VR or desktop, load a movie, scrub with the slider, and confirm playback no longer speeds up while overall sync remains steadier during longer playback."
+  ],
+  "knownIssues": [
+    "This slice keeps the correction cadence intentionally conservative at once per second and does not yet attempt a broader audio clock architecture.",
+    "Some unusual media may still need deeper transport or codec-specific handling later, but this release stays bounded to active periodic correction."
+  ]
+}

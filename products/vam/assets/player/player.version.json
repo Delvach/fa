@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.8",
-    "notes":  "0.6.8 applies the explicit product rule for fresh media loads: images pause on load, videos play on load, and the scene/browser load path no longer forces play=true for every selection.",
-    "branch":  "release/0.6.8-image-pause-video-play",
+    "version":  "0.6.9",
+    "notes":  "0.6.9 adds a conservative once-per-second audio/video correction pass for playing movies, using the existing seek-resume seam only when measured drift is meaningfully large.",
+    "branch":  "release/0.6.9-periodic-av-resync",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.8.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.9.json"
 }
