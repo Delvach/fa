@@ -1,0 +1,205 @@
+{
+  "schemaVersion": "frameangel_player_product_matrix_v1",
+  "recommendation": {
+    "repoStrategy": "stay_in_current_repo",
+    "reason": "The current repo already contains the tested player baseline, the compile seams, the packaging lane, the shell export scripts, and the changelog/handoff canon needed to stand up the modular product system without another recovery cycle."
+  },
+  "coreBuilds": {
+    "free_core": {
+      "edition": "free",
+      "description": "Baseline shipping player core.",
+      "futureCompileProfile": "FRAMEANGEL_EDITION_FREE"
+    },
+    "pro_core": {
+      "edition": "pro",
+      "description": "Premium shipping player core.",
+      "futureCompileProfile": "FRAMEANGEL_EDITION_PRO"
+    }
+  },
+  "editionProfiles": {
+    "free": {
+      "coreBuildKey": "free_core",
+      "marketingRole": "public_baseline"
+    },
+    "pro": {
+      "coreBuildKey": "pro_core",
+      "marketingRole": "premium"
+    },
+    "pro_demo": {
+      "coreBuildKey": "pro_core",
+      "marketingRole": "demo",
+      "inheritsEdition": "pro"
+    }
+  },
+  "surfaces": {
+    "player": {
+      "displayName": "Player",
+      "surfaceType": "basic_screen",
+      "shellKey": "",
+      "notes": "Base screen authority seam."
+    },
+    "modern_tv_player": {
+      "displayName": "Modern TV Player",
+      "surfaceType": "shell",
+      "shellKey": "modern_tv"
+    },
+    "laptop_player": {
+      "displayName": "Laptop Player",
+      "surfaceType": "shell",
+      "shellKey": "mcbrooke_laptop"
+    },
+    "phone_player": {
+      "displayName": "Phone Player",
+      "surfaceType": "shell",
+      "shellKey": "ivone_phone"
+    },
+    "tablet_player": {
+      "displayName": "Tablet Player",
+      "surfaceType": "shell",
+      "shellKey": "ivad_tablet"
+    }
+  },
+  "products": [
+    {
+      "productId": "player_free",
+      "displayName": "Player",
+      "packageName": "Player",
+      "surfaceKey": "player",
+      "editionProfileKey": "free"
+    },
+    {
+      "productId": "player_pro",
+      "displayName": "Player Pro",
+      "packageName": "PlayerPro",
+      "surfaceKey": "player",
+      "editionProfileKey": "pro"
+    },
+    {
+      "productId": "player_pro_demo",
+      "displayName": "Player Pro Demo",
+      "packageName": "PlayerProDemo",
+      "surfaceKey": "player",
+      "editionProfileKey": "pro_demo"
+    },
+    {
+      "productId": "modern_tv_player_free",
+      "displayName": "Modern TV Player",
+      "packageName": "ModernTVPlayer",
+      "surfaceKey": "modern_tv_player",
+      "editionProfileKey": "free"
+    },
+    {
+      "productId": "modern_tv_player_pro",
+      "displayName": "Modern TV Player Pro",
+      "packageName": "ModernTVPlayerPro",
+      "surfaceKey": "modern_tv_player",
+      "editionProfileKey": "pro"
+    },
+    {
+      "productId": "modern_tv_player_pro_demo",
+      "displayName": "Modern TV Player Pro Demo",
+      "packageName": "ModernTVPlayerProDemo",
+      "surfaceKey": "modern_tv_player",
+      "editionProfileKey": "pro_demo"
+    },
+    {
+      "productId": "laptop_player_free",
+      "displayName": "Laptop Player",
+      "packageName": "LaptopPlayer",
+      "surfaceKey": "laptop_player",
+      "editionProfileKey": "free"
+    },
+    {
+      "productId": "laptop_player_pro",
+      "displayName": "Laptop Player Pro",
+      "packageName": "LaptopPlayerPro",
+      "surfaceKey": "laptop_player",
+      "editionProfileKey": "pro"
+    },
+    {
+      "productId": "laptop_player_pro_demo",
+      "displayName": "Laptop Player Pro Demo",
+      "packageName": "LaptopPlayerProDemo",
+      "surfaceKey": "laptop_player",
+      "editionProfileKey": "pro_demo"
+    },
+    {
+      "productId": "phone_player_free",
+      "displayName": "Phone Player",
+      "packageName": "PhonePlayer",
+      "surfaceKey": "phone_player",
+      "editionProfileKey": "free"
+    },
+    {
+      "productId": "phone_player_pro",
+      "displayName": "Phone Player Pro",
+      "packageName": "PhonePlayerPro",
+      "surfaceKey": "phone_player",
+      "editionProfileKey": "pro"
+    },
+    {
+      "productId": "phone_player_pro_demo",
+      "displayName": "Phone Player Pro Demo",
+      "packageName": "PhonePlayerProDemo",
+      "surfaceKey": "phone_player",
+      "editionProfileKey": "pro_demo"
+    },
+    {
+      "productId": "tablet_player_free",
+      "displayName": "Tablet Player",
+      "packageName": "TabletPlayer",
+      "surfaceKey": "tablet_player",
+      "editionProfileKey": "free"
+    },
+    {
+      "productId": "tablet_player_pro",
+      "displayName": "Tablet Player Pro",
+      "packageName": "TabletPlayerPro",
+      "surfaceKey": "tablet_player",
+      "editionProfileKey": "pro"
+    },
+    {
+      "productId": "tablet_player_pro_demo",
+      "displayName": "Tablet Player Pro Demo",
+      "packageName": "TabletPlayerProDemo",
+      "surfaceKey": "tablet_player",
+      "editionProfileKey": "pro_demo"
+    }
+  ],
+  "releaseWaves": [
+    {
+      "waveId": "wave_0_freeze_prototype",
+      "goal": "Keep the current player as a stable feature witness."
+    },
+    {
+      "waveId": "wave_1_architecture_setup",
+      "goal": "Stand up the matrix, profiles, metadata, and documentation."
+    },
+    {
+      "waveId": "wave_2_shell_validation",
+      "goal": "Export and validate the shell family for the new system."
+    },
+    {
+      "waveId": "wave_3_edition_scaffolding",
+      "goal": "Create free_core, pro_core, and pro_demo package profiles."
+    },
+    {
+      "waveId": "wave_4_parallel_witness_builds",
+      "goal": "Build all initial product SKUs from the same system."
+    },
+    {
+      "waveId": "wave_5_feature_development",
+      "goal": "Land remaining desired features only on the new modular lane."
+    }
+  ],
+  "parallelMarketingLanes": {
+    "joystickScroller": {
+      "purpose": "Keep FrameAngel visible between larger player-family milestones.",
+      "updateLadder": [
+        "metadata_brand_cleanup",
+        "demo_scene_package",
+        "small_ux_polish",
+        "first_public_branded_release"
+      ]
+    }
+  }
