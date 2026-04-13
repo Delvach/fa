@@ -69,7 +69,7 @@ Guardrails:
 
 Add the package as a local package from:
 
-- `C:\projects\frameangel_tools\tools\unity_editor_bridge\current`
+- `C:\projects\fa\products\vam\assets\player\unity_editor_bridge\current`
 
 Then open:
 

@@ -32,7 +32,7 @@ Do not move here:
 
 Primary local validation entrypoint:
 
-1. `C:\projects\frameangel_tools\tools\unity_editor_bridge\current\Validate-UnityEditorBridge.ps1`
+1. `C:\projects\fa\products\vam\assets\player\unity_editor_bridge\current\Validate-UnityEditorBridge.ps1`
 
 When changing the bridge, prefer validating here before assuming downstream
 Unity projects are at fault.
@@ -42,7 +42,7 @@ Unity projects are at fault.
 If a Unity project still points at an old local package path, patch the
 project manifest to reference:
 
-1. `C:\projects\frameangel_tools\tools\unity_editor_bridge\current`
+1. `C:\projects\fa\products\vam\assets\player\unity_editor_bridge\current`
 
 Do not reintroduce `C:\projects\frameangel` or older recovery roots as the
 landing zone for active bridge work.
