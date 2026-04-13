@@ -119,6 +119,34 @@ Use the right seam for the task:
 
 Do not let one seam silently replace another in canon.
 
+## Live authority and caching rule
+
+VaM caching is a real product constraint in this repo.
+
+For any versioned test or release slice:
+
+1. choose exactly one live authority seam:
+   - versioned `.var`
+   - or versioned `Custom/...`
+2. do not keep the same version live in both seams at once
+3. do not assume removing a `.var` from `AddonPackages` clears VaM's memory of it
+4. do not assume `Custom/...` artifacts with the same version are harmless when a
+   same-version `.var` has already been seen by VaM
+5. all live filenames must be versioned so the operator can see exactly what is
+   being loaded
+
+Working rule:
+
+1. pre-release uses `dev` names internally and externally
+2. final release uses `prod` names internally and externally
+3. if a slice is being tested in `.var`, treat `.var` as the only live authority
+4. if a slice is being tested in `Custom/...`, treat raw `Custom/...` as the
+   only live authority
+5. do not mix those seams for one version boundary
+
+If there is any doubt about which copy VaM is loading, the lane is not ready to
+call tested.
+
 ## Branch discipline
 
 Use minimal branch discipline.

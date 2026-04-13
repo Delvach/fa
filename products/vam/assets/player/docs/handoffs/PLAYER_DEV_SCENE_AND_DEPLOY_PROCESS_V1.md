@@ -51,6 +51,25 @@ Example:
 - packaged asset URL: `FrameAngel.DevPlayer.5:/Custom/Assets/FrameAngel/Player/dev_cua_player.0.6.6.assetbundle`
 - packaged plugin URL: `FrameAngel.DevPlayer.5:/Custom/Scripts/dev_plugin_player.0.6.6.dll`
 
+## Current Channel Naming Rule
+
+The lane now has two explicit naming channels:
+
+Pre-release:
+
+- external package identity uses `Dev`
+- internal asset/plugin naming uses `dev`
+- this is the operator-testing and prerelease channel
+
+Final release:
+
+- external package identity uses `Prod`
+- internal asset/plugin naming uses `prod`
+- this is the public release channel
+
+Do not mix `dev` and `prod` naming inside the same built artifact.
+Do not treat older unversioned names as current authority.
+
 ## Deterministic Scene Pipeline
 
 The packaged player scene is not authored in Unity.
@@ -122,6 +141,31 @@ For the current DevPlayer lane, the live test authority is the `.var` in:
 - `F:\sim\vam\AddonPackages`
 
 Do not treat raw `Custom\Assets` or raw `Custom\Plugins` copies as the test authority when the lane is package-first.
+
+## Seam Exclusivity Rule
+
+VaM caches package and asset identity aggressively enough that same-version
+mixing causes bad witness conditions.
+
+For any one versioned test boundary:
+
+1. choose one live authority seam:
+   - `.var`
+   - or `Custom/...`
+2. do not keep the same semantic version live in both seams at once
+3. do not assume removing a `.var` from `AddonPackages` clears VaM memory of it
+4. do not assume a same-version `Custom/...` asset/plugin is safe if VaM has
+   already seen the `.var`
+5. all live filenames must remain versioned so the operator can tell what is
+   loaded
+
+Practical consequence:
+
+1. if the current lane is package-first, test only the `.var`
+2. if the current lane is raw interactive proofing, test only the raw
+   `Custom/...` artifact set
+3. if you need to switch seams, switch the version boundary too
+4. if the seam has become ambiguous, the test result is not trustworthy
 
 Current deterministic package-first build pattern:
 
