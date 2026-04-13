@@ -38,6 +38,10 @@ Volodeck parity witness lane:
 1. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 2. `products/vam/assets/player/docs/handoffs/PLAYER_META_UI_PACKET_1_5_RUNNING_LOG_V1.md`
 
+Repo hygiene lane:
+
+1. `products/vam/docs/handoffs/REPO_AGENT_AND_PROCESS_HYGIENE_V1.md`
+
 Joystick scroller brand/support lane:
 
 1. `products/vam/plugins/ui_scroller/docs/UI_SCROLLER_DEPLOY_AND_PACKAGE_SEAM_V1.md`

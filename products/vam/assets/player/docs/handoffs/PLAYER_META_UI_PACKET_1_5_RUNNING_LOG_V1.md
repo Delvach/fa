@@ -353,28 +353,49 @@ Default shell set:
 4. `ivad_tablet`
 5. `retro_tv`
 
+## Cleanup checkpoint 2026-04-13
+
+This lane accumulated stale background sidecars and witness-path ambiguity over
+multiple long sessions. The cleanup action taken on `2026-04-13` is now part of
+handoff truth:
+
+1. completed background agents were closed after their useful findings were
+   harvested into repo docs
+2. the active branch remained `feature/docs-canon-release-strategy`
+3. `AGENTS.md` remained the only unrelated local dirt
+4. the raw 2018 shell export remained the active VaM-valid host authority
+5. incompatible or superseded hosted proof outputs must stay demoted in docs so
+   filename drift does not send the operator back to them
+
+Operational rule from this checkpoint:
+
+1. do not accumulate completed agents across sessions
+2. when a sidecar result becomes repo truth, close the sidecar
+3. if the thread freezes, reopen repo truth before reopening exploratory work
+
 ## Resume instructions if the thread freezes
 
 1. Open this file first.
 2. Confirm branch and working tree state.
 3. Confirm `AGENTS.md` is still the only unrelated dirty file.
-4. For Meta proof visual-fidelity work, verify that `Build-MetaVideoPlayerProofCua.ps1` still points at `GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch` in `ghost_training_export_clone`.
-5. Run `Build-MetaVideoPlayerProofVolodeckWitness.ps1` and inspect both generated images before making any quality claims.
-6. Use `PLAYER_VOLODECK_VISUAL_AND_INTERACTION_GUARDRAILS_V1.md` to judge whether the witness is actually informative.
-7. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
-8. Inspect the successful narrow proof receipt above before changing inputs.
-9. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
-10. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
-11. Inspect the bundle header class before calling any hosted-player artifact
+4. Close stale completed sidecars before resuming implementation.
+5. For Meta proof visual-fidelity work, verify that `Build-MetaVideoPlayerProofCua.ps1` still points at `GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch` in `ghost_training_export_clone`.
+6. Run `Build-MetaVideoPlayerProofVolodeckWitness.ps1` and inspect both generated images before making any quality claims.
+7. Use `PLAYER_VOLODECK_VISUAL_AND_INTERACTION_GUARDRAILS_V1.md` to judge whether the witness is actually informative.
+8. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
+9. Inspect the successful narrow proof receipt above before changing inputs.
+10. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
+11. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
+12. Inspect the bundle header class before calling any hosted-player artifact
     VaM-valid:
     - `2022.3.62f3` means Volodeck/package witness only
     - `2018.1.9f2` means candidate VaM-valid raw shell seam
-12. Do not send the current `fa_cua_player_modern_tv_v1.assetbundle` hosted
+13. Do not send the current `fa_cua_player_modern_tv_v1.assetbundle` hosted
     proof back to the operator until the host shell export has been switched to
     the 2018-compatible raw seam.
-13. Treat the search-bar and grid-menu proofs as snapshot witnesses only until
+14. Treat the search-bar and grid-menu proofs as snapshot witnesses only until
     they are rebuilt from a true interactive carrier.
-14. Only after the narrow proof is trustworthy, widen the shell set.
+15. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 
