@@ -104,6 +104,17 @@ Final release:
 
 Do not mix those channels inside one built artifact or one test boundary.
 
+## Deployment Labels
+
+Use these labels literally:
+
+1. `dev_deploy`
+   - versioned raw `Custom/...` seam
+2. `prerelease_deploy`
+   - versioned `.var` seam using `Dev` externally and `dev` internally
+3. `release_deploy`
+   - versioned `.var` seam using `Prod` externally and `prod` internally
+
 ## Repo-Local Metadata Files
 
 Player metadata defaults:

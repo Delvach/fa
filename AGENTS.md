@@ -123,6 +123,18 @@ Do not let one seam silently replace another in canon.
 
 VaM caching is a real product constraint in this repo.
 
+Deployment labels:
+
+1. `dev_deploy`
+   - versioned raw `Custom/...` authority
+   - used for faster interactive/debug proofing
+2. `prerelease_deploy`
+   - versioned `.var` authority using `Dev` externally and `dev` internally
+   - used for operator prerelease testing
+3. `release_deploy`
+   - versioned `.var` authority using `Prod` externally and `prod` internally
+   - used for final public release
+
 For any versioned test or release slice:
 
 1. choose exactly one live authority seam:

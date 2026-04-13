@@ -70,6 +70,20 @@ Final release:
 Do not mix `dev` and `prod` naming inside the same built artifact.
 Do not treat older unversioned names as current authority.
 
+## Deployment Labels
+
+Use these labels literally in planning and handoffs:
+
+1. `dev_deploy`
+   - versioned raw `Custom/...` deploy
+   - fastest interactive/debug seam
+2. `prerelease_deploy`
+   - versioned `.var` deploy with `Dev` externally and `dev` internally
+   - operator prerelease testing seam
+3. `release_deploy`
+   - versioned `.var` deploy with `Prod` externally and `prod` internally
+   - final public release seam
+
 ## Deterministic Scene Pipeline
 
 The packaged player scene is not authored in Unity.
