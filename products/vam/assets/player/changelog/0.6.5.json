@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.5",
+  "title": "Wire the packaged dev scene against the current control IDs",
+  "summary": "0.6.5 keeps the clean 0.6.0 baseline and fixes the packaged `controls_example` scene builder so the current inline scene controls are wired in place instead of being treated like the older managed-control layout.",
+  "reasoning": "The packaged scene was being generated through the right PowerShell lane, but the builder still expected legacy IDs like `play_pause_button` and `scrub_slider`. The current repo-local scene template uses `button_toggle_play`, `button_previous`, `button_load`, `button_next`, `slider_progress`, and `checkbox_shuffle`, so the correct fix is to update the builder to target that current contract directly rather than rediscovering anything else.",
+  "changes": [
+    {
+      "area": "scene-builder-current-controls",
+      "summary": "Detects the current `controls_example` control layout and wires the existing scene atoms directly: `button_previous`, `button_toggle_play`, `button_load`, `button_next`, `slider_progress`, and `checkbox_shuffle`.",
+      "reasoning": "That restores the intended packaged-scene control contract without changing the current scene template shape or pulling in legacy layout assumptions."
+    },
+    {
+      "area": "scene-builder-layout-preservation",
+      "summary": "Preserves the existing placement and labels for the current inline controls while updating their trigger bindings to the player plugin.",
+      "reasoning": "The `fap` placeholder is only for placement. The fix should make the current scene controls work, not restyle or reposition them."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.5 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and package the DevPlayer lane from C:\\projects\\fa with managed scene controls enabled.",
+    "Confirm the packaged scene JSON contains trigger wiring for the current control IDs instead of the old legacy-only IDs."
+  ],
+  "knownIssues": [
+    "This slice is scene wiring only and does not change playback, sync, or joystick behavior.",
+    "The current and total text displays stay on the existing scene template contract; this slice focuses on interactive control wiring."
+  ]
+}

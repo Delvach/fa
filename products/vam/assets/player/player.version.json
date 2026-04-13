@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.4",
-    "notes":  "0.6.4 keeps the clean 0.6.0 baseline, packages the current control demo scene by default for DevPlayer releases, and switches the dev package rung back to the incrementing AddonPackages identity.",
-    "branch":  "release/0.6.4-packaged-dev-scene",
+    "version":  "0.6.5",
+    "notes":  "0.6.5 keeps the clean 0.6.0 baseline and updates the packaged dev scene builder so the current controls_example scene buttons and scrub slider are wired against the current control IDs instead of the old managed-control layout.",
+    "branch":  "release/0.6.5-current-scene-control-wiring",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.4.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.5.json"
 }

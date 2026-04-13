@@ -89,7 +89,59 @@ function Format-SceneNumber {
     return $Value.ToString("0.#######", [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
+function Test-PlayerDemoCurrentControlLayout {
+    param([object[]]$Atoms)
+
+    $requiredIds = @(
+        "button_toggle_play",
+        "button_previous",
+        "button_load",
+        "button_next",
+        "slider_progress",
+        "checkbox_shuffle"
+    )
+
+    foreach ($requiredId in $requiredIds) {
+        $matched = $Atoms | Where-Object { $null -ne $_ -and [string]$_.id -eq $requiredId } | Select-Object -First 1
+        if ($null -eq $matched) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
+function Resolve-PlayerDemoManagedAtomId {
+    param(
+        [string]$LocalId,
+        [string]$ParentAtomId = "",
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
+    )
+
+    if ($ControlLayout -eq "current_example") {
+        return $LocalId
+    }
+
+    return Get-SceneManagedAtomId -LocalId $LocalId -ParentAtomId $ParentAtomId
+}
+
 function Get-PlayerDemoManagedControlLocalIds {
+    param(
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
+    )
+
+    if ($ControlLayout -eq "current_example") {
+        return @(
+            "button_load",
+            "button_previous",
+            "button_toggle_play",
+            "button_next",
+            "checkbox_shuffle"
+        )
+    }
+
     return @(
         "fit_button",
         "full_button",
@@ -110,6 +162,17 @@ function Get-PlayerDemoManagedControlLocalIds {
 }
 
 function Get-PlayerDemoManagedSliderLocalIds {
+    param(
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
+    )
+
+    if ($ControlLayout -eq "current_example") {
+        return @(
+            "slider_progress"
+        )
+    }
+
     return @(
         "scrub_slider",
         "volume_slider"
@@ -145,10 +208,14 @@ function Get-SceneManagedAtomCandidateIds {
 }
 
 function Get-PlayerDemoManagedButtonIds {
-    param([string]$ParentAtomId = "")
+    param(
+        [string]$ParentAtomId = "",
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
+    )
 
     $ids = New-Object System.Collections.Generic.List[string]
-    foreach ($localId in @(Get-PlayerDemoManagedControlLocalIds)) {
+    foreach ($localId in @(Get-PlayerDemoManagedControlLocalIds -ControlLayout $ControlLayout)) {
         foreach ($candidateId in @(Get-SceneManagedAtomCandidateIds -LocalId $localId -ParentAtomId $ParentAtomId)) {
             if (-not $ids.Contains($candidateId)) {
                 [void]$ids.Add($candidateId)
@@ -160,10 +227,14 @@ function Get-PlayerDemoManagedButtonIds {
 }
 
 function Get-PlayerDemoManagedControlAtomIds {
-    param([string]$ParentAtomId = "")
+    param(
+        [string]$ParentAtomId = "",
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
+    )
 
     $ids = New-Object System.Collections.Generic.List[string]
-    foreach ($localId in @((Get-PlayerDemoManagedControlLocalIds) + (Get-PlayerDemoManagedSliderLocalIds))) {
+    foreach ($localId in @((Get-PlayerDemoManagedControlLocalIds -ControlLayout $ControlLayout) + (Get-PlayerDemoManagedSliderLocalIds -ControlLayout $ControlLayout))) {
         foreach ($candidateId in @(Get-SceneManagedAtomCandidateIds -LocalId $localId -ParentAtomId $ParentAtomId)) {
             if (-not $ids.Contains($candidateId)) {
                 [void]$ids.Add($candidateId)
@@ -177,28 +248,95 @@ function Get-PlayerDemoManagedControlAtomIds {
 function Get-PlayerDemoButtonSpecs {
     param(
         [string]$Policy,
-        [string]$ParentAtomId = ""
+        [string]$ParentAtomId = "",
+        [ValidateSet("legacy", "current_example")]
+        [string]$ControlLayout = "legacy"
     )
 
     $specs = New-Object System.Collections.Generic.List[object]
 
-    if ($Policy -eq "multi_aspect") {
-        [void]$specs.Add([pscustomobject]@{ localId = "fit_button"; id = (Get-SceneManagedAtomId -LocalId "fit_button" -ParentAtomId $ParentAtomId); text = "fit"; x = 1.9; y = 0.75; z = 0.0; action = "Player Aspect Fit"; parentAtom = $ParentAtomId })
-        [void]$specs.Add([pscustomobject]@{ localId = "full_button"; id = (Get-SceneManagedAtomId -LocalId "full_button" -ParentAtomId $ParentAtomId); text = "full"; x = 1.4; y = 0.75; z = 0.0; action = "Player Aspect Full Width"; parentAtom = $ParentAtomId })
-        [void]$specs.Add([pscustomobject]@{ localId = "crop_button"; id = (Get-SceneManagedAtomId -LocalId "crop_button" -ParentAtomId $ParentAtomId); text = "crop"; x = 0.9; y = 0.75; z = 0.0; action = "Player Aspect Crop"; parentAtom = $ParentAtomId })
+    if ($ControlLayout -eq "current_example") {
+        [void]$specs.Add([pscustomobject]@{
+            localId = "button_previous"
+            id = (Resolve-PlayerDemoManagedAtomId -LocalId "button_previous" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout)
+            text = "Previous"
+            x = 1.3
+            y = 0.8
+            z = 0.0
+            action = "Player Previous"
+            parentAtom = $ParentAtomId
+            preserveExistingLayout = $true
+            preserveExistingText = $true
+        })
+        [void]$specs.Add([pscustomobject]@{
+            localId = "button_toggle_play"
+            id = (Resolve-PlayerDemoManagedAtomId -LocalId "button_toggle_play" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout)
+            text = "Play/pause"
+            x = 1.0
+            y = 0.8
+            z = 0.0
+            action = "Player Play Pause"
+            parentAtom = $ParentAtomId
+            preserveExistingLayout = $true
+            preserveExistingText = $true
+        })
+        [void]$specs.Add([pscustomobject]@{
+            localId = "button_next"
+            id = (Resolve-PlayerDemoManagedAtomId -LocalId "button_next" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout)
+            text = "Next"
+            x = 0.7
+            y = 0.8
+            z = 0.0
+            action = "Player Next"
+            parentAtom = $ParentAtomId
+            preserveExistingLayout = $true
+            preserveExistingText = $true
+        })
+        [void]$specs.Add([pscustomobject]@{
+            localId = "button_load"
+            id = (Resolve-PlayerDemoManagedAtomId -LocalId "button_load" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout)
+            text = "Load"
+            x = 1.0
+            y = 0.7
+            z = 0.0
+            action = "Player Load Media"
+            parentAtom = $ParentAtomId
+            preserveExistingLayout = $true
+            preserveExistingText = $true
+        })
+        [void]$specs.Add([pscustomobject]@{
+            localId = "checkbox_shuffle"
+            id = (Resolve-PlayerDemoManagedAtomId -LocalId "checkbox_shuffle" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout)
+            text = "Shuffle"
+            x = 0.71
+            y = 0.7
+            z = 0.0
+            action = "Player Random On"
+            parentAtom = $ParentAtomId
+            preserveExistingLayout = $true
+            preserveExistingText = $true
+        })
+
+        return $specs.ToArray()
     }
 
-    [void]$specs.Add([pscustomobject]@{ localId = "reload_button"; id = (Get-SceneManagedAtomId -LocalId "reload_button" -ParentAtomId $ParentAtomId); text = "load"; x = 0.4; y = 0.75; z = 0.0; action = "Player Load Media"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "previous_button"; id = (Get-SceneManagedAtomId -LocalId "previous_button" -ParentAtomId $ParentAtomId); text = "prev"; x = 1.9; y = 0.25; z = 0.0; action = "Player Previous"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "play_pause_button"; id = (Get-SceneManagedAtomId -LocalId "play_pause_button" -ParentAtomId $ParentAtomId); text = "play/pause"; x = 1.4; y = 0.25; z = 0.0; action = "Player Play Pause"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "next_button"; id = (Get-SceneManagedAtomId -LocalId "next_button" -ParentAtomId $ParentAtomId); text = "next"; x = 0.9; y = 0.25; z = 0.0; action = "Player Next"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "skip_back_button"; id = (Get-SceneManagedAtomId -LocalId "skip_back_button" -ParentAtomId $ParentAtomId); text = "-10s"; x = 1.9; y = -0.25; z = 0.0; action = "Player Skip Backward"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "seek_reference_button"; id = (Get-SceneManagedAtomId -LocalId "seek_reference_button" -ParentAtomId $ParentAtomId); text = "ref"; x = 1.4; y = -0.25; z = 0.0; action = "Player Seek Reference"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "skip_forward_button"; id = (Get-SceneManagedAtomId -LocalId "skip_forward_button" -ParentAtomId $ParentAtomId); text = "+10s"; x = 0.9; y = -0.25; z = 0.0; action = "Player Skip Forward"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "volume_low_button"; id = (Get-SceneManagedAtomId -LocalId "volume_low_button" -ParentAtomId $ParentAtomId); text = "vol25"; x = 0.4; y = -0.25; z = 0.0; action = "Player Volume 25"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "volume_high_button"; id = (Get-SceneManagedAtomId -LocalId "volume_high_button" -ParentAtomId $ParentAtomId); text = "vol75"; x = 1.9; y = -0.75; z = 0.0; action = "Player Volume 75"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "resize_down_button"; id = (Get-SceneManagedAtomId -LocalId "resize_down_button" -ParentAtomId $ParentAtomId); text = "size-"; x = 1.4; y = -0.75; z = 0.0; action = "Player Resize Down"; parentAtom = $ParentAtomId })
-    [void]$specs.Add([pscustomobject]@{ localId = "resize_up_button"; id = (Get-SceneManagedAtomId -LocalId "resize_up_button" -ParentAtomId $ParentAtomId); text = "size+"; x = 0.9; y = -0.75; z = 0.0; action = "Player Resize Up"; parentAtom = $ParentAtomId })
+    if ($Policy -eq "multi_aspect") {
+        [void]$specs.Add([pscustomobject]@{ localId = "fit_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "fit_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "fit"; x = 1.9; y = 0.75; z = 0.0; action = "Player Aspect Fit"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+        [void]$specs.Add([pscustomobject]@{ localId = "full_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "full_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "full"; x = 1.4; y = 0.75; z = 0.0; action = "Player Aspect Full Width"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+        [void]$specs.Add([pscustomobject]@{ localId = "crop_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "crop_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "crop"; x = 0.9; y = 0.75; z = 0.0; action = "Player Aspect Crop"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    }
+
+    [void]$specs.Add([pscustomobject]@{ localId = "reload_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "reload_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "load"; x = 0.4; y = 0.75; z = 0.0; action = "Player Load Media"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "previous_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "previous_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "prev"; x = 1.9; y = 0.25; z = 0.0; action = "Player Previous"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "play_pause_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "play_pause_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "play/pause"; x = 1.4; y = 0.25; z = 0.0; action = "Player Play Pause"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "next_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "next_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "next"; x = 0.9; y = 0.25; z = 0.0; action = "Player Next"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "skip_back_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "skip_back_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "-10s"; x = 1.9; y = -0.25; z = 0.0; action = "Player Skip Backward"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "seek_reference_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "seek_reference_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "ref"; x = 1.4; y = -0.25; z = 0.0; action = "Player Seek Reference"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "skip_forward_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "skip_forward_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "+10s"; x = 0.9; y = -0.25; z = 0.0; action = "Player Skip Forward"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "volume_low_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "volume_low_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "vol25"; x = 0.4; y = -0.25; z = 0.0; action = "Player Volume 25"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "volume_high_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "volume_high_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "vol75"; x = 1.9; y = -0.75; z = 0.0; action = "Player Volume 75"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "resize_down_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "resize_down_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "size-"; x = 1.4; y = -0.75; z = 0.0; action = "Player Resize Down"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "resize_up_button"; id = (Resolve-PlayerDemoManagedAtomId -LocalId "resize_up_button" -ParentAtomId $ParentAtomId -ControlLayout $ControlLayout); text = "size+"; x = 0.9; y = -0.75; z = 0.0; action = "Player Resize Up"; parentAtom = $ParentAtomId; preserveExistingLayout = $false; preserveExistingText = $false })
 
     return $specs.ToArray()
 }
@@ -662,11 +800,25 @@ Remove-StorableByPredicate -Storables $screenStorables -Predicate {
 })
 $screenAtom.storables = $screenStorables
 
-$controlRootAtom = $atoms | Where-Object { [string]$_.id -eq "controls" } | Select-Object -First 1
-$controlParentId = if ($null -ne $controlRootAtom) { "controls" } else { "" }
+$controlLayout = if (Test-PlayerDemoCurrentControlLayout -Atoms @($atoms)) { "current_example" } else { "legacy" }
+$controlRootAtom = if ($controlLayout -eq "legacy") {
+    $atoms | Where-Object { [string]$_.id -eq "controls" } | Select-Object -First 1
+}
+else {
+    $null
+}
+$controlParentId = if ($controlLayout -eq "current_example") {
+    "fap"
+}
+elseif ($null -ne $controlRootAtom) {
+    "controls"
+}
+else {
+    ""
+}
 $controlSubSceneStorePath = "Custom/SubScene/FrameAngel/controls/player_controls.json"
-$useControlSubScene = $null -ne $controlRootAtom -and [string]::Equals([string]$controlRootAtom.type, "SubScene", [System.StringComparison]::OrdinalIgnoreCase)
-$managedControlAtomIds = Get-PlayerDemoManagedControlAtomIds -ParentAtomId $controlParentId
+$useControlSubScene = $controlLayout -eq "legacy" -and $null -ne $controlRootAtom -and [string]::Equals([string]$controlRootAtom.type, "SubScene", [System.StringComparison]::OrdinalIgnoreCase)
+$managedControlAtomIds = Get-PlayerDemoManagedControlAtomIds -ParentAtomId $controlParentId -ControlLayout $controlLayout
 $includeManagedControlsEnabled = $IncludeManagedControls -ne 0
 
 if ($useControlSubScene -and $includeManagedControlsEnabled) {
@@ -719,36 +871,61 @@ $buttonSpecs = @()
 $sliderSpecs = @()
 
 if ($includeManagedControlsEnabled) {
-    $buttonSpecs = Get-PlayerDemoButtonSpecs -Policy $DisplayPolicy -ParentAtomId $controlParentId
+    $buttonSpecs = Get-PlayerDemoButtonSpecs -Policy $DisplayPolicy -ParentAtomId $controlParentId -ControlLayout $controlLayout
 
-    $sliderSpecs = @(
-        [pscustomobject]@{
-            localId = "scrub_slider"
-            id = (Get-SceneManagedAtomId -LocalId "scrub_slider" -ParentAtomId $controlParentId)
-            text = "scrub"
-            x = 1.15
-            y = -1.30
-            z = 0.0
-            parentAtom = $controlParentId
-            receiverTargetName = "scrub_normalized"
-            startValue = 0.0
-            endValue = 1.0
-            defaultValue = 0.0
-        },
-        [pscustomobject]@{
-            localId = "volume_slider"
-            id = (Get-SceneManagedAtomId -LocalId "volume_slider" -ParentAtomId $controlParentId)
-            text = "volume"
-            x = 1.15
-            y = -1.80
-            z = 0.0
-            parentAtom = $controlParentId
-            receiverTargetName = "volume_normalized"
-            startValue = 0.0
-            endValue = 1.0
-            defaultValue = 1.0
-        }
-    )
+    if ($controlLayout -eq "current_example") {
+        $sliderSpecs = @(
+            [pscustomobject]@{
+                localId = "slider_progress"
+                id = (Resolve-PlayerDemoManagedAtomId -LocalId "slider_progress" -ParentAtomId $controlParentId -ControlLayout $controlLayout)
+                text = " "
+                x = 1.0
+                y = 0.9
+                z = 0.0
+                parentAtom = $controlParentId
+                receiverTargetName = "scrub_normalized"
+                startValue = 0.0
+                endValue = 1.0
+                defaultValue = 0.0
+                preserveExistingLayout = $true
+                preserveExistingText = $true
+            }
+        )
+    }
+    else {
+        $sliderSpecs = @(
+            [pscustomobject]@{
+                localId = "scrub_slider"
+                id = (Resolve-PlayerDemoManagedAtomId -LocalId "scrub_slider" -ParentAtomId $controlParentId -ControlLayout $controlLayout)
+                text = "scrub"
+                x = 1.15
+                y = -1.30
+                z = 0.0
+                parentAtom = $controlParentId
+                receiverTargetName = "scrub_normalized"
+                startValue = 0.0
+                endValue = 1.0
+                defaultValue = 0.0
+                preserveExistingLayout = $false
+                preserveExistingText = $false
+            },
+            [pscustomobject]@{
+                localId = "volume_slider"
+                id = (Resolve-PlayerDemoManagedAtomId -LocalId "volume_slider" -ParentAtomId $controlParentId -ControlLayout $controlLayout)
+                text = "volume"
+                x = 1.15
+                y = -1.80
+                z = 0.0
+                parentAtom = $controlParentId
+                receiverTargetName = "volume_normalized"
+                startValue = 0.0
+                endValue = 1.0
+                defaultValue = 1.0
+                preserveExistingLayout = $false
+                preserveExistingText = $false
+            }
+        )
+    }
 
     $buttonSpecs = @($buttonSpecs | ForEach-Object {
         New-OffsetSceneSpec -Spec $_ -OffsetX $ControlOffsetX -OffsetY $ControlOffsetY -OffsetZ $ControlOffsetZ
@@ -759,7 +936,7 @@ if ($includeManagedControlsEnabled) {
     })
 }
 
-$managedButtonIds = Get-PlayerDemoManagedButtonIds -ParentAtomId $controlParentId
+$managedButtonIds = Get-PlayerDemoManagedButtonIds -ParentAtomId $controlParentId -ControlLayout $controlLayout
 if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
     $buttonTemplate = Find-SceneAtomByIds -Atoms $atoms -CandidateIds $managedButtonIds
     if ($null -eq $buttonTemplate) {
@@ -793,18 +970,20 @@ if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
             Set-SceneAtomParent -Atom $buttonAtom -ParentAtomId $buttonSpec.parentAtom
         }
 
-        foreach ($storable in @($buttonAtom.storables)) {
-            if ($null -eq $storable) {
-                continue
-            }
+        if (-not $buttonSpec.preserveExistingLayout -or -not $buttonSpec.preserveExistingText) {
+            foreach ($storable in @($buttonAtom.storables)) {
+                if ($null -eq $storable) {
+                    continue
+                }
 
-            if ([string]$storable.id -eq "Text") {
-                $storable.text = $buttonSpec.text
-            }
-            elseif ([string]$storable.id -eq "control") {
-                $storable.position.x = [string]$buttonSpec.x
-                $storable.position.y = [string]$buttonSpec.y
-                $storable.position.z = [string]$buttonSpec.z
+                if (([string]$storable.id -eq "Text") -and -not $buttonSpec.preserveExistingText) {
+                    $storable.text = $buttonSpec.text
+                }
+                elseif (([string]$storable.id -eq "control") -and -not $buttonSpec.preserveExistingLayout) {
+                    $storable.position.x = [string]$buttonSpec.x
+                    $storable.position.y = [string]$buttonSpec.y
+                    $storable.position.z = [string]$buttonSpec.z
+                }
             }
         }
 
@@ -871,10 +1050,10 @@ if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
         }
 
         $textStorable = Get-StorableById -Storables @($sliderStorables) -Id "Text"
-        if ($null -ne $textStorable) {
+        if ($null -ne $textStorable -and -not $sliderSpec.preserveExistingText) {
             $textStorable.text = $sliderSpec.text
         }
-        else {
+        elseif ($null -eq $textStorable) {
             [void]$sliderStorables.Insert(0, [pscustomobject]@{
                 id = "Text"
                 text = $sliderSpec.text
