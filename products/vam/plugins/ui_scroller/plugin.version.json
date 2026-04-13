@@ -2,5 +2,5 @@
   "version": "0.0.7",
   "artifactName": "fa_ui_scroller.0.0.7.dll",
   "channel": "prototype",
-  "summary": "Renames the public plugin title to Joystick Scroll and adds a package-first build lane with a stable JoystickScrollerDev var for testing."
+  "summary": "Sets the public plugin title to Joystick Scroller and keeps the package-first build lane with a stable JoystickScrollerDev var for testing."
 }

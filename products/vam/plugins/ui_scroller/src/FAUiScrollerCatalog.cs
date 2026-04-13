@@ -14,7 +14,7 @@ internal sealed class FAUiScrollerCatalog
 internal sealed class FAUiScrollerUiStrings
 {
     public string pluginTitleLabel = "Plugin Title";
-    public string pluginTitle = "Joystick Scroll";
+    public string pluginTitle = "Joystick Scroller";
     public string enabledLabel = "Enabled";
     public string captureNavigationLabel = "Capture Navigation";
     public string invertVerticalLabel = "Invert Vertical";

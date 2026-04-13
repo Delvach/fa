@@ -1,7 +1,7 @@
 {
   "ui": {
     "pluginTitleLabel": "Plugin Title",
-    "pluginTitle": "Joystick Scroll",
+    "pluginTitle": "Joystick Scroller",
     "enabledLabel": "Enabled",
     "captureNavigationLabel": "Capture Navigation",
     "invertVerticalLabel": "Invert Vertical",

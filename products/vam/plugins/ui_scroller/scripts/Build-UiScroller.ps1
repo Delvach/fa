@@ -264,7 +264,7 @@ if ($shouldBuildVarPackage) {
         licenseType = "FC"
         creatorName = $packageState.creatorName
         packageName = $packageState.packageName
-        description = "FrameAngel Joystick Scroll plugin"
+        description = "FrameAngel Joystick Scroller plugin"
     }
     Write-JsonFile -Path $metaPath -Value $meta
 
