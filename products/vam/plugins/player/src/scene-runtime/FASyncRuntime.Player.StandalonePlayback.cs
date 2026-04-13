@@ -85,7 +85,6 @@ public partial class FASyncRuntime : MVRScript
                 record.playbackKey = hostedPlaybackKey;
                 record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, record.aspectMode);
                 record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
-                record.desiredPlaying = TryReadStandalonePlayerDesiredPlaying(argsJson, true);
 
                 if (!TryResolvePlayerRuntimeMediaPaths(mediaPath, out hostedMediaPaths, out errorMessage)
                     || hostedMediaPaths == null
@@ -96,6 +95,7 @@ public partial class FASyncRuntime : MVRScript
                 }
 
                 mediaPath = ResolvePrimaryPlayerRuntimeMediaPath(mediaPath, hostedMediaPaths);
+                record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, mediaPath, record.desiredPlaying);
                 SetPendingPlayerSelection(mediaPath);
                 List<string> previousHostedPlaylistPaths = new List<string>(record.playlistPaths);
                 List<string> nextHostedPlaylistPaths = new List<string>(hostedMediaPaths.Count);
@@ -199,7 +199,7 @@ public partial class FASyncRuntime : MVRScript
         record.playbackKey = playbackKey;
         record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, instance.defaultAspectMode);
         record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
-        record.desiredPlaying = TryReadStandalonePlayerDesiredPlaying(argsJson, true);
+        record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, mediaPath, record.desiredPlaying);
         ApplyStandalonePlayerPlaylistArgs(record, argsJson, mediaPath);
         record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
         if (record.randomEnabled)
@@ -272,6 +272,7 @@ public partial class FASyncRuntime : MVRScript
         if (loadCurrent)
         {
             string currentPath = GetStandalonePlayerCurrentPlaylistPath(record);
+            record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, currentPath, record.desiredPlaying);
             if (!string.IsNullOrEmpty(currentPath) && !TryLoadStandalonePlayerRecordPath(record, instance, slot, currentPath, out errorMessage))
             {
                 resultJson = BuildBrokerResult(false, errorMessage, "{}");

@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.7",
-    "notes":  "0.6.7 keeps the current DevPlayer playback lane and strips the old hidden player diagnostics/runtime log seam out of the packaged player path, including scene-generated diagnostics storables in the normal demo scene.",
-    "branch":  "release/0.6.7-no-player-diagnostics",
+    "version":  "0.6.8",
+    "notes":  "0.6.8 applies the explicit product rule for fresh media loads: images pause on load, videos play on load, and the scene/browser load path no longer forces play=true for every selection.",
+    "branch":  "release/0.6.8-image-pause-video-play",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.7.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.8.json"
 }

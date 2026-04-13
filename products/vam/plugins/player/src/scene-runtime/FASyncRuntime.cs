@@ -1139,12 +1139,13 @@ public partial class FASyncRuntime : MVRScript
         selectedMediaPath = ResolvePrimaryPlayerRuntimeMediaPath(selectedMediaPath, mediaPaths);
         SetPendingPlayerSelection(selectedMediaPath);
         SetPendingPlayerStateSummary("state=load_requested source=player");
+        bool shouldPlaySelectedMedia = !FrameAngelPlayerMediaParity.IsSupportedImagePath(selectedMediaPath);
 
         string argsJson = BuildAttachedPlayerActionArgsJson(
             selectorJson,
             "\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
                 + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
-                + ",\"play\":true");
+                + ",\"play\":" + (shouldPlaySelectedMedia ? "true" : "false"));
 
         string resultJson;
         if (!TryExecuteAction(PlayerActionLoadPathId, argsJson, out resultJson, out errorMessage))
@@ -1222,13 +1223,14 @@ public partial class FASyncRuntime : MVRScript
             playerMediaPathField.valNoCallback = playerMediaPath;
         if (syncMetaProofMediaPathField != null)
             syncMetaProofMediaPathField.valNoCallback = selectedMediaPath;
+        bool shouldPlaySelectedMedia = !FrameAngelPlayerMediaParity.IsSupportedImagePath(selectedMediaPath);
 
         string loadArgsJson = "{"
             + "\"instanceId\":\"" + EscapeJsonString(targetInstanceId) + "\""
             + ",\"displayId\":\"" + EscapeJsonString(InnerPiecePrimaryPlayerDisplayId) + "\""
             + ",\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
-            + ",\"play\":true"
+            + ",\"play\":" + (shouldPlaySelectedMedia ? "true" : "false")
             + "}";
 
         if (!TryExecuteMetaProofAction(PlayerActionLoadPathId, loadArgsJson, out _))

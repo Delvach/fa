@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.8",
+  "title": "Make fresh image loads pause and fresh video loads play",
+  "summary": "0.6.8 applies the explicit product rule for fresh media loads: images pause on load, videos play on load. The scene/browser load path no longer hardcodes `play=true` for every selection, and the runtime fallback now defaults fresh loads by media kind when no explicit play flag is provided.",
+  "reasoning": "Current operator testing on 0.6.7 showed the worst-case failure: selecting an image from the packaged scene still immediately started cycling through image media. Repo review found the source seam directly in the current scene/browser load path, which was always passing `\"play\":true` into `player_load_path`. That overrode the intended manual image behavior before runtime defaults could help. This slice fixes the rule at the source and also hardens the runtime fallback so fresh image loads pause even if a caller omits the play flag entirely.",
+  "changes": [
+    {
+      "area": "scene-load-contract",
+      "summary": "The attached-player and meta-proof load builders now set the outgoing `play` flag from the selected media kind instead of always forcing `true`.",
+      "reasoning": "That keeps the packaged scene and the runtime aligned with the actual product rule: images pause, videos play."
+    },
+    {
+      "area": "runtime-load-default",
+      "summary": "Standalone player load paths now resolve default `desiredPlaying` from the selected media path when no explicit play flag is present.",
+      "reasoning": "This prevents fresh image loads from inheriting stale or too-permissive play defaults from older load code."
+    },
+    {
+      "area": "hosted-startup",
+      "summary": "Hosted player bring-up now defaults to paused and only arms playback automatically when the selected startup media is a video.",
+      "reasoning": "That keeps the hosted lane consistent with the same image/video rule."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.8 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and distribute the next FrameAngel.DevPlayer.<n>.var from C:\\projects\\fa.",
+    "Load the packaged scene, select an image, and confirm the first image stays put until Play/Pause is pressed.",
+    "Select a video and confirm it still starts playing on load."
+  ],
+  "knownIssues": [
+    "This slice changes fresh-load autoplay defaults only; it does not widen into new sync or scrub behavior.",
+    "If audio/video sync still drifts after video seeks, that remains a separate playback seam from the image-load rule corrected here."
+  ]
+}

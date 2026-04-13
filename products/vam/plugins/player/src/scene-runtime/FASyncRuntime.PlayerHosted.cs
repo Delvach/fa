@@ -770,7 +770,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        record.desiredPlaying = true;
+        record.desiredPlaying = false;
         record.muted = false;
         record.storedVolume = Mathf.Clamp01(record.storedVolume <= 0f ? 1f : record.storedVolume);
         record.volume = Mathf.Clamp01(record.storedVolume);
@@ -795,7 +795,7 @@ public partial class FASyncRuntime : MVRScript
 
             selectedMediaPath = ResolvePrimaryPlayerRuntimeMediaPath(selectedMediaPath, selectedMediaPaths);
             SetPendingPlayerSelection(selectedMediaPath);
-            record.desiredPlaying = true;
+            record.desiredPlaying = !FrameAngelPlayerMediaParity.IsSupportedImagePath(selectedMediaPath);
             if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, selectedMediaPaths, selectedMediaPath, out errorMessage))
                 return false;
         }

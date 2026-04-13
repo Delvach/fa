@@ -7775,6 +7775,18 @@ public partial class FASyncRuntime : MVRScript
         return defaultValue;
     }
 
+    private bool ResolveStandalonePlayerLoadDesiredPlaying(string argsJson, string mediaPath, bool fallbackValue)
+    {
+        bool explicitValue;
+        if (TryReadBoolArg(argsJson, out explicitValue, "autoPlay", "play", "desiredPlaying"))
+            return explicitValue;
+
+        if (!string.IsNullOrEmpty(mediaPath))
+            return !FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
+
+        return fallbackValue;
+    }
+
     private bool TryReadStandalonePlayerLooping(string argsJson, bool defaultValue)
     {
         return TryReadStandalonePlayerLoopFlagArg(argsJson, defaultValue);
