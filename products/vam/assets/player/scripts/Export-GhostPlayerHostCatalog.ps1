@@ -6,7 +6,8 @@ param(
     [string]$ControlsSummaryPath = "",
     [string]$ShellExportRoot = "",
     [string]$OutputRoot = "",
-    [string]$ControlSurfaceId = "meta_patterns_contentuiexample_videoplayer_e7cfc411",
+    [string]$DefaultsPath = "",
+    [string]$ControlSurfaceId = "",
     [string[]]$ShellKeys = @(),
     [switch]$Deploy,
     [string]$DeployRoot = "F:\sim\vam\Custom\PluginData\FrameAngel\cua_player_host_catalog"
@@ -16,6 +17,7 @@ $ErrorActionPreference = "Stop"
 $resolvedAssetLaneRoot = Split-Path -Parent $PSScriptRoot
 $defaultProjectPath = Join-Path $resolvedAssetLaneRoot "unity\ghost_training_export_clone"
 $defaultUnityEditorBridgePackagePath = Join-Path $resolvedAssetLaneRoot "unity_editor_bridge\current"
+$defaultDefaultsPath = Join-Path $resolvedAssetLaneRoot "config\meta_ui_packet_1_5.defaults.json"
 $defaultBuildThemeFolderName = "theme_{0:D2}" -f $ThemeIndex
 $defaultBuildControlsSummaryPath = Join-Path $resolvedAssetLaneRoot ("build\meta_toolkit_catalog\{0}\ghost_meta_ui_toolkit_export_summary_{0}.json" -f $defaultBuildThemeFolderName)
 $defaultFamilyShellKeys = @(
@@ -107,6 +109,28 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 
 if ([string]::IsNullOrWhiteSpace($UnityEditorBridgePackagePath)) {
     $UnityEditorBridgePackagePath = $defaultUnityEditorBridgePackagePath
+}
+
+$resolvedDefaultsPath = if ([string]::IsNullOrWhiteSpace($DefaultsPath)) {
+    $defaultDefaultsPath
+}
+else {
+    $DefaultsPath
+}
+$defaults = if (Test-Path -LiteralPath $resolvedDefaultsPath) {
+    Get-Content -LiteralPath $resolvedDefaultsPath -Raw | ConvertFrom-Json
+}
+else {
+    $null
+}
+$resolvedControlSurfaceId = if (-not [string]::IsNullOrWhiteSpace($ControlSurfaceId)) {
+    $ControlSurfaceId
+}
+elseif ($null -ne $defaults -and -not [string]::IsNullOrWhiteSpace([string]$defaults.controlSurfaceId)) {
+    [string]$defaults.controlSurfaceId
+}
+else {
+    "meta_patterns_contentuiexample_videoplayer_e7cfc411"
 }
 
 Assert-Path -Path $UnityExe -Label "Unity editor"
@@ -209,7 +233,9 @@ if ($unityExitCode -ne 0) {
 $catalogArgs = @{
     ShellExportSummaryPath = $shellSummaryPath
     ControlsSummaryPath = $resolvedControlsSummaryPath
-    ControlSurfaceId = $ControlSurfaceId
+    ControlSurfaceId = $resolvedControlSurfaceId
+    ThemeIndex = $ThemeIndex
+    DefaultsPath = $resolvedDefaultsPath
     OutputRoot = $resolvedOutputRoot
 }
 
@@ -236,7 +262,8 @@ $receipt = [ordered]@{
     outputRoot = $resolvedOutputRoot
     unityLogPath = $unityLogPath
     unityExitCode = $unityExitCode
-    controlSurfaceId = $ControlSurfaceId
+    controlSurfaceId = $resolvedControlSurfaceId
+    defaultsPath = if (Test-Path -LiteralPath $resolvedDefaultsPath) { $resolvedDefaultsPath } else { "" }
     shellKeys = @($ShellKeys)
     deployRoot = if ($Deploy.IsPresent) { $DeployRoot } else { "" }
     catalog = $catalogResult

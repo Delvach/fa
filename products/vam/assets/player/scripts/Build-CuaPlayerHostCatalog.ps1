@@ -2,9 +2,11 @@ param(
     [string]$ShellExportSummaryPath = "",
     [string]$ControlsSummaryPath = "",
     [string]$ControlsPackageRoot = "",
-    [string]$ControlSurfaceId = "meta_patterns_contentuiexample_videoplayer_e7cfc411",
-    [string]$ControlFamilyId = "meta_ui_video_player",
+    [string]$ControlSurfaceId = "",
+    [string]$ControlFamilyId = "",
     [string[]]$ShellKeys = @(),
+    [int]$ThemeIndex = -1,
+    [string]$DefaultsPath = "",
     [string]$OutputRoot = "",
     [switch]$Deploy,
     [string]$DeployRoot = "F:\sim\vam\Custom\PluginData\FrameAngel\cua_player_host_catalog"
@@ -13,6 +15,42 @@ param(
 $ErrorActionPreference = "Stop"
 
 $resolvedScriptRepoRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $PSScriptRoot))))
+$resolvedDefaultsPath = if ([string]::IsNullOrWhiteSpace($DefaultsPath)) {
+    Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\config\meta_ui_packet_1_5.defaults.json"
+}
+else {
+    $DefaultsPath
+}
+$defaults = if (Test-Path -LiteralPath $resolvedDefaultsPath) {
+    Get-Content -LiteralPath $resolvedDefaultsPath -Raw | ConvertFrom-Json
+}
+else {
+    $null
+}
+$resolvedThemeIndex = if ($ThemeIndex -ge 0) {
+    $ThemeIndex
+}
+elseif ($null -ne $defaults -and $null -ne $defaults.themeIndex) {
+    [int]$defaults.themeIndex
+}
+else {
+    0
+}
+$resolvedControlSurfaceId = if (-not [string]::IsNullOrWhiteSpace($ControlSurfaceId)) {
+    $ControlSurfaceId
+}
+elseif ($null -ne $defaults -and -not [string]::IsNullOrWhiteSpace([string]$defaults.controlSurfaceId)) {
+    [string]$defaults.controlSurfaceId
+}
+else {
+    "meta_patterns_contentuiexample_videoplayer_e7cfc411"
+}
+$resolvedControlFamilyId = if (-not [string]::IsNullOrWhiteSpace($ControlFamilyId)) {
+    $ControlFamilyId
+}
+else {
+    "meta_ui_video_player"
+}
 if ([string]::IsNullOrWhiteSpace($ShellExportSummaryPath)) {
     $ShellExportSummaryPath = Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\build\host_shell_exports\ghost_player_host_shell_export_summary.json"
 }
@@ -20,7 +58,8 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
     $OutputRoot = Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\build\host_catalog"
 }
 if ([string]::IsNullOrWhiteSpace($ControlsSummaryPath)) {
-    $ControlsSummaryPath = Join-Path $resolvedScriptRepoRoot "products\vam\assets\player\build\meta_toolkit_catalog\theme_00\ghost_meta_ui_toolkit_export_summary_theme_00.json"
+    $themeFolderName = "theme_{0:D2}" -f $resolvedThemeIndex
+    $ControlsSummaryPath = Join-Path $resolvedScriptRepoRoot ("products\vam\assets\player\build\meta_toolkit_catalog\{0}\ghost_meta_ui_toolkit_export_summary_{0}.json" -f $themeFolderName)
 }
 
 function Assert-Path {
@@ -219,8 +258,8 @@ if ($selectedShells.Count -le 0) {
 $resolvedControls = Resolve-ControlsPackageRoot `
     -RequestedPackageRoot $ControlsPackageRoot `
     -SummaryPath $ControlsSummaryPath `
-    -RequestedControlSurfaceId $ControlSurfaceId `
-    -RequestedControlFamilyId $ControlFamilyId
+    -RequestedControlSurfaceId $resolvedControlSurfaceId `
+    -RequestedControlFamilyId $resolvedControlFamilyId
 
 if (Test-Path -LiteralPath $OutputRoot) {
     Remove-Item -LiteralPath $OutputRoot -Recurse -Force
@@ -281,6 +320,8 @@ $summary = [ordered]@{
     controlsPackageId = [string]$resolvedControls.packageId
     controlsControlSurfaceId = [string]$resolvedControls.controlSurfaceId
     controlsControlFamilyId = [string]$resolvedControls.controlFamilyId
+    defaultsPath = if (Test-Path -LiteralPath $resolvedDefaultsPath) { $resolvedDefaultsPath } else { "" }
+    themeIndex = $resolvedThemeIndex
     outputRoot = $OutputRoot
     deployRoot = if ($Deploy.IsPresent) { $DeployRoot } else { "" }
     hosts = $results.ToArray()

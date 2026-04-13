@@ -59,6 +59,8 @@ Defaults:
 4. Added `Build-PlayerMetaUiPacket15Foundation.ps1` to turn the scattered toolkit export and host catalog seams into one deterministic repo-local entry point.
 5. Kept the work bounded to repo-local Meta UI, Volodeck, and host catalog seams.
 6. Ran the first narrow proof successfully with `modern_tv`, `theme_00`, no preview, and no deploy.
+7. Hardened the underlying host-catalog scripts so they can resolve Packet `1.5` defaults instead of assuming one fixed proof surface by default.
+8. Re-ran the same narrow proof after that hardening and got a second clean receipt.
 
 ## What the new wrapper does
 
@@ -93,6 +95,10 @@ First successful narrow proof in this slice:
    `products/vam/assets/player/build/meta_toolkit_catalog/theme_00/ghost_meta_ui_toolkit_export_summary_theme_00.json`
 3. host catalog summary:
    `products/vam/assets/player/build/host_catalog/theme_00/ghost_player_host_catalog_summary.json`
+
+Latest successful narrow proof after host-catalog hardening:
+
+1. `products/vam/assets/player/build/meta_ui_packet_1_5_runs/meta_ui_packet_1_5_foundation_20260413T172437Z.json`
 
 ## Current defaults
 
@@ -134,5 +140,6 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 1. verify the wrapper receipt and host catalog outputs
 2. note that the current shell export wrapper still emits the whole shell family before host catalog filtering; decide whether to keep that as-is or narrow it later
 3. remove or further quarantine remaining legacy bridge repair strings if they still matter
-4. decide whether the next Meta UI proof surface after video player should be search bar or grid menu
-5. update the version/capability schedule row for `v1.5` once the actual toolkit feature set is chosen
+4. decide whether to keep `theme_00` as only a fixture in the defaults file or widen Packet `1.5` into multiple toolkit theme/profile rows
+5. decide whether the next Meta UI proof surface after video player should be search bar or grid menu
+6. update the version/capability schedule row for `v1.5` once the actual toolkit feature set is chosen
