@@ -31,7 +31,7 @@ internal static class FAUiScrollerCatalogGenerated
             package = new FAUiScrollerPackageIdentity
             {
                 releaseIdentity = "FrameAngel.JoystickScroller.1.var",
-                devIdentity = "FrameAngel.JoystickScrollerDev.3.var"
+                devIdentity = "FrameAngel.JoystickScrollerDev.4.var"
             }
         };
     }

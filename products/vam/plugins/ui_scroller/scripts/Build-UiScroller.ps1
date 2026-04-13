@@ -315,7 +315,7 @@ $metaPath = Join-Path $stageRoot "meta.json"
 $packageReportPath = Join-Path $packageRoot "ui_scroller_var_package_report.json"
 $packagePath = Join-Path $packagesDir $packageState.packageFileName
 $distributedPackagePath = ""
-$packagedPluginRelativePath = Join-Path "Custom\Scripts" $artifactName
+$packagedPluginRelativePath = Join-Path "Custom\Plugins" $artifactName
 
 if ($shouldBuildVarPackage) {
     if (Test-Path -LiteralPath $stageRoot) {

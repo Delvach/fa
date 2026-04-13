@@ -1,0 +1,9 @@
+{
+  "version": "0.0.10",
+  "date": "2026-04-13",
+  "changes": [
+    "Rebuild the packaged Joystick Scroller DLL as fa_ui_scroller.0.0.10.dll and stage it under Custom/Plugins instead of Custom/Scripts inside the .var.",
+    "Keep the compile-time generated catalog seam so the plugin runtime does not depend on the old resource-loading catalog path.",
+    "Advance the package-first dev test lane to FrameAngel.JoystickScrollerDev.4.var so VaM sees a fresh outer package identity too."
+  ]
+}

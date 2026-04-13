@@ -1,6 +1,6 @@
 {
-  "version": "0.0.9",
-  "artifactName": "fa_ui_scroller.0.0.9.dll",
+  "version": "0.0.10",
+  "artifactName": "fa_ui_scroller.0.0.10.dll",
   "channel": "prototype",
-  "summary": "Iterates the packaged scroller DLL to fa_ui_scroller.0.0.9.dll while keeping the compile-time catalog fix and the FrameAngel.JoystickScrollerDev.2.var dev lane."
+  "summary": "Packages the rebuilt scroller DLL under Custom/Plugins instead of Custom/Scripts, keeps the compile-time catalog fix, and advances the dev test lane to FrameAngel.JoystickScrollerDev.4.var."
 }
