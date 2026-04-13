@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.2",
-    "notes":  "0.6.2 keeps the clean 0.6.0 baseline and removes the redundant standalone hot-tick audio reapply so playback can stay leaner while we work the next sync lane.",
-    "branch":  "release/0.6.2-audio-tick-trim",
+    "version":  "0.6.3",
+    "notes":  "0.6.3 keeps the clean 0.6.0 baseline and trims allocation churn from standalone player state JSON building so the player action and control-surface lane stays leaner without changing transport behavior.",
+    "branch":  "release/0.6.3-state-json-trim",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.2.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.3.json"
 }

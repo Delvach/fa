@@ -224,6 +224,8 @@ public partial class FASyncRuntime : MVRScript
         new List<PlayerControlSurfaceBindingRecord>();
     private readonly List<StandalonePlayerRecord> standalonePlayerTickScratch =
         new List<StandalonePlayerRecord>();
+    private readonly List<StandalonePlayerRecord> standalonePlayerStateSelectionScratch =
+        new List<StandalonePlayerRecord>();
     private Texture2D standalonePlayerPlaceholderTexture;
 
     private bool IsPlayerBoundControlFamily(string controlFamilyId)
@@ -9762,33 +9764,33 @@ public partial class FASyncRuntime : MVRScript
 
     private string BuildStandalonePlayerSelectedStateJson(string argsJson)
     {
-        List<StandalonePlayerRecord> selectedRecords = new List<StandalonePlayerRecord>();
+        standalonePlayerStateSelectionScratch.Clear();
         if (HasStandalonePlayerSelector(argsJson))
         {
             StandalonePlayerRecord selectedRecord;
             string ignoredError;
             if (TryResolveStandalonePlayerRecord(argsJson, out selectedRecord, out ignoredError) && selectedRecord != null)
-                selectedRecords.Add(selectedRecord);
+                standalonePlayerStateSelectionScratch.Add(selectedRecord);
         }
         else
         {
             foreach (KeyValuePair<string, StandalonePlayerRecord> kvp in standalonePlayerRecords)
             {
                 if (kvp.Value != null)
-                    selectedRecords.Add(kvp.Value);
+                    standalonePlayerStateSelectionScratch.Add(kvp.Value);
             }
         }
 
         StringBuilder sb = new StringBuilder(512);
         sb.Append('{');
         sb.Append("\"schemaVersion\":\"").Append(StandalonePlayerStateSchemaVersion).Append("\",");
-        sb.Append("\"recordCount\":").Append(selectedRecords.Count).Append(',');
+        sb.Append("\"recordCount\":").Append(standalonePlayerStateSelectionScratch.Count).Append(',');
         sb.Append("\"records\":[");
-        for (int i = 0; i < selectedRecords.Count; i++)
+        for (int i = 0; i < standalonePlayerStateSelectionScratch.Count; i++)
         {
             if (i > 0)
                 sb.Append(',');
-            AppendStandalonePlayerRecordJson(sb, selectedRecords[i]);
+            AppendStandalonePlayerRecordJson(sb, standalonePlayerStateSelectionScratch[i]);
         }
         sb.Append("]}");
         return sb.ToString();

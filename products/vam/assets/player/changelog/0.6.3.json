@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.3",
+  "title": "Trim standalone player state-builder allocation churn",
+  "summary": "0.6.3 keeps the clean 0.6.0 baseline and reuses a scratch list when building standalone player state JSON so the player action and control-surface state lane does less transient allocation work.",
+  "reasoning": "The current player direction is performance only. After 0.6.2 removed redundant hot-tick audio reapply, the next safe bounded trim is the standalone state-builder path that gets exercised across load, transport, control-surface, preset, and audio receipts. Reusing the selection list here cuts allocation churn without changing playback, joystick routing, or sync behavior.",
+  "changes": [
+    {
+      "area": "standalone-state-json",
+      "summary": "Reuses a scratch list in `BuildStandalonePlayerSelectedStateJson()` instead of allocating a fresh `List<StandalonePlayerRecord>` on every state build.",
+      "reasoning": "This keeps the performance slice behavioraly neutral while reducing garbage in a frequently used state and receipt path."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.3 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the player release from the 0.6.x baseline and confirm release validation passes.",
+    "Verify the runtime still compiles cleanly after the state-builder maintenance change."
+  ],
+  "knownIssues": [
+    "This slice is intentionally narrow and does not change audio sync, video sync, or any joystick behavior.",
+    "The future dev package should include a packaged scene, but that packaging policy update is kept out of this performance-maintenance slice."
+  ]
+}
