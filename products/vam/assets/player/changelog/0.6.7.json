@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.7",
+  "title": "Retire the hidden player diagnostics lane from the live runtime",
+  "summary": "0.6.7 keeps the current DevPlayer playback line intact and strips the old hidden diagnostics probe out of the packaged player path: no hidden player-diagnostics storables in the normal demo scene, no `SuperController.LogMessage` probe chatter, and no eager diagnostics snapshot building in hot playback code.",
+  "reasoning": "Current repo history shows the diagnostics witness lane was intentionally added in 0.4.30 and extended through 0.4.34 for Fifth Element recovery work. That made sense as a bounded witness surface, but it is the wrong default for the current performance lane. Code review of 0.6.6 showed the current runtime still carried the hidden diagnostics class plus many eager `LogStandalonePlayerDiagnostics(...)` call sites that built snapshot strings before the gate rejected them. This slice retires that witness lane from live packaged playback without widening into a new sync algorithm.",
+  "changes": [
+    {
+      "area": "diagnostics-runtime",
+      "summary": "Replaces the current player diagnostics runtime with inert stubs and removes hot-path diagnostics call sites from the standalone player playback, hosted, and audio seams.",
+      "reasoning": "This removes unnecessary `SuperController.LogMessage` traffic and the snapshot/audio-summary string building that was still happening inside hot playback code."
+    },
+    {
+      "area": "scene-generation",
+      "summary": "Stops the normal demo-scene builder from writing `FA Player Diagnostics Enabled` and `FA Player Diagnostics Filter` into generated player scenes.",
+      "reasoning": "The package and the runtime should agree: the current live player lane no longer carries a hidden diagnostics contract in normal packaged scenes."
+    },
+    {
+      "area": "history-note",
+      "summary": "Adds retirement notes back to the older 0.4.30 and 0.4.34 changelog entries where the diagnostics witness lane was introduced and hardened.",
+      "reasoning": "That keeps the repo trail honest so future threads can see both why diagnostics existed and why the live runtime stopped carrying them."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.7 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the next FrameAngel.DevPlayer.<n>.var from C:\\projects\\fa into F:\\sim\\vam\\AddonPackages.",
+    "Confirm the packaged normal demo scene no longer writes `FA Player Diagnostics Enabled` or `FA Player Diagnostics Filter` into `plugin#0_FASyncRuntime`.",
+    "Confirm the current player playback lane no longer contains active `LogStandalonePlayerDiagnostics(...)` call sites in the standalone player runtime files."
+  ],
+  "knownIssues": [
+    "This slice does not change the current audio/video sync strategy or introduce periodic correction logic.",
+    "Current player playback does not appear to write files in the hot media path; preset persistence remains a separate non-playback lane."
+  ]
+}

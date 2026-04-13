@@ -352,11 +352,6 @@ public partial class FASyncRuntime : MVRScript
             }
         }
 
-        LogStandalonePlayerDiagnostics(
-            record,
-            "play_request",
-            BuildStandalonePlayerDiagnosticsSnapshot(record));
-
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_play ok", payload);
         EmitRuntimeEvent(
@@ -401,11 +396,6 @@ public partial class FASyncRuntime : MVRScript
                 record.lastError = "player pause failed: " + ex.Message;
             }
         }
-
-        LogStandalonePlayerDiagnostics(
-            record,
-            "pause_request",
-            BuildStandalonePlayerDiagnosticsSnapshot(record));
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_pause ok", payload);

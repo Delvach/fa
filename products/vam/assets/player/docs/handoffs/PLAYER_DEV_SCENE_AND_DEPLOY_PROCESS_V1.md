@@ -62,8 +62,6 @@ The scene builder does these deterministic rewrites:
 - rewrites `PluginManager` so `plugin#0` points at the passed plugin path
 - rewrites `plugin#0_FASyncRuntime` values for:
   - `Player Media Path`
-  - `FA Player Diagnostics Enabled`
-  - `FA Player Diagnostics Filter`
 
 For packaged builds, those URLs are package-scoped `Creator.Package.Tag:/Custom/...` paths.
 
@@ -118,7 +116,9 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1 `
   -RepoRoot C:\projects\fa `
   -Version <semantic-version> `
+  -BuildVarPackage `
   -PackageOnlyDeploy `
+  -IncludeVarScene `
   -VarCreatorName FrameAngel `
   -VarPackageName DevPlayer `
   -VarSceneIncludeManagedControls 1

@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.6",
-    "notes":  "0.6.6 keeps the clean 0.6.0 baseline and delays playback resume until after the next apply window once a seek finishes, so slider-driven movie scrubs stop re-entering playback on the same tick as seek completion.",
-    "branch":  "release/0.6.6-seek-resume-delay",
+    "version":  "0.6.7",
+    "notes":  "0.6.7 keeps the current DevPlayer playback lane and strips the old hidden player diagnostics/runtime log seam out of the packaged player path, including scene-generated diagnostics storables in the normal demo scene.",
+    "branch":  "release/0.6.7-no-player-diagnostics",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.6.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.7.json"
 }

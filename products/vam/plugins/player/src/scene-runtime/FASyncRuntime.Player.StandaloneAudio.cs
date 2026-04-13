@@ -32,11 +32,6 @@ public partial class FASyncRuntime : MVRScript
         record.storedVolume = Mathf.Clamp01(volume);
         record.volume = record.muted ? 0f : record.storedVolume;
         ApplyStandalonePlayerAudioState(record);
-        LogStandalonePlayerDiagnostics(
-            record,
-            "audio_update",
-            "reason=volume " + BuildStandalonePlayerDiagnosticsAudioSummary(record));
-
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_volume ok", payload);
         EmitRuntimeEvent(
@@ -76,11 +71,6 @@ public partial class FASyncRuntime : MVRScript
         record.muted = muted;
         record.volume = record.muted ? 0f : record.storedVolume;
         ApplyStandalonePlayerAudioState(record);
-        LogStandalonePlayerDiagnostics(
-            record,
-            "audio_update",
-            "reason=mute " + BuildStandalonePlayerDiagnosticsAudioSummary(record));
-
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_mute ok", payload);
         EmitRuntimeEvent(

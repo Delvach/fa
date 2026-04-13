@@ -28,6 +28,7 @@
   ],
   "knownIssues": [
     "This slice does not itself claim to fix the Fifth Element freeze; it restores the missing witness path needed to judge the next move honestly.",
-    "If Fifth Element still freezes after one diagnostics-enabled witness run and one media-normalization witness run, the next healthy move is to classify it as a compatibility edge case rather than continue blind runtime churn."
+    "If Fifth Element still freezes after one diagnostics-enabled witness run and one media-normalization witness run, the next healthy move is to classify it as a compatibility edge case rather than continue blind runtime churn.",
+    "Historical note: the packaged diagnostics-scene witness lane restored here was later retired from the current DevPlayer runtime in 0.6.7 so normal packaged playback no longer preloads diagnostics storables."
   ]
 }

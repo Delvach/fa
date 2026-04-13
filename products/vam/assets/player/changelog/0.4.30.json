@@ -29,6 +29,7 @@
   ],
   "knownIssues": [
     "The diagnostics probe remains hidden and scene-configurable rather than user-facing.",
-    "This slice does not yet add a dedicated diagnostics scene variant; it only strengthens the transport path and the existing probe output."
+    "This slice does not yet add a dedicated diagnostics scene variant; it only strengthens the transport path and the existing probe output.",
+    "Historical note: the live diagnostics probe introduced here was later retired from the current DevPlayer runtime in 0.6.7 so packaged playback no longer carries hidden log allocations by default."
   ]
 }
