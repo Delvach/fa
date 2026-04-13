@@ -88,9 +88,9 @@ Current `modern_tv` recovery witness:
 1. visual witness authority stays in the authored Volodeck surface proof and
    shell preview
 2. VaM-load witness authority is now the raw `0.6.11` interactive proof:
-   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
-   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
-   - `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
 3. that raw proof is only trustworthy because it now exports from the composed
    host package root while keeping the `2018.1.9f2` bundle class
 

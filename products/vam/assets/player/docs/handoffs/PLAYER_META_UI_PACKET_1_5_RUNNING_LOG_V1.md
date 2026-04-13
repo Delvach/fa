@@ -187,17 +187,17 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -ShellKey modern_tv -PlayerPluginMode raw
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
 4. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 5. markdown receipt:
@@ -207,8 +207,8 @@ Current proof interpretation:
 
 1. this artifact is player-backed and no longer ships an empty `PluginManager`
 2. the dev interaction seam now uses raw `Custom/Plugins/dev_plugin_player.<version>.dll`
-   again, which matches the existing manual authority seam in the player release
-   validator
+   through the canonical `dev_deploy` alpha naming as
+   `plugin_player_dev.0.6.11.alpha.dll`
 3. the raw proof now consumes the composed host catalog package root instead of
    the shell-only root, so the current host bundle carries a visible control
    carrier while staying in the `2018.1.9f2` VaM-valid bundle class
@@ -260,18 +260,18 @@ Current restored raw hosted-player artifact:
 1. `Build-PlayerShellAssetBundles.ps1` and
    `FrameAngelPlayerShell2018Exporter.cs` were restored from repo history as the
    raw 2018 shell seam
-2. `Build-MetaInteractiveHostedPlayerProof.ps1 -ShellKey modern_tv -PlayerPluginMode raw`
+2. `Build-MetaInteractiveHostedPlayerProof.ps1 -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha`
    now routes through that seam
 3. current deployed interactive proof preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
 4. current deployed host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
 5. current deployed host bundle class:
    `2018.1.9f2`
 6. stale incompatible host bundle removed:
    `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
 7. current deployed player plugin:
-   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
 8. current proof receipt records:
    - `hostPackageRoot = products/vam/assets/player/build/host_catalog/theme_00/modern_tv/faipe_fa_cua_player_modern_tv_v1`
    - `proofExportAuthority = raw_shell_2018`
@@ -286,12 +286,17 @@ The `0.6.11` recovery exposed two process seams that must stay in repo truth:
    `Custom/...` after building them, then validated the missing paths. The
    wrapper now preserves the current version's live `dev_*` artifacts during
    cleanup and only clears stale versions.
-2. The same wrapper previously always emitted `-MetadataPath` into
+2. `Build-MetaInteractiveHostedPlayerProof.ps1` now emits canonical
+   `dev_deploy` names for the live raw proof and removes the older same-version
+   ad hoc raw direct artifacts (`fa_cua_player_modern_tv.assetbundle`,
+   `dev_cua_player.0.6.11.assetbundle`, `dev_plugin_player.0.6.11.dll`) so the
+   alpha proof is the only live authority in `Custom/...`.
+3. The same wrapper previously always emitted `-MetadataPath` into
    `Build-CuaPlayerVarPackage.ps1` even when no metadata path was set. That
    created a false packaging failure after the release wrapper had already built
    and validated the release artifacts. The metadata argument is now only passed
    when populated.
-3. The `0.6.11` changelog must stay ASCII-clean. Mojibake in the source
+4. The `0.6.11` changelog must stay ASCII-clean. Mojibake in the source
    changelog causes `foundation_release_changelog.json` to fail the release
    sync validation even when the code seam is correct.
 
@@ -438,7 +443,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 ## Recommended first interactive proof command
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -ShellKey modern_tv -PlayerPluginMode raw
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 ## Next implementation targets after the first proof

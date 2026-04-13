@@ -2,6 +2,10 @@ param(
     [string]$RepoRoot = "",
     [string]$Version = "",
     [string]$ShellKey = "modern_tv",
+    [ValidateSet("legacy", "dev_deploy")]
+    [string]$DeployLabel = "legacy",
+    [string]$DeploySubject = "",
+    [string]$DeployIteration = "",
     [string]$HostCatalogSummaryPath = "",
     [string]$UnityEditorPath = "",
     [int]$ThemeIndex = -1,
@@ -28,6 +32,21 @@ function Ensure-Directory {
 
     if (-not (Test-Path -LiteralPath $PathValue)) {
         New-Item -ItemType Directory -Path $PathValue -Force | Out-Null
+    }
+}
+
+function Remove-FilesByPattern {
+    param(
+        [string]$DirectoryPath,
+        [string]$Filter
+    )
+
+    if (-not (Test-Path -LiteralPath $DirectoryPath)) {
+        return
+    }
+
+    Get-ChildItem -LiteralPath $DirectoryPath -Filter $Filter -File -ErrorAction SilentlyContinue | ForEach-Object {
+        Remove-Item -LiteralPath $_.FullName -Force
     }
 }
 
@@ -141,13 +160,122 @@ function Resolve-InteractivePresetFileName {
     return ("Preset_{0} Interactive Proof.vap" -f $baseName)
 }
 
+function Resolve-DeploySubjectToken {
+    param(
+        [string]$RequestedSubject,
+        [string]$FallbackShellKey
+    )
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedSubject)) {
+        $FallbackShellKey
+    }
+    else {
+        $RequestedSubject.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy subject cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy subject token resolved blank."
+    }
+
+    return $value
+}
+
+function Resolve-DeployIterationToken {
+    param([string]$RequestedIteration)
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        "alpha"
+    }
+    else {
+        $RequestedIteration.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
+}
+
+function Resolve-DeployNaming {
+    param(
+        [string]$ResolvedDeployLabel,
+        [string]$ResolvedVersionValue,
+        [string]$ShellKey,
+        [string]$RequestedSubject,
+        [string]$RequestedIteration,
+        [string]$LegacyPresetFileName,
+        [string]$LegacyHostBundleFileName
+    )
+
+    if ([string]::Equals($ResolvedDeployLabel, "dev_deploy", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $subjectToken = Resolve-DeploySubjectToken -RequestedSubject $RequestedSubject -FallbackShellKey $ShellKey
+        $iterationToken = Resolve-DeployIterationToken -RequestedIteration $RequestedIteration
+
+        return [pscustomobject]@{
+            deployLabel = "dev_deploy"
+            subjectToken = $subjectToken
+            iterationToken = $iterationToken
+            pluginFileName = ("plugin_player_dev.{0}.{1}.dll" -f $ResolvedVersionValue, $iterationToken)
+            assetBundleFileName = ("asset_dev_{0}.{1}.{2}.assetbundle" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
+            presetFileName = ("preset_dev_{0}.{1}.{2}.vap" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
+            stalePluginPattern = ("plugin_player_dev.{0}.*.dll" -f $ResolvedVersionValue)
+            staleAssetPattern = ("asset_dev_{0}.{1}.*.assetbundle" -f $subjectToken, $ResolvedVersionValue)
+            stalePresetPattern = ("preset_dev_{0}.{1}.*.vap" -f $subjectToken, $ResolvedVersionValue)
+            removeLegacyPresetNames = @($LegacyPresetFileName)
+            removeLegacyBundleNames = @($LegacyHostBundleFileName)
+        }
+    }
+
+    return [pscustomobject]@{
+        deployLabel = "legacy"
+        subjectToken = ""
+        iterationToken = ""
+        pluginFileName = ("dev_plugin_player.{0}.dll" -f $ResolvedVersionValue)
+        assetBundleFileName = $LegacyHostBundleFileName
+        presetFileName = $LegacyPresetFileName
+        stalePluginPattern = ""
+        staleAssetPattern = ""
+        stalePresetPattern = ""
+        removeLegacyPresetNames = @()
+        removeLegacyBundleNames = @()
+    }
+}
+
+function Remove-LiteralPathsIfPresent {
+    param([string[]]$Paths)
+
+    foreach ($path in @($Paths)) {
+        if ([string]::IsNullOrWhiteSpace($path)) {
+            continue
+        }
+
+        if (Test-Path -LiteralPath $path) {
+            Remove-Item -LiteralPath $path -Force
+        }
+    }
+}
+
 function Resolve-PlayerPluginBinding {
     param(
         [string]$PluginMode,
         [string]$ResolvedVersionValue,
         [string]$PackagedPluginUrl,
         [string]$ReleasePluginPath,
-        [string]$DeployPluginDirectory
+        [string]$DeployPluginDirectory,
+        [string]$DeployPluginFileName
     )
 
     $resolvedMode = if ([string]::IsNullOrWhiteSpace($PluginMode)) { "raw" } else { $PluginMode.Trim().ToLowerInvariant() }
@@ -169,7 +297,12 @@ function Resolve-PlayerPluginBinding {
     }
 
     Ensure-Directory -PathValue $DeployPluginDirectory
-    $pluginFileName = Split-Path -Path $ReleasePluginPath -Leaf
+    $pluginFileName = if ([string]::IsNullOrWhiteSpace($DeployPluginFileName)) {
+        Split-Path -Path $ReleasePluginPath -Leaf
+    }
+    else {
+        $DeployPluginFileName.Trim()
+    }
     $deployedPluginPath = Join-Path $DeployPluginDirectory $pluginFileName
     Copy-Item -LiteralPath $ReleasePluginPath -Destination $deployedPluginPath -Force
 
@@ -358,7 +491,7 @@ $receiptRoot = Join-Path $resolvedOutputRoot "receipts"
 $unityLogPath = Join-Path $receiptRoot "unity_batch.log"
 $interactiveReceiptPath = Join-Path $receiptRoot "meta_interactive_hosted_player_proof_receipt.json"
 $interactiveReceiptMarkdownPath = Join-Path $receiptRoot "meta_interactive_hosted_player_proof_receipt.md"
- $resolvedPrimaryMediaPath = if ([string]::IsNullOrWhiteSpace($PrimaryMediaPath)) { "" } else { $PrimaryMediaPath.Trim() }
+$resolvedPrimaryMediaPath = if ([string]::IsNullOrWhiteSpace($PrimaryMediaPath)) { "" } else { $PrimaryMediaPath.Trim() }
 
 if (Test-Path -LiteralPath $resolvedOutputRoot) {
     Remove-Item -LiteralPath $resolvedOutputRoot -Recurse -Force
@@ -369,12 +502,31 @@ Ensure-Directory -PathValue $receiptRoot
 Ensure-Directory -PathValue $DeployAssetsRoot
 Ensure-Directory -PathValue $DeployPresetRoot
 
+$deployNaming = Resolve-DeployNaming `
+    -ResolvedDeployLabel $DeployLabel `
+    -ResolvedVersionValue $resolvedVersion `
+    -ShellKey $ShellKey `
+    -RequestedSubject $DeploySubject `
+    -RequestedIteration $DeployIteration `
+    -LegacyPresetFileName "" `
+    -LegacyHostBundleFileName ""
+
+if (-not [string]::IsNullOrWhiteSpace([string]$deployNaming.stalePluginPattern)) {
+    Remove-FilesByPattern -DirectoryPath $DeployPluginRoot -Filter ([string]$deployNaming.stalePluginPattern)
+}
+if (-not [string]::IsNullOrWhiteSpace([string]$deployNaming.staleAssetPattern)) {
+    Remove-FilesByPattern -DirectoryPath $DeployAssetsRoot -Filter ([string]$deployNaming.staleAssetPattern)
+}
+if (-not [string]::IsNullOrWhiteSpace([string]$deployNaming.stalePresetPattern)) {
+    Remove-FilesByPattern -DirectoryPath $DeployPresetRoot -Filter ([string]$deployNaming.stalePresetPattern)
+}
 $playerPluginBinding = Resolve-PlayerPluginBinding `
     -PluginMode $PlayerPluginMode `
     -ResolvedVersionValue $resolvedVersion `
     -PackagedPluginUrl $playerPluginUrl `
     -ReleasePluginPath $playerReleasePluginPath `
-    -DeployPluginDirectory $DeployPluginRoot
+    -DeployPluginDirectory $DeployPluginRoot `
+    -DeployPluginFileName ([string]$deployNaming.pluginFileName)
 
 $builtHostBundlePath = ""
 $builtHostAssetName = ""
@@ -471,8 +623,21 @@ if ([string]::IsNullOrWhiteSpace($hostResourceId)) {
     throw "Unable to resolve host resource id for shell '$ShellKey'."
 }
 
-$deployedHostBundlePath = Join-Path $DeployAssetsRoot ($hostResourceId + ".assetbundle")
-$interactivePresetFileName = Resolve-InteractivePresetFileName -HostDisplayName $hostDisplayName
+if ([string]::Equals([string]$deployNaming.deployLabel, "dev_deploy", [System.StringComparison]::OrdinalIgnoreCase)) {
+    $legacyProofPresetPath = Join-Path $DeployPresetRoot (Resolve-InteractivePresetFileName -HostDisplayName $hostDisplayName)
+    $legacyProofBundlePath = Join-Path $DeployAssetsRoot ($hostResourceId + ".assetbundle")
+    $legacyRawDirectAssetPath = Join-Path $DeployAssetsRoot ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+    $legacyRawDirectPluginPath = Join-Path $DeployPluginRoot ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+    Remove-LiteralPathsIfPresent -Paths @(
+        $legacyProofPresetPath,
+        $legacyProofBundlePath,
+        $legacyRawDirectAssetPath,
+        $legacyRawDirectPluginPath
+    )
+}
+
+$deployedHostBundlePath = Join-Path $DeployAssetsRoot ([string]$deployNaming.assetBundleFileName)
+$interactivePresetFileName = [string]$deployNaming.presetFileName
 $deployedInteractivePresetPath = Join-Path $DeployPresetRoot $interactivePresetFileName
 
 Copy-Item -LiteralPath $builtHostBundlePath -Destination $deployedHostBundlePath -Force
@@ -518,6 +683,9 @@ $receipt = [ordered]@{
     unityLogPath = $unityLogPath
     unityExitCode = $unityExitCode
     proofExportAuthority = $proofExportAuthority
+    deployLabel = [string]$deployNaming.deployLabel
+    deploySubject = [string]$deployNaming.subjectToken
+    deployIteration = [string]$deployNaming.iterationToken
     proofBoundary = [ordered]@{
         interactionArtifactReady = $true
         vamBundleCompatibilityAuthority = if ([string]::Equals($proofExportAuthority, "raw_shell_2018", [System.StringComparison]::OrdinalIgnoreCase)) { "2018.1.9f2 raw shell export" } else { "not yet VaM-valid; 2022 host package witness only" }

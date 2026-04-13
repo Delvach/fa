@@ -57,11 +57,11 @@ VaM-valid raw shell seam:
 4. use that seam when an interactive host must actually load in VaM
 5. current `modern_tv` interactive proof authority is the raw `0.6.11` seam:
    - host bundle:
-     `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+     `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
    - preset:
-     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
    - plugin:
-     `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+     `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
 6. that proof now exports from the composed host package root under
    `C:\projects\fa\products\vam\assets\player\build\host_catalog\theme_00\modern_tv\...`
    rather than from the shell-only package root, which is what carries the

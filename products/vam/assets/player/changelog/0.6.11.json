@@ -24,7 +24,7 @@
   "verification": [
     "Stamp version 0.6.11 into player.version.json and BuildRuntimeInfo.cs.",
     "Build the modern_tv raw hosted interactive proof from C:\\projects\\fa and confirm the receipt records hostPackageRoot under build/host_catalog/theme_00/modern_tv/... rather than the shell-only host_shell_exports path.",
-    "Confirm the deployed modern_tv host bundle remains a 2018.1.9f2 UnityFS bundle and the interactive preset still points at fa_cua_player_modern_tv.assetbundle plus dev_plugin_player.0.6.11.dll.",
+    "Confirm the canonical dev_deploy alpha artifacts exist as asset_dev_modern_tv.0.6.11.alpha.assetbundle, preset_dev_modern_tv.0.6.11.alpha.vap, and plugin_player_dev.0.6.11.alpha.dll, and that older same-version raw direct artifacts are not left beside them in Custom/...",
     "Use the Volodeck witness lane to confirm orientation/layout remains correct before operator VaM testing."
   ],
   "knownIssues": [
