@@ -177,6 +177,56 @@ Important:
 2. the standalone proof presets above are the current direct VaM interaction witness
 3. those are different seams and both are currently useful
 
+## Current interactive hosted-player proof artifact
+
+The first player-backed hosted Meta proof is now deterministic and deployed in
+the raw `Custom/...` dev seam:
+
+1. builder:
+   `products/vam/assets/player/scripts/Build-MetaInteractiveHostedPlayerProof.ps1`
+2. current command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -ShellKey modern_tv -PlayerPluginMode raw
+```
+
+Current deployed outputs:
+
+1. host bundle:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
+2. player runtime plugin:
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.10.dll`
+3. interactive preset:
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+4. receipt:
+   `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
+5. markdown receipt:
+   `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.md`
+
+Current proof interpretation:
+
+1. this artifact is player-backed and no longer ships an empty `PluginManager`
+2. the dev interaction seam now uses raw `Custom/Plugins/dev_plugin_player.<version>.dll`
+   again, which matches the existing manual authority seam in the player release
+   validator
+3. the `.var` package remains the release/output reference, not the live proof
+   dependency for this interactive Meta host artifact
+4. current shell/control confidence is now:
+   - shell orientation and stance from Volodeck shell export preview
+   - control visual fidelity from the authored Meta video-player Volodeck proof
+   - interaction contract/build truth from the player-backed raw preset above
+5. current remaining gap is still live session proof:
+   - Halo is offline
+   - Volodeck is not yet treated as an exact emulator for every VaM-internal
+     interaction behavior
+
+Current supporting visual preflight sources:
+
+1. host shell preview:
+   `products/vam/assets/player/build/host_shell_exports/modern_tv/faipe_fa_cua_player_modern_tv_7b8977e1e4de/preview/thumbnail.png`
+2. authored control surface preview:
+   `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_surface_preview.png`
+
 ## Current visual fidelity seam
 
 The direct Meta video player proof had drifted:
@@ -250,12 +300,23 @@ Default shell set:
 8. Inspect the successful narrow proof receipt above before changing inputs.
 9. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
 10. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
-11. Only after the narrow proof is trustworthy, widen the shell set.
+11. Run `Build-MetaInteractiveHostedPlayerProof.ps1` for `modern_tv` and confirm
+    the deployed raw host bundle, raw player plugin, and interactive preset all
+    exist.
+12. Inspect `meta_interactive_hosted_player_proof_receipt.json` and confirm the
+    proof boundary still says live Halo verification is pending.
+13. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerMetaUiPacket15Foundation.ps1 -RepoRoot C:\projects\fa -ShellKeys modern_tv -NoPreview
+```
+
+## Recommended first interactive proof command
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -ShellKey modern_tv -PlayerPluginMode raw
 ```
 
 ## Next implementation targets after the first proof

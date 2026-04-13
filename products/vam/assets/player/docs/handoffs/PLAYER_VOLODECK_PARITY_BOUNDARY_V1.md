@@ -42,6 +42,8 @@ That means:
    VaM scenes use
 2. it should not invent a special control path just for Unity proofing
 3. it should not rely on external legacy repos for bridge/runtime setup
+4. it should not be described as exact VaM interaction emulation when the live
+   session seam is still materially different
 
 ## Current integration role
 
@@ -51,6 +53,15 @@ Volodeck is the fastest pre-VaM witness seam for:
 2. control anchoring and motion
 3. visible playback/parity checks
 4. exported host/package validation before operator testing
+
+Volodeck is not yet the exact authority for every VaM-internal interaction
+behavior. Current honest use is:
+
+1. prove shell orientation and control layout
+2. prove the exposed control contract is the same contract the runtime expects
+3. prove there is a real player-backed artifact to load in VaM
+4. do not over-claim full interaction parity when live VaM chaining is still a
+   known gap
 
 Meta UI toolkit should use this same parity witness seam once Packet `1.5` begins.
 
@@ -64,6 +75,14 @@ Do not send work to the operator for testing until Volodeck has already produced
 
 If the witness is blank, tiny, overly cropped, or only proves one framing, it is
 not ready for operator testing.
+
+If the current slice is using raw `Custom/...` deploy for faster interactive
+proofing:
+
+1. keep the `.var` output capability intact as the release lane
+2. record the live raw asset/plugin/preset paths and the packaged release
+   reference in the same receipt
+3. do not let the raw dev seam silently replace the package lane in canon
 
 ## Deterministic posture
 

@@ -101,6 +101,17 @@ Interaction is only considered truly proven when the harness can show:
 2. visible state response
 3. state readback parity where applicable
 
+Important current boundary:
+
+1. Volodeck can honestly prove shell orientation, control layout, and exposed
+   contract shape right now
+2. Volodeck should not be described as exact VaM-internal interaction emulation
+   while the live Halo-to-VaM chaining seam is still unavailable
+3. when that gap exists, the witness packet should explicitly separate:
+   - Volodeck visual/control preflight
+   - player-backed raw or packaged artifact proof
+   - live VaM interaction proof
+
 Examples:
 
 1. `play/pause` should visibly toggle playback state
