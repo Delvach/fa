@@ -3,7 +3,7 @@
   "date": "2026-04-13",
   "changes": [
     "Replace runtime catalog loading with a compile-time generated C# catalog so the plugin no longer references prohibited System.IO APIs inside VaM.",
-    "Keep the public title on Joystick Scroller and move the dev package identity to FrameAngel.JoystickScrollerDev.1.var.",
+    "Keep the public title on Joystick Scroller and advance the dev package identity to FrameAngel.JoystickScrollerDev.2.var so VaM sees a fresh test package.",
     "Preserve the package-first dev testing lane while removing the runtime namespace restriction that blocked the packaged plugin from compiling."
   ]
 }
