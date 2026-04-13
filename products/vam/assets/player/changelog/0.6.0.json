@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.0",
+  "title": "Reset the active player line to the confirmed 0.5.0 baseline",
+  "summary": "0.6.0 does not widen the player surface. It promotes the operator-confirmed 0.5.0 code into a fresh semantic line so future work can be reapplied one bounded feature at a time without inheriting the later 0.5.x repair churn.",
+  "reasoning": "The last stable player truth for this lane is the confirmed 0.5.0 rung. A fresh semantic boundary is needed both to avoid VaM cache ambiguity and to give the next feature work a clean base instead of continuing from the later autoplay-repair line.",
+  "changes": [
+    {
+      "area": "semantic-reset-boundary",
+      "summary": "Carries forward the confirmed 0.5.0 runtime and packaging behavior unchanged under a fresh 0.6.0 semantic identity.",
+      "reasoning": "This preserves the last known-good player behavior while making future additions explicit and reviewable."
+    },
+    {
+      "area": "release-line-reset",
+      "summary": "Marks the new active branch as a clean post-0.5.0 restart point for the next bounded feature slices.",
+      "reasoning": "The player line can now re-add wanted features intentionally instead of dragging the 0.5.x repair churn forward."
+    }
+  ],
+  "verification": [
+    "Confirm the 0.6.0 branch is byte-for-byte the 0.5.0 player code except for version stamps and the new changelog boundary.",
+    "Use 0.6.0 as the clean source branch for the next bounded feature slice instead of continuing from the later 0.5.x repair branches."
+  ],
+  "knownIssues": [
+    "0.6.0 is a semantic reset boundary, not a new feature build.",
+    "Wanted post-0.5.0 features still need to be reapplied intentionally from this clean line."
+  ]
+}
