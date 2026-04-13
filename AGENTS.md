@@ -42,6 +42,7 @@ Primary current docs:
 5. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_SHELL_RECOVERY_BOUNDARY_V1.md`
 6. `C:\projects\fa\products\vam\docs\handoffs\REPO_AGENT_AND_PROCESS_HYGIENE_V1.md`
 7. `C:\projects\fa\products\vam\docs\handoffs\VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
+8. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
 
 ## Current interactive Meta proof authority
 
@@ -63,6 +64,9 @@ Important:
 1. the current proof authority is the raw `2018.1.9f2` host export seam
 2. do not send the operator back to the stale `fa_cua_player_modern_tv_v1.assetbundle` 2022 seam
 3. search-bar and grid-menu Meta proofs are still snapshot carriers, not full interactive widgets
+4. keep the matching version or iteration conversation log updated under
+   `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
+5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 
 ## Volodeck boundary
 

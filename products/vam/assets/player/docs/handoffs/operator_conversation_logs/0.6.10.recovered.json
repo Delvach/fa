@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.10",
+  "iteration": "",
+  "deployLabel": "prerelease_deploy",
+  "captureMode": "retroactive_recovery",
+  "startedAt": "2026-04-13T01:20:29-06:00",
+  "endedAt": "2026-04-13T13:13:11-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "git commit 9154ad5ce4aa3c6c06ac2ed6158e23e8ca3b0c29",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.10\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.10\\direct_cua\\player_var_package_report_latest.json"
+    ],
+    "limitations": [
+      "Exact chat message timestamps were not recoverable from local repo truth.",
+      "This window spans both the stable playback confirmation and later product-system planning, so the recovered entries focus on the player seam only."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T01:20:29-06:00",
+      "kind": "commit",
+      "value": "9154ad5ce4aa3c6c06ac2ed6158e23e8ca3b0c29",
+      "message": "player: release 0.6.10 guard periodic audio-video sync"
+    },
+    {
+      "timestamp": "2026-04-13T07:20:09.3363748Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.10\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T07:20:10.2037905Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.10\\direct_cua\\player_var_package_report_latest.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.10-commit",
+      "timestamp": "2026-04-13T01:20:29-06:00",
+      "timestampKind": "exact_commit",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Published 0.6.10 with guardrails around periodic correction so the sync seam would ignore bogus or premature audio clocks.",
+      "reconstructedFrom": [
+        "git commit 9154ad5ce4aa3c6c06ac2ed6158e23e8ca3b0c29",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.10.json"
+      ]
+    },
+    {
+      "entryId": "0.6.10-operator-feedback",
+      "after": "2026-04-13T01:20:29-06:00",
+      "before": "2026-04-13T13:13:11-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": true,
+      "message": "Okay.. that is working, and it seems better than before",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.10-baseline-decision",
+      "after": "2026-04-13T01:20:29-06:00",
+      "before": "2026-04-13T13:13:11-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "0.6.10 was treated as the good live baseline and later merged back to main before work continued on the interactive modern_tv proof seam.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "git history",
+        "AGENTS.md"
+      ]
+    }
+  ],
+  "decisions": [
+    "Keep the periodic sync seam, but only with guardrails.",
+    "Use 0.6.10 as the latest tested player line on main."
+  ],
+  "openQuestions": [
+    "How should the hosted interactive proof lane evolve without regressing the stable player baseline?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.10.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.10\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.10\\direct_cua\\player_var_package_report_latest.json"
+  ]
+}

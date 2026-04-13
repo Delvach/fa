@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_index_v1",
+  "generatedAtLocal": "2026-04-13T14:36:01.8016289-06:00",
+  "root": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs",
+  "logs": [
+    {
+      "version": "0.6.8",
+      "iteration": "",
+      "captureMode": "retroactive_recovery",
+      "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.8.recovered.json"
+    },
+    {
+      "version": "0.6.9",
+      "iteration": "",
+      "captureMode": "retroactive_recovery",
+      "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.9.recovered.json"
+    },
+    {
+      "version": "0.6.10",
+      "iteration": "",
+      "captureMode": "retroactive_recovery",
+      "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.10.recovered.json"
+    },
+    {
+      "version": "0.6.11",
+      "iteration": "alpha",
+      "captureMode": "hybrid_recovery_and_live",
+      "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.11.alpha.json"
+    }
+  ]
+}

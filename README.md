@@ -38,6 +38,7 @@ Volodeck parity witness lane:
 
 1. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 2. `products/vam/assets/player/docs/handoffs/PLAYER_META_UI_PACKET_1_5_RUNNING_LOG_V1.md`
+3. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
 
 Repo hygiene lane:
 

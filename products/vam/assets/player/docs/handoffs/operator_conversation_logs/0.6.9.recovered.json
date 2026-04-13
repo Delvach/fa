@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.9",
+  "iteration": "",
+  "deployLabel": "prerelease_deploy",
+  "captureMode": "retroactive_recovery",
+  "startedAt": "2026-04-13T01:08:18-06:00",
+  "endedAt": "2026-04-13T01:20:29-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "git commit b1cd23fea21d2625e0d5841b8ec5702f2092732b",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.9\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.9\\direct_cua\\player_var_package_report_latest.json"
+    ],
+    "limitations": [
+      "Exact chat message timestamps were not recoverable from local repo truth."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T01:08:18-06:00",
+      "kind": "commit",
+      "value": "b1cd23fea21d2625e0d5841b8ec5702f2092732b",
+      "message": "player: release 0.6.9 add periodic audio-video correction"
+    },
+    {
+      "timestamp": "2026-04-13T07:07:14.4686861Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.9\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T07:07:15.4010982Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.9\\direct_cua\\player_var_package_report_latest.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.9-commit",
+      "timestamp": "2026-04-13T01:08:18-06:00",
+      "timestampKind": "exact_commit",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Published 0.6.9 with a once-per-second bounded periodic audio/video correction seam using the existing seek-resume path.",
+      "reconstructedFrom": [
+        "git commit b1cd23fea21d2625e0d5841b8ec5702f2092732b",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.9.json"
+      ]
+    },
+    {
+      "entryId": "0.6.9-regression-report",
+      "after": "2026-04-13T01:08:18-06:00",
+      "before": "2026-04-13T01:20:29-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": true,
+      "message": "It messed up movie playback. I select a point with the slider, it shows for a fraction of a second and then goes black and quiet",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.9-decision",
+      "after": "2026-04-13T01:08:18-06:00",
+      "before": "2026-04-13T01:20:29-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "The periodic correction was judged too trusting of routed audio authority, and the next fix was narrowed to guard the correction rather than remove the seam entirely.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "0.6.10 changelog"
+      ]
+    }
+  ],
+  "decisions": [
+    "Do not keep the first periodic correction behavior unchanged.",
+    "Add plausibility guards before allowing correction seeks."
+  ],
+  "openQuestions": [
+    "Can periodic sync remain helpful after adding audio-clock guardrails?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.9.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.9\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.9\\direct_cua\\player_var_package_report_latest.json"
+  ]
+}

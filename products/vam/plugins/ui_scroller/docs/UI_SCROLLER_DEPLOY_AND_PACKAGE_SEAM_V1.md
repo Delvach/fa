@@ -10,6 +10,14 @@ product system:
 
 1. `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
 2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+3. `products/vam/docs/handoffs/VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
+
+Future truth:
+
+1. the joystick scroller should adopt the same `dev_deploy`,
+   `prerelease_deploy`, and `release_deploy` authority model as the player lane
+2. until a bounded prerelease candidate is ready, do not widen the scroller
+   lane into demo-scene or Meta-widget work by assumption
 
 ## Current Seams
 

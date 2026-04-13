@@ -19,17 +19,19 @@ contradictory handoff state, and superseded witness artifacts.
 ## Process hygiene
 
 1. Repo docs are the handoff authority, not thread memory.
-2. Running logs should always record:
+2. Versioned player work should promote important operator conversation into the
+   versioned JSON conversation logs, not leave it only in thread memory.
+3. Running logs should always record:
    - current branch
    - current witness artifact
    - current recommended command
    - known invalid or superseded artifact paths
-3. If a proof artifact is replaced by a better authority surface, explicitly
+4. If a proof artifact is replaced by a better authority surface, explicitly
    demote the old one in docs.
-4. Remove or quarantine stale deployed artifacts that can misroute operator
+5. Remove or quarantine stale deployed artifacts that can misroute operator
    testing.
-5. Keep `main` as tested truth and keep uncommitted dirt near zero.
-6. Preserve the operator's unrelated local edits.
+6. Keep `main` as tested truth and keep uncommitted dirt near zero.
+7. Preserve the operator's unrelated local edits.
 
 ## Volodeck and VaM hygiene
 

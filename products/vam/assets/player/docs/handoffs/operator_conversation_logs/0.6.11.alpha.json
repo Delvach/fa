@@ -1,0 +1,161 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.11",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "hybrid_recovery_and_live",
+  "startedAt": "2026-04-13T13:13:11-06:00",
+  "endedAt": "2026-04-13T14:36:01.8016289-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "git commit 241c1c436b2e48fb3adc61f24721217c5024e3e0",
+      "git commit fd367ee92fbd5159c2496bb15dc0638c7daa271b",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.11\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.11\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    ],
+    "limitations": [
+      "Exact chat timestamps were not available for all messages in the thread history.",
+      "The log preserves several recent messages verbatim, but their timing is anchored between exact repo events rather than claimed as exact chat telemetry."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T13:13:11-06:00",
+      "kind": "commit",
+      "value": "241c1c436b2e48fb3adc61f24721217c5024e3e0",
+      "message": "player.release 0.6.11: restore modern_tv hosted interactive proof seam"
+    },
+    {
+      "timestamp": "2026-04-13T19:05:29.9134079Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.11\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T19:10:16.1182505Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.11\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-13T20:21:21.9471899Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T14:23:03-06:00",
+      "kind": "commit",
+      "value": "fd367ee92fbd5159c2496bb15dc0638c7daa271b",
+      "message": "player.dev_deploy 0.6.11 alpha: canonicalize modern_tv raw proof authority"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.11-release-proof",
+      "timestamp": "2026-04-13T13:13:11-06:00",
+      "timestampKind": "exact_commit",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Restored the modern_tv hosted interactive proof seam and rebuilt the VaM-valid raw proof against the composed host package root.",
+      "reconstructedFrom": [
+        "git commit 241c1c436b2e48fb3adc61f24721217c5024e3e0",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.11.json"
+      ]
+    },
+    {
+      "entryId": "0.6.11-caching-rules",
+      "after": "2026-04-13T13:13:11-06:00",
+      "before": "2026-04-13T14:23:03-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Defined strict deployment authority rules: .var or Custom, not both; every live file must be versioned; same semantic version cannot be reused for changed code; dev, prerelease, and release deploy labels must stay distinct.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md",
+        "AGENTS.md"
+      ]
+    },
+    {
+      "entryId": "0.6.11-alpha-request",
+      "after": "2026-04-13T13:13:11-06:00",
+      "before": "2026-04-13T14:23:03-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": true,
+      "message": "perfect. The previous one was before this scheme, so start with alpha, and give me a dev_deploy",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.11-alpha-commit",
+      "timestamp": "2026-04-13T14:23:03-06:00",
+      "timestampKind": "exact_commit",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Canonicalized the live raw proof to alpha dev_deploy names and removed the older same-version raw direct artifacts so the modern_tv proof had one authority seam on disk.",
+      "reconstructedFrom": [
+        "git commit fd367ee92fbd5159c2496bb15dc0638c7daa271b",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    },
+    {
+      "entryId": "0.6.11-regression-opinion",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T14:36:01.8016289-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Raised a possible image-autoplay regression but explicitly held it as suspect because cached or mixed authority could still be polluting the test seam.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.11-conversation-log-request",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T14:36:01.8016289-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Requested a versioned JSON running log of the operator conversation, retroactive when possible, because thread freezes and retrieval failures were wasting hours and threatening continuity.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.11-scroller-future-truth",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T14:36:01.8016289-06:00",
+      "timestampKind": "approx_between_exact_events",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Future truth: the joystick scroller should be incorporated into the same naming, release, and deploy scheme as a prerelease candidate, but without letting that work distract from the current player conversation-log and proof task.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    }
+  ],
+  "decisions": [
+    "The live dev retest authority for 0.6.11 is the alpha raw Custom seam, not the .var seam.",
+    "Per-version operator conversation logs are now durable repo truth alongside changelogs and receipts.",
+    "Retroactive logs must clearly separate exact repo timestamps from reconstructed conversation timing."
+  ],
+  "openQuestions": [
+    "Does the 0.6.11 alpha dev_deploy still show image autoplay when tested as the sole raw authority seam?",
+    "When the current player proof task is settled, how should the joystick scroller be carried forward as a prerelease candidate under the same naming canon?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.11.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.11\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.11\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.11.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.11.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.11.alpha.dll"
+  ],
+  "notes": [
+    "This is the first conversation log created under the formal canon.",
+    "Going forward, active version or deploy-iteration logs should be updated in-step with the changelog and receipts instead of reconstructed later."
+  ]
+}

@@ -16,6 +16,8 @@ Packet `1.5` is governed by:
 3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
+6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.11.alpha.json`
 
 ## Working rule
 
