@@ -63,6 +63,26 @@ behavior. Current honest use is:
 4. do not over-claim full interaction parity when live VaM chaining is still a
    known gap
 
+## Current split authority
+
+The repo now has an important explicit split:
+
+1. the 2022 `ghost_training_export_clone` lane is currently the best visual
+   witness authority for shell stance and Meta control fidelity
+2. that same lane is not automatically a VaM-valid assetbundle authority
+3. the known VaM-valid shell load class is the 2018 raw assetbundle seam from
+   `products/vam/assets/player/unity/player-screen-2018`
+
+Current rule:
+
+1. use Volodeck/2022 exports to judge orientation, layout, and crispness
+2. use the 2018 raw shell export seam to prove that a hosted player shell will
+   actually load in VaM:
+   - `C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerShellAssetBundles.ps1`
+   - `C:\projects\fa\products\vam\assets\player\unity\player-screen-2018\Assets\Editor\FrameAngelPlayerShell2018Exporter.cs`
+3. do not collapse those two authorities into one claim until a single export
+   seam proves both
+
 Meta UI toolkit should use this same parity witness seam once Packet `1.5` begins.
 
 ## Operator gate
@@ -83,6 +103,13 @@ proofing:
 2. record the live raw asset/plugin/preset paths and the packaged release
    reference in the same receipt
 3. do not let the raw dev seam silently replace the package lane in canon
+
+If the current slice is using a 2022 export to generate a host shell:
+
+1. inspect the bundle header class before treating it as a VaM witness
+2. if the bundle class is `2022.3.62f3`, treat it as Volodeck/package witness
+   only
+3. if the bundle class is `2018.1.9f2`, it is eligible for VaM-host load proof
 
 ## Deterministic posture
 

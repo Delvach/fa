@@ -255,6 +255,7 @@ function Write-MarkdownReceipt {
     $lines.Add("- Shell Key: $($Receipt.shellKey)")
     $lines.Add("- Host Display Name: $($Receipt.hostDisplayName)")
     $lines.Add("- Host Package Root: $($Receipt.hostPackageRoot)")
+    $lines.Add("- Raw Shell Report Path: $($Receipt.rawShellReportPath)")
     $lines.Add("- Host Shell Export Summary Path: $($Receipt.hostShellExportSummaryPath)")
     $lines.Add("- Host Shell Preview Path: $($Receipt.hostShellPreviewPath)")
     $lines.Add("- Host Resource Id: $($Receipt.hostResourceId)")
@@ -352,13 +353,12 @@ if ([string]::IsNullOrWhiteSpace($playerPluginUrl)) {
     throw "Player var package report did not provide packagedPluginUrl: $varPackageReportPath"
 }
 
-$unityProjectPath = Join-Path $laneRoots.AssetsPlayerUnityRoot "ghost_training_export_clone"
-$resolvedUnityEditorPath = Resolve-UnityEditorPathForProject -ProjectPath $unityProjectPath -RequestedUnityEditorPath $UnityEditorPath
 $temporaryExportRoot = Join-Path $resolvedOutputRoot "package_cua_export"
 $receiptRoot = Join-Path $resolvedOutputRoot "receipts"
 $unityLogPath = Join-Path $receiptRoot "unity_batch.log"
 $interactiveReceiptPath = Join-Path $receiptRoot "meta_interactive_hosted_player_proof_receipt.json"
 $interactiveReceiptMarkdownPath = Join-Path $receiptRoot "meta_interactive_hosted_player_proof_receipt.md"
+ $resolvedPrimaryMediaPath = if ([string]::IsNullOrWhiteSpace($PrimaryMediaPath)) { "" } else { $PrimaryMediaPath.Trim() }
 
 if (Test-Path -LiteralPath $resolvedOutputRoot) {
     Remove-Item -LiteralPath $resolvedOutputRoot -Recurse -Force
@@ -376,59 +376,103 @@ $playerPluginBinding = Resolve-PlayerPluginBinding `
     -ReleasePluginPath $playerReleasePluginPath `
     -DeployPluginDirectory $DeployPluginRoot
 
-$unityArgs = @(
-    "-batchmode",
-    "-quit",
-    "-projectPath", $unityProjectPath,
-    "-executeMethod", "GhostPlayerHostPackageCustomUnityAssetExporter.ExportPlayerHostPackageCuaBatch",
-    "-faOutputRoot", $temporaryExportRoot,
-    "-faPackageRoot", $hostPackageRoot,
-    "-faShellKeys", "player_host",
-    "-faDeploy", "false",
-    "-logFile", $unityLogPath
-)
+$builtHostBundlePath = ""
+$builtHostAssetName = ""
+$hostResourceId = ""
+$hostDisplayName = ""
+$rawShellReportPath = ""
+$proofExportAuthority = ""
+$unityProjectPath = ""
+$resolvedUnityEditorPath = ""
+$unityExitCode = 0
 
-$unityProcess = Start-Process -FilePath $resolvedUnityEditorPath -ArgumentList $unityArgs -PassThru -Wait
-$unityExitCode = $unityProcess.ExitCode
+if ([string]::Equals([string]$playerPluginBinding.mode, "raw", [System.StringComparison]::OrdinalIgnoreCase)) {
+    $rawShellScriptPath = Join-Path $PSScriptRoot "Build-PlayerShellAssetBundles.ps1"
+    $rawShellOutputRoot = Join-Path $resolvedOutputRoot "raw_shell_export"
+    $rawShellResult = & $rawShellScriptPath `
+        -RepoRoot $resolvedRepoRoot `
+        -ShellKeys $ShellKey `
+        -OutputRoot $rawShellOutputRoot `
+        -DeployAssetsRoot $DeployAssetsRoot `
+        -DeployPresetRoot $DeployPresetRoot `
+        -DeployPluginsRoot $DeployPluginRoot `
+        -PlayerMediaPath $resolvedPrimaryMediaPath `
+        -SkipDeploy
+    $rawShellReportPath = [string]$rawShellResult.reportPath
+    $rawShellReport = Read-JsonFile -Path $rawShellReportPath
+    $rawShellEntry = @($rawShellReport.shells) | Where-Object { [string]$_.shellKey -eq $ShellKey } | Select-Object -First 1
+    if ($null -eq $rawShellEntry) {
+        throw "Raw shell report did not contain shell '$ShellKey': $rawShellReportPath"
+    }
 
-$genericSummaryPath = Join-Path $temporaryExportRoot "ghost_player_host_cua_export_summary.json"
-if (-not (Test-Path -LiteralPath $genericSummaryPath)) {
-    throw "Interactive host export summary not found: $genericSummaryPath"
+    $builtHostBundlePath = [string]$rawShellEntry.builtBundlePath
+    $builtHostAssetName = [string]$rawShellEntry.builtAssetName
+    $hostResourceId = [string]$rawShellEntry.resourceId
+    $hostDisplayName = [string]$rawShellEntry.displayName
+    $hostPackageRoot = [string]$rawShellEntry.packageRoot
+    $unityLogPath = [string]$rawShellEntry.unityLogPath
+    $unityProjectPath = [string]$rawShellReport.unityProjectPath
+    $resolvedUnityEditorPath = [string]$rawShellReport.unityEditorPath
+    $proofExportAuthority = "raw_shell_2018"
+}
+else {
+    $unityProjectPath = Join-Path $laneRoots.AssetsPlayerUnityRoot "ghost_training_export_clone"
+    $resolvedUnityEditorPath = Resolve-UnityEditorPathForProject -ProjectPath $unityProjectPath -RequestedUnityEditorPath $UnityEditorPath
+
+    $unityArgs = @(
+        "-batchmode",
+        "-quit",
+        "-projectPath", $unityProjectPath,
+        "-executeMethod", "GhostPlayerHostPackageCustomUnityAssetExporter.ExportPlayerHostPackageCuaBatch",
+        "-faOutputRoot", $temporaryExportRoot,
+        "-faPackageRoot", $hostPackageRoot,
+        "-faShellKeys", "player_host",
+        "-faDeploy", "false",
+        "-logFile", $unityLogPath
+    )
+
+    $unityProcess = Start-Process -FilePath $resolvedUnityEditorPath -ArgumentList $unityArgs -PassThru -Wait
+    $unityExitCode = $unityProcess.ExitCode
+
+    $genericSummaryPath = Join-Path $temporaryExportRoot "ghost_player_host_cua_export_summary.json"
+    if (-not (Test-Path -LiteralPath $genericSummaryPath)) {
+        throw "Interactive host export summary not found: $genericSummaryPath"
+    }
+
+    $genericSummary = Read-JsonFile -Path $genericSummaryPath
+    $genericExportEntry = @($genericSummary.exports) | Select-Object -First 1
+    if ($null -eq $genericExportEntry) {
+        throw "Interactive host export summary did not contain any exports: $genericSummaryPath"
+    }
+
+    $builtHostBundlePath = [string]$genericExportEntry.bundlePath
+    $builtHostAssetName = [string]$genericExportEntry.assetName
+    $hostResourceId = if (-not [string]::IsNullOrWhiteSpace([string]$hostProfile.resourceId)) {
+        [string]$hostProfile.resourceId
+    }
+    else {
+        [string]$hostManifest.resourceId
+    }
+    $hostDisplayName = if (-not [string]::IsNullOrWhiteSpace([string]$hostProfile.hostDisplayName)) {
+        [string]$hostProfile.hostDisplayName
+    }
+    else {
+        [string]$hostManifest.displayName
+    }
+    $proofExportAuthority = "host_package_2022"
 }
 
-$genericSummary = Read-JsonFile -Path $genericSummaryPath
-$genericExportEntry = @($genericSummary.exports) | Select-Object -First 1
-if ($null -eq $genericExportEntry) {
-    throw "Interactive host export summary did not contain any exports: $genericSummaryPath"
-}
-
-$builtHostBundlePath = [string]$genericExportEntry.bundlePath
-$builtHostAssetName = [string]$genericExportEntry.assetName
 if (-not (Test-Path -LiteralPath $builtHostBundlePath)) {
     throw "Interactive host bundle not found: $builtHostBundlePath"
 }
 
-$hostResourceId = if (-not [string]::IsNullOrWhiteSpace([string]$hostProfile.resourceId)) {
-    [string]$hostProfile.resourceId
-}
-else {
-    [string]$hostManifest.resourceId
-}
-$hostDisplayName = if (-not [string]::IsNullOrWhiteSpace([string]$hostProfile.hostDisplayName)) {
-    [string]$hostProfile.hostDisplayName
-}
-else {
-    [string]$hostManifest.displayName
-}
-
 if ([string]::IsNullOrWhiteSpace($hostResourceId)) {
-    throw "Unable to resolve host resource id from $hostProfilePath"
+    throw "Unable to resolve host resource id for shell '$ShellKey'."
 }
 
 $deployedHostBundlePath = Join-Path $DeployAssetsRoot ($hostResourceId + ".assetbundle")
 $interactivePresetFileName = Resolve-InteractivePresetFileName -HostDisplayName $hostDisplayName
 $deployedInteractivePresetPath = Join-Path $DeployPresetRoot $interactivePresetFileName
-$resolvedPrimaryMediaPath = if ([string]::IsNullOrWhiteSpace($PrimaryMediaPath)) { "" } else { $PrimaryMediaPath.Trim() }
 
 Copy-Item -LiteralPath $builtHostBundlePath -Destination $deployedHostBundlePath -Force
 
@@ -451,6 +495,7 @@ $receipt = [ordered]@{
     hostShellPreviewPath = $hostShellPreviewPath
     hostResourceId = $hostResourceId
     hostPackageRoot = $hostPackageRoot
+    rawShellReportPath = $rawShellReportPath
     hostCatalogSummaryPath = $resolvedHostCatalogSummaryPath
     hostCatalogControlsControlFamilyId = [string]$hostCatalogSummary.controlsControlFamilyId
     packet15ReceiptPath = $packet15ReceiptPath
@@ -471,8 +516,10 @@ $receipt = [ordered]@{
     unityEditorPath = $resolvedUnityEditorPath
     unityLogPath = $unityLogPath
     unityExitCode = $unityExitCode
+    proofExportAuthority = $proofExportAuthority
     proofBoundary = [ordered]@{
         interactionArtifactReady = $true
+        vamBundleCompatibilityAuthority = if ([string]::Equals($proofExportAuthority, "raw_shell_2018", [System.StringComparison]::OrdinalIgnoreCase)) { "2018.1.9f2 raw shell export" } else { "not yet VaM-valid; 2022 host package witness only" }
         liveHaloVerified = $false
         liveHaloFailure = "Halo MCP unavailable at http://localhost:5031/mcp during this slice."
         operatorTestRequested = $false

@@ -227,6 +227,45 @@ Current supporting visual preflight sources:
 2. authored control surface preview:
    `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_surface_preview.png`
 
+## Current VaM validity findings
+
+The current hosted-player proof split is now explicit:
+
+1. `Build-MetaInteractiveHostedPlayerProof.ps1` currently exports the host shell
+   through the 2022 Volodeck host-package path
+2. that path is producing `fa_cua_player_modern_tv_v1.assetbundle` with a
+   `2022.3.62f3` bundle header
+3. VaM rejects that host bundle as `Not valid`
+4. the repo already contains a VaM-valid raw modern TV shell bundle under
+   `products/vam/assets/player/build/shell_assetbundle_exports_2018/modern_tv/assetbundles/fa_cua_player_modern_tv.assetbundle`
+5. that raw shell bundle has a `2018.1.9f2` bundle header and matches the
+   compatibility class of the known-good player assetbundle seam
+
+Working interpretation:
+
+1. the 2022 host export is currently a Volodeck/package witness seam, not a
+   VaM-valid hosted-player load seam
+2. the correct next recovery target for true VaM interaction is the repo-local
+   2018 raw shell export seam
+3. do not treat the current 2022 hosted-player preset as a successful VaM proof
+   until the shell export path is switched back to a VaM-valid bundle class
+
+Current restored raw hosted-player artifact:
+
+1. `Build-PlayerShellAssetBundles.ps1` and
+   `FrameAngelPlayerShell2018Exporter.cs` were restored from repo history as the
+   raw 2018 shell seam
+2. `Build-MetaInteractiveHostedPlayerProof.ps1 -ShellKey modern_tv -PlayerPluginMode raw`
+   now routes through that seam
+3. current deployed interactive proof preset:
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+4. current deployed host bundle:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+5. current deployed host bundle class:
+   `2018.1.9f2`
+6. stale incompatible host bundle removed:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
+
 ## Current visual fidelity seam
 
 The direct Meta video player proof had drifted:
@@ -248,6 +287,32 @@ Working interpretation:
 3. use the authored Volodeck proof path when judging whether controls/icons are crisp enough to promote
 4. `Build-MetaControlSurfaceProofCua.ps1` still routes through the older snapshot exporter and should not be treated as the primary authored video-player proof witness until it is explicitly upgraded
 5. the authored Volodeck proof path now has its own dedicated witness wrapper so future threads do not need to improvise framing
+
+## Current standalone Meta proof boundary
+
+The direct search-bar and grid-menu proofs are more limited than the filenames
+suggest:
+
+1. `Build-MetaSearchBarProofCua.ps1` and `Build-MetaGridMenu2x4ProofCua.ps1`
+   both route through `Build-MetaControlSurfaceProofCua.ps1`
+2. that wrapper uses `FrameAngelMetaVideoPlayer2018Exporter.BuildAndDeployBatch`
+3. that exporter explicitly flattens the selected Meta surface to a
+   `control_surface_canvas_snapshot` texture on a quad
+4. those proofs are therefore snapshot carriers, not full authored interactive
+   Meta widgets
+
+Current consequence:
+
+1. `fa_meta_search_bar_proof.assetbundle` and
+   `fa_meta_grid_menu_2x4_proof.assetbundle` loading in VaM does not prove full
+   interaction
+2. magenta on those proofs is a snapshot material/shader seam, not evidence
+   that the underlying authored Meta widget interaction contract is working
+3. the standalone Meta proof set should currently be classified as:
+   - video player proof: authored visual witness, live VaM validity still
+     pending by export lane
+   - search bar proof: snapshot carrier
+   - grid menu 2x4 proof: snapshot carrier
 
 ## Provisional operator memory to verify
 
@@ -300,12 +365,16 @@ Default shell set:
 8. Inspect the successful narrow proof receipt above before changing inputs.
 9. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
 10. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
-11. Run `Build-MetaInteractiveHostedPlayerProof.ps1` for `modern_tv` and confirm
-    the deployed raw host bundle, raw player plugin, and interactive preset all
-    exist.
-12. Inspect `meta_interactive_hosted_player_proof_receipt.json` and confirm the
-    proof boundary still says live Halo verification is pending.
-13. Only after the narrow proof is trustworthy, widen the shell set.
+11. Inspect the bundle header class before calling any hosted-player artifact
+    VaM-valid:
+    - `2022.3.62f3` means Volodeck/package witness only
+    - `2018.1.9f2` means candidate VaM-valid raw shell seam
+12. Do not send the current `fa_cua_player_modern_tv_v1.assetbundle` hosted
+    proof back to the operator until the host shell export has been switched to
+    the 2018-compatible raw seam.
+13. Treat the search-bar and grid-menu proofs as snapshot witnesses only until
+    they are rebuilt from a true interactive carrier.
+14. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 
