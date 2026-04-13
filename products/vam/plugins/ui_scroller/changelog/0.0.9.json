@@ -1,0 +1,9 @@
+{
+  "version": "0.0.9",
+  "date": "2026-04-13",
+  "changes": [
+    "Advance the packaged scroller DLL to fa_ui_scroller.0.0.9.dll so VaM sees a fresh internal plugin artifact as well as the fresh dev package identity.",
+    "Keep the compile-time generated catalog path that removed prohibited runtime System.IO usage from the plugin.",
+    "Preserve the Joystick Scroller public title and advance the package-first dev testing lane to FrameAngel.JoystickScrollerDev.3.var."
+  ]
+}

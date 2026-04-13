@@ -1,6 +1,6 @@
 {
-  "version": "0.0.8",
-  "artifactName": "fa_ui_scroller.0.0.8.dll",
+  "version": "0.0.9",
+  "artifactName": "fa_ui_scroller.0.0.9.dll",
   "channel": "prototype",
-  "summary": "Generates the scroller catalog into compile-time C# so the runtime no longer references prohibited System.IO APIs, and packages the dev test lane as FrameAngel.JoystickScrollerDev.1.var."
+  "summary": "Iterates the packaged scroller DLL to fa_ui_scroller.0.0.9.dll while keeping the compile-time catalog fix and the FrameAngel.JoystickScrollerDev.2.var dev lane."
 }
