@@ -5,6 +5,12 @@
 This note records the deterministic joystick scroller packaging and live deploy
 truth in `C:\projects\fa` so the lane does not have to rely on thread memory.
 
+This lane now shares package metadata/process rules with the broader FrameAngel
+product system:
+
+1. `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+
 ## Current Seams
 
 Loose raw testing seam:

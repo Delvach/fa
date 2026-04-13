@@ -1,5 +1,14 @@
 # Player First Release Boundary
 
+## Scope note
+
+This file defines the historical base-player first-release boundary.
+
+It does not define the whole new modular product system. For that, use:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+
 ## Current live canon milestone
 
 The current file-backed answer after the `2026-04-09` runtime proof is:
@@ -92,6 +101,10 @@ Phase order is:
 1. screen plus VaM controls first
 2. deterministic witness scene proving the same exposed methods second
 3. Meta UI component integration after the first release is stable
+
+For the new modular lane, Meta UI toolkit is now the next planned prerequisite
+after the current architecture solidifies. That does not change this historical
+first-release boundary; it just means the new lane has a different next step.
 
 ## Resource progression
 

@@ -7,6 +7,9 @@ This is the concrete execution packet for the new player product system.
 It exists so implementation can follow a prepared buildout path instead of
 re-thinking structure during development.
 
+The long-range scaling and scheduling model lives in
+`products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`.
+
 ## Hard Rule
 
 Do not add new feature development to the current prototype lane while these
@@ -38,6 +41,24 @@ Files to verify or normalize:
 Exit condition:
 
 1. naming and metadata are trustworthy inputs for the new lane
+
+### Packet 1.5: Meta UI Toolkit Foundation
+
+Goal:
+
+1. restore Meta UI toolkit as a trustworthy modular building block
+2. keep it parity-bound to Volodeck and the same exposed player/control contracts
+3. prevent Meta UI from becoming a special architecture root
+
+Authority files:
+
+1. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+
+Exit condition:
+
+1. Meta UI toolkit is ready to plug into the new family as a composable module
+2. the toolkit lane does not contradict the surface x edition x package profile grammar
 
 ### Packet 2: Product Matrix Canon
 
@@ -151,9 +172,32 @@ Files to add:
 5. `products/vam/assets/player/scripts/Build-PlayerProductPackage.ps1`
 6. `products/vam/assets/player/scripts/Build-PlayerProductFamily.ps1`
 
+The release packaging matrix should follow the version/capability schedule in
+`products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+so the family can produce multiple variants on a skewed cadence without inventing
+new release logic for each surface.
+
 Exit condition:
 
 1. any SKU can be built from one product id
+
+### Packet 5.5: Version Capability Schedule
+
+Goal:
+
+1. decide version bundles before implementation starts
+2. bind those bundles to the product matrix
+3. allow skewed release cadence without ad hoc reasoning
+
+Authority file:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+2. `products/vam/config/player_version_capability_schedule.v1.json`
+
+Exit condition:
+
+1. every planned version has a table row before feature work starts
+2. the JSON schedule artifact is updated in the same slice as any schedule change
 
 ### Packet 6: Parallel Witness Builds
 

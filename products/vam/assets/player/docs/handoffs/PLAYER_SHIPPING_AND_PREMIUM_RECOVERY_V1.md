@@ -1,5 +1,17 @@
 # Player Shipping And Premium Recovery V1
 
+## Scope note
+
+This is now a bounded recovery note, not the primary architecture router for
+the new family.
+
+Active shared packaging and product-system authority lives in:
+
+1. `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+4. `products/vam/assets/player/docs/handoffs/PLAYER_DEV_SCENE_AND_DEPLOY_PROCESS_V1.md`
+
 ## Purpose
 
 Capture the bounded recovered seams for:
@@ -11,9 +23,9 @@ Capture the bounded recovered seams for:
 This packet is meant to keep those shipping decisions out of thread memory while the
 core player lane continues to recover in `C:\projects\fa`.
 
-## Current Canon In `fa`
+## Current historical base-player seam in `fa`
 
-The current authority seam in this repo is still the raw versioned release pair:
+The preserved base-player seam in this repo is the raw versioned release pair:
 
 - `Custom/Assets/FrameAngel/Player/fa_player_asset.<version>.assetbundle`
 - `Custom/Plugins/fa_cua_player.<version>.dll`

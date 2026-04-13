@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "1",
+  "purpose": "Canonical version and capability schedule for the modular VaM player family.",
+  "notes": [
+    "Update this file before feature implementation starts for a planned family version.",
+    "Keep this schedule aligned with VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md.",
+    "Rows may land on a skewed public cadence, but they should still map back to one planned family version."
+  ],
+  "rows": [
+    {
+      "familyVersion": "v1",
+      "status": "planned",
+      "capabilityBundleKeys": [
+        "baseline_family_authority"
+      ],
+      "prerequisiteStateKeys": [
+        "product_matrix_locked",
+        "package_profiles_locked",
+        "shell_export_parity",
+        "volodeck_parity"
+      ],
+      "includedSurfaceKeys": [
+        "player",
+        "modern_tv_player",
+        "laptop_player",
+        "phone_player",
+        "tablet_player"
+      ],
+      "includedEditionKeys": [
+        "free",
+        "pro",
+        "pro_demo"
+      ],
+      "releaseSkewNote": "Launch the first ready surface first, then fill the remaining family cells without changing the version row."
+    },
+    {
+      "familyVersion": "v1.5",
+      "status": "planned",
+      "capabilityBundleKeys": [
+        "meta_ui_toolkit_foundation"
+      ],
+      "prerequisiteStateKeys": [
+        "baseline_family_authority_stable",
+        "volodeck_parity"
+      ],
+      "includedSurfaceKeys": [
+        "player"
+      ],
+      "includedEditionKeys": [
+        "pro",
+        "pro_demo"
+      ],
+      "releaseSkewNote": "Keep the toolkit proof narrow until parity is trustworthy across the new lane."
+    },
+    {
+      "familyVersion": "v2",
+      "status": "placeholder",
+      "capabilityBundleKeys": [
+        "tbd_capability_bundle"
+      ],
+      "prerequisiteStateKeys": [
+        "v1_stable"
+      ],
+      "includedSurfaceKeys": [],
+      "includedEditionKeys": [],
+      "releaseSkewNote": "Use this row for the next intentionally planned bundle, such as loop, shuffle, performance work, or another chosen capability set."
+    },
+    {
+      "familyVersion": "v3",
+      "status": "placeholder",
+      "capabilityBundleKeys": [
+        "tbd_capability_bundle"
+      ],
+      "prerequisiteStateKeys": [
+        "v2_stable"
+      ],
+      "includedSurfaceKeys": [],
+      "includedEditionKeys": [],
+      "releaseSkewNote": "Keep skew intentional. One surface can lead if the schedule row and prerequisites stay truthful."
+    }
+  ]
+}

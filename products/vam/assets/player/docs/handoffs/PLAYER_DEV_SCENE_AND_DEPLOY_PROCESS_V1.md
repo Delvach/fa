@@ -14,9 +14,19 @@ It exists because the lane already depends on these conventions in practice:
 
 This is the operator-facing truth for the current dev lane unless a later repo-local handoff supersedes it.
 
+This note is not the full modular family architecture. For that, use:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+3. `products/vam/config/player_version_capability_schedule.v1.json`
+
 For shared `.var` metadata rules that now cover both player and joystick scroller, also see:
 
 - `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+
+Meta UI toolkit is the next prerequisite after the current architecture solidifies,
+but it should be layered into the new modular lane, not improvised inside the
+DevPlayer witness process.
 
 ## Current Naming
 

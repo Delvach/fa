@@ -1,5 +1,15 @@
 # Player Tier Boundary And Witness
 
+## Scope note
+
+This file defines the separated authored-surface and tier witness boundary for
+the historical base-player lane.
+
+It should not be read as the full modular product-system plan. For that, use:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+
 ## Current live canon milestone
 
 The current runtime-backed canon is recorded in:

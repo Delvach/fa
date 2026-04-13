@@ -1,5 +1,18 @@
 # Player Core Canon 0.2.1
 
+## Status
+
+This is a historical milestone note for the restored base-player seam.
+
+It is still useful for recovery truth, but it is not the active architecture
+spec for the new modular lane.
+
+For current modular product-system authority, use:
+
+1. `products/vam/assets/player/docs/handoffs/PLAYER_FIRST_RELEASE_BOUNDARY_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+
 ## Current answer
 
 Version `0.2.1` is the first clean-room milestone where the base player should

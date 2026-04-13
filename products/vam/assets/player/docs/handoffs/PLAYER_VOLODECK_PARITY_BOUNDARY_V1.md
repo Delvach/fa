@@ -7,6 +7,13 @@ This note defines the deterministic Volodeck witness seam for player shell work.
 Volodeck exists to let shell/control work be exercised in Unity before VaM
 testing, but only if parity stays honest.
 
+For the broader modular product-system plan that Volodeck supports, use:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_EXECUTION_PLAN_V1.md`
+3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+4. `products/vam/config/player_version_capability_schedule.v1.json`
+
 ## Current repo-local authority
 
 Volodeck Unity project:
@@ -42,6 +49,8 @@ Volodeck is the fastest pre-VaM witness seam for:
 2. control anchoring and motion
 3. visible playback/parity checks
 4. exported host/package validation before operator testing
+
+Meta UI toolkit should use this same parity witness seam once Packet `1.5` begins.
 
 ## Deterministic posture
 

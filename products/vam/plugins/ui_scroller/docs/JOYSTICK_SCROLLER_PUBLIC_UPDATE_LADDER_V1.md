@@ -13,6 +13,9 @@ The goal is:
 3. let the scroller serve as a low-risk exposure lane while the new player
    product family is being stood up
 
+That means this ladder should stay compatible with the shared FrameAngel
+packaging and release grammar instead of becoming its own isolated system.
+
 ## Update Ladder
 
 ### 0.0.13

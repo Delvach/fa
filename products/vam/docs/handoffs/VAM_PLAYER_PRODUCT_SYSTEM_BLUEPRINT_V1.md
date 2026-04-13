@@ -2,22 +2,27 @@
 
 ## Purpose
 
-This note replaces ad hoc thread reasoning with a product-system blueprint for the
-next player line.
+This note replaces ad hoc thread reasoning with a product-system blueprint for
+the next player line.
 
 The current player is now treated as:
 
-- a stable prototype and feature witness
-- not the final architecture for the full product family
+1. a stable prototype and feature witness
+2. not the final architecture for the full product family
 
 The next lane should be built so development becomes composition rather than
 reinvention: LEGO pieces with a blueprint.
+
+For the durable scaling and scheduling model behind that composition, use:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+2. `products/vam/config/player_version_capability_schedule.v1.json`
 
 ## Recommendation
 
 Do this in the current repo.
 
-Do **not** start a fresh repo yet.
+Do not start a fresh repo yet.
 
 ### Why staying in `C:\projects\fa` is the right move now
 
@@ -67,12 +72,12 @@ Use the current player as:
 2. a feature witness
 3. a source of reusable core seams
 
-The new product system must be built from shared modules and declarative product
-profiles.
+The new product system must be built from shared modules and declarative
+product profiles.
 
 ## Architecture Model
 
-The correct model is **not** fifteen independent code products.
+The correct model is not fifteen independent code products.
 
 The correct model is:
 
@@ -81,7 +86,9 @@ The correct model is:
 3. shared surface export pipeline
 4. surface modules
 5. edition profiles
-6. product matrix assembled from those pieces
+6. package profiles
+7. product matrix assembled from those pieces
+8. version/capability schedule governing what ships when
 
 ### Shared Core
 
@@ -94,7 +101,7 @@ The shared core should own:
 5. shared exposed control actions
 6. package-safe plugin/runtime identity
 
-The shared core should **not** directly own:
+The shared core should not directly own:
 
 1. phone-specific swipe behavior
 2. tablet-specific swipe behavior
@@ -200,6 +207,9 @@ It should not:
 2. depend on external legacy repos
 3. become a special-case runtime authority
 
+Meta UI toolkit should re-enter through this same parity seam during Packet
+`1.5`, not as a bypass around it.
+
 ## Product Matrix
 
 The first public family is:
@@ -229,6 +239,16 @@ Every public SKU gets:
 3. one surface key
 4. one edition key
 5. one core build profile
+6. one package profile
+
+Future capability bundles and staggered release timing should be planned
+against that same product identity rule, not as a separate scheduling system.
+
+That identity rule is the `surface x edition x package profile` model described
+in:
+
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+2. `products/vam/config/player_version_capability_schedule.v1.json`
 
 ### Suggested package naming
 
@@ -310,9 +330,18 @@ Purpose:
 Deliverables:
 
 1. product matrix config
-2. lane blueprint docs
-3. clean package metadata profiles
-4. explicit surface and edition keys
+2. version/capability schedule config
+3. lane blueprint docs
+4. clean package metadata profiles
+5. explicit surface and edition keys
+
+### Wave 1.5: Meta UI Toolkit Foundation
+
+Deliverables:
+
+1. Volodeck parity-bound Meta UI toolkit proof
+2. toolkit module boundaries that fit the shared grammar
+3. no special-case architecture root for toolkit work
 
 ### Wave 2: Shell Validation
 
@@ -341,8 +370,8 @@ Deliverables:
 4. phone free/pro/pro_demo
 5. tablet free/pro/pro_demo
 
-At this stage the goal is not full polish. The goal is “all products build from the
-same system without special-case reasoning.”
+At this stage the goal is not full polish. The goal is "all products build from
+the same system without special-case reasoning."
 
 ### Wave 5: Remaining Feature Development
 
@@ -350,12 +379,13 @@ All future feature work lands here:
 
 1. only on the new modular lane
 2. only against explicit module/edition/surface boundaries
-3. never as prototype drift
+3. only after a matching row exists in the version/capability schedule
+4. never as prototype drift
 
 ## Joystick Scroller Parallel Marketing Ladder
 
-The scroller should be used as a parallel exposure lane while the player family is
-being established.
+The scroller should be used as a parallel exposure lane while the player family
+is being established.
 
 Recommended ladder:
 
@@ -374,19 +404,21 @@ This is the intended next execution order:
 1. clean player metadata and brand defaults
 2. export and validate shell family outputs
 3. create the machine-readable product matrix
-4. scaffold edition/build profiles
-5. build the first parallel witness set
-6. only then start adding the few remaining desired features
+4. create the machine-readable version/capability schedule
+5. scaffold edition/build profiles
+6. build the first parallel witness set
+7. only then start adding the few remaining desired features
 
 ## What Success Looks Like
 
-Success is not “the prototype keeps growing.”
+Success is not "the prototype keeps growing."
 
 Success is:
 
 1. one stable shared core
 2. one explicit product matrix
-3. one shell export pipeline
-4. one packaging system
-5. parallel product updates that can be shipped together for visibility
-6. future development that follows the architecture instead of improvising it
+3. one explicit version/capability schedule
+4. one shell export pipeline
+5. one packaging system
+6. parallel product updates that can be shipped together for visibility
+7. future development that follows the architecture instead of improvising it

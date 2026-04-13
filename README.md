@@ -1,89 +1,79 @@
 # fa
 
-Minimal clean-room start for the FrameAngel core CUA player.
-This repo is the replacement home for the FrameAngel monorepo player code.
+FrameAngel repo-local product authority.
 
-Current imported foundation:
+This repo now carries both:
 
-- `products/vam/plugins/player/vs/fa_cua_player`
-- `products/vam/plugins/player/src`
-- `products/vam/assets/player`
-- `products/vam/assets/player/unity/player-screen-2018`
-- `products/vam/assets/player/changelog`
-- `shared/scripts/player-assets`
+1. the historical base-player recovery trail
+2. the active modular product-system canon for the next lane
 
-Current scope is intentionally narrow:
+Use the router docs below instead of treating this README as the architecture
+spec.
 
-- the `fa_cua_player` Visual Studio project
-- the exact runtime source files compiled by that project
-- one minimal player assetbundle export lane
-- one minimal versioned release wrapper
-- the phase-1 release boundary: screen plus VaM controls
-- no scene/session-only runtime surface
-- no toolkit, recovery, catalog, or probe-ladder drift
-- no `unknown_vs` compile root fallback in this repo
+## Active canon router
 
-Current release order is intentional:
+Modular player family strategy:
 
-- first usable release is the authored screen with VaM buttons and sliders calling exposed player methods
-- deterministic scene or Volodeck setup is a witness seam for that same in-game method surface
-- the future richer control approach is custom projected scene controls wired to the same player methods
-- Meta UI components are a later integration phase, not first-release authority
+1. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_EXECUTION_PLAN_V1.md`
+3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+4. `products/vam/config/player_product_matrix.v1.json`
+5. `products/vam/config/player_version_capability_schedule.v1.json`
 
-Version and commit discipline:
+Shared package metadata/process:
 
-- the clean-room repo version line starts at `0.1.1`
-- every versioned player change that is built for testing or release gets its own git commit
-- every versioned player change that is built for testing or release gets a matching `products/vam/assets/player/changelog/<version>.json`
-- commit messages should be verbose enough to capture the version, changed seam, and visible outcome
-- the release wrapper emits a copy of that changelog into the release packet as both JSON and Markdown
+1. `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
 
-Core release entrypoint:
+Historical base-player boundary:
 
-- `products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1`
+1. `products/vam/assets/player/docs/handoffs/PLAYER_FIRST_RELEASE_BOUNDARY_V1.md`
+2. `products/vam/assets/player/docs/handoffs/PLAYER_CORE_CANON_0_2_1_V1.md`
 
-Tracked Unity authoring source:
+Current DevPlayer witness/process lane:
 
-- `products/vam/assets/player/unity/player-screen-2018`
+1. `products/vam/assets/player/docs/handoffs/PLAYER_DEV_SCENE_AND_DEPLOY_PROCESS_V1.md`
 
-Volodeck / XR authoring lane:
+Volodeck parity witness lane:
 
-- `products/vam/assets/player/unity/ghost_training_export_clone`
-- `products/vam/assets/player/unity_editor_bridge/current`
-- Volodeck is a parity witness for the same exposed player/shell method surface, not a separate authority path
+1. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 
-Minimal scripts kept in this repo:
+Joystick scroller brand/support lane:
 
-- `products/vam/assets/player/scripts/Build-CuaPlayerResource.ps1`
-- `products/vam/assets/player/scripts/Build-PlayerAssetBundle.ps1`
-- `products/vam/assets/player/scripts/Build-PlayerDemoScene.ps1`
-- `products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1`
-- `products/vam/assets/player/scripts/Validate-PlayerScreenCoreRelease.ps1`
-- `products/vam/assets/player/scripts/Validate-VamForbiddenUsage.ps1`
+1. `products/vam/plugins/ui_scroller/docs/UI_SCROLLER_DEPLOY_AND_PACKAGE_SEAM_V1.md`
+2. `products/vam/plugins/ui_scroller/docs/JOYSTICK_SCROLLER_PUBLIC_UPDATE_LADDER_V1.md`
 
-Examples:
+## Current repo rule
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-CuaPlayerResource.ps1 -RepoRoot C:\projects\fa
-```
+The active long-term grammar is:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerScreenCoreFoundation.ps1 -RepoRoot C:\projects\fa
-```
+1. surface
+2. edition
+3. package profile
+4. version/capability schedule
 
-Local-only validation without touching live VaM directories:
+Meta UI toolkit is the next prerequisite for the new modular lane once the
+current architecture is solid. That does not retroactively widen the historical
+first-release boundary for the base player.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerScreenCoreFoundation.ps1 -RepoRoot C:\projects\fa -SkipLiveDeploy
-```
+## Core entrypoints
 
-Deterministic phase-1 witness scene using VaM buttons and sliders:
+Player release wrapper:
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerDemoScene.ps1 -RepoRoot C:\projects\fa -Version 0.1.3 -AllowExistingVersion
-```
+1. `products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1`
 
-Current witness output pattern:
+Player package builder:
 
-- `F:\sim\vam\Saves\scene\fa_scene.0.1.3.json`
-- `C:\projects\fa\products\vam\assets\player\build\scene_builds\0.1.3\player_demo_scene_build_receipt.md`
+1. `products/vam/assets/player/scripts/Build-CuaPlayerVarPackage.ps1`
+
+Scene builder:
+
+1. `products/vam/assets/player/scripts/Build-PlayerDemoScene.ps1`
+
+Volodeck/shell export:
+
+1. `products/vam/assets/player/scripts/Export-GhostPlayerHostCuaFamily.ps1`
+2. `products/vam/assets/player/scripts/Export-GhostPlayerHostCatalog.ps1`
+
+Shared package metadata resolver:
+
+1. `shared/scripts/vam-packaging/Resolve-FrameAngelVarPackageMetadata.ps1`
