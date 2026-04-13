@@ -62,6 +62,7 @@ Defaults:
 7. Hardened the underlying host-catalog scripts so they can resolve Packet `1.5` defaults instead of assuming one fixed proof surface by default.
 8. Re-ran the same narrow proof after that hardening and got a second clean receipt.
 9. Refreshed the live standalone Meta proof set into VaM raw `Custom` paths so there are actual interactive Meta presets available in VaM right now.
+10. Corrected the Meta video player proof export seam so the live proof script now builds from the authored Volodeck scene in `ghost_training_export_clone` instead of the older snapshot-only `player-screen-2018` exporter.
 
 ## What the new wrapper does
 
@@ -148,6 +149,27 @@ Important:
 2. the standalone proof presets above are the current direct VaM interaction witness
 3. those are different seams and both are currently useful
 
+## Current visual fidelity seam
+
+The direct Meta video player proof had drifted:
+
+1. `Build-MetaVideoPlayerProofCua.ps1` was still pointing at `FrameAngelMetaVideoPlayer2018Exporter.BuildAndDeployBatch`
+2. that exporter builds from the `player-screen-2018` project and explicitly flattens the control surface to the `control_surface_canvas_snapshot` material
+3. that means the bundle could look broadly correct while still shipping rasterized control icons/details
+
+Current correction:
+
+1. `Build-MetaVideoPlayerProofCua.ps1` now points at `GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch`
+2. that exporter builds from the authored Volodeck project at `products/vam/assets/player/unity/ghost_training_export_clone`
+3. the proof bundle now comes from the authored `GhostMetaUiSetVideoPlayerProof` scene object instead of a snapshot quad
+
+Working interpretation:
+
+1. snapshot-based exports are still valid for snapshot witnesses
+2. they are not trustworthy as the main interactive visual-fidelity proof path
+3. use the authored Volodeck proof path when judging whether controls/icons are crisp enough to promote
+4. `Build-MetaControlSurfaceProofCua.ps1` still routes through the older snapshot exporter and should not be treated as the primary authored video-player proof witness until it is explicitly upgraded
+
 ## Provisional operator memory to verify
 
 This is not yet promoted to fully verified witness truth, but it should be
@@ -192,11 +214,12 @@ Default shell set:
 1. Open this file first.
 2. Confirm branch and working tree state.
 3. Confirm `AGENTS.md` is still the only unrelated dirty file.
-4. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
-5. Inspect the successful narrow proof receipt above before changing inputs.
-6. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
-7. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
-8. Only after the narrow proof is trustworthy, widen the shell set.
+4. For Meta proof visual-fidelity work, verify that `Build-MetaVideoPlayerProofCua.ps1` still points at `GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch` in `ghost_training_export_clone`.
+5. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
+6. Inspect the successful narrow proof receipt above before changing inputs.
+7. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
+8. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
+9. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 
