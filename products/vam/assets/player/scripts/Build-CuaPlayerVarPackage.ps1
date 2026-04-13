@@ -8,7 +8,7 @@ param(
     [int]$PublicRelease = 0,
     [string]$OutputRoot = "",
     [switch]$IncludeScene,
-    [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
+    [string]$SceneTemplatePath = "",
     [string]$ScenePrimaryMediaPath = "",
     [switch]$IncludeDiagnosticsScene,
     [string]$DiagnosticsSceneFilter = "",
@@ -147,7 +147,8 @@ function Resolve-VarPackageVersionTag {
         [string]$RequestedPackageVersionTag,
         [int]$RequestedPublicRelease,
         [string]$ResolvedCreatorName,
-        [string]$ResolvedPackageName
+        [string]$ResolvedPackageName,
+        [string]$ResolvedDestinationAddonPackages
     )
 
     if (-not [string]::IsNullOrWhiteSpace($RequestedPackageVersionTag)) {
@@ -156,6 +157,24 @@ function Resolve-VarPackageVersionTag {
 
     if ($RequestedPublicRelease -gt 0) {
         return $RequestedPublicRelease.ToString()
+    }
+
+    if ([string]::Equals(([string]$ResolvedPackageName).Trim(), "DevPlayer", [System.StringComparison]::OrdinalIgnoreCase)) {
+        $maxExistingNumericTag = 0
+        if (-not [string]::IsNullOrWhiteSpace($ResolvedDestinationAddonPackages) -and (Test-Path -LiteralPath $ResolvedDestinationAddonPackages)) {
+            $candidateFilter = "{0}.{1}.*.var" -f $ResolvedCreatorName, $ResolvedPackageName
+            $candidatePattern = '^{0}\.{1}\.(\d+)\.var$' -f [regex]::Escape($ResolvedCreatorName), [regex]::Escape($ResolvedPackageName)
+            Get-ChildItem -LiteralPath $ResolvedDestinationAddonPackages -Filter $candidateFilter -File -ErrorAction SilentlyContinue | ForEach-Object {
+                if ($_.Name -match $candidatePattern) {
+                    $tagValue = 0
+                    if ([int]::TryParse($matches[1], [ref]$tagValue) -and $tagValue -gt $maxExistingNumericTag) {
+                        $maxExistingNumericTag = $tagValue
+                    }
+                }
+            }
+        }
+
+        return ([Math]::Max(1, $maxExistingNumericTag + 1)).ToString()
     }
 
     if ([string]::IsNullOrWhiteSpace($ResolvedVersion)) {
@@ -412,6 +431,14 @@ function New-CustomUnityAssetPreset {
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
 $sceneBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerDemoScene.ps1"
+$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) {
+    $SceneTemplatePath = $defaultSceneTemplatePath
+}
+else {
+    $SceneTemplatePath = Resolve-PathFromBase -PathValue $SceneTemplatePath -BasePath $RepoRoot -Label "Scene template path"
+}
+$resolvedIncludeScene = $IncludeScene.IsPresent -or [string]::Equals(([string]$PackageName).Trim(), "DevPlayer", [System.StringComparison]::OrdinalIgnoreCase)
 
 $release = Resolve-ReleaseManifest -LaneRoots $laneRoots -ExplicitVersion $Version -ExplicitReleaseManifestPath $ReleaseManifestPath
 $resolvedVersion = $release.Version
@@ -441,7 +468,8 @@ $resolvedPackageVersionTag = Resolve-VarPackageVersionTag `
     -RequestedPackageVersionTag $PackageVersionTag `
     -RequestedPublicRelease $PublicRelease `
     -ResolvedCreatorName $CreatorName `
-    -ResolvedPackageName $PackageName
+    -ResolvedPackageName $PackageName `
+    -ResolvedDestinationAddonPackages $DestinationAddonPackages
 $packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
 $packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
 $zipPath = Join-Path $packagesRoot $packageZipName
@@ -554,7 +582,7 @@ $packagedDiagnosticsScenePath = ""
 $packagedDiagnosticsScenePreviewPath = ""
 $generatedDiagnosticsScenePath = ""
 $generatedDiagnosticsScenePreviewPath = ""
-if ($IncludeScene.IsPresent) {
+if ($resolvedIncludeScene) {
     if (-not (Test-Path -LiteralPath $sceneBuildScript)) {
         throw "Scene build script not found: $sceneBuildScript"
     }
@@ -787,11 +815,11 @@ $stageManifest = [ordered]@{
     packageFileName = $packageFileName
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
-    authoritySeam = if ($IncludeScene.IsPresent) { "phase_2_package_first_direct_cua_with_packaged_scene" } else { "phase_2_direct_cua_with_packaged_plugin_attach" }
-    note = if ($IncludeScene.IsPresent -and $null -ne $demoMediaStage) {
+    authoritySeam = if ($resolvedIncludeScene) { "phase_2_package_first_direct_cua_with_packaged_scene" } else { "phase_2_direct_cua_with_packaged_plugin_attach" }
+    note = if ($resolvedIncludeScene -and $null -ne $demoMediaStage) {
         "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs, a packaged demo media folder under Custom/Images, and a packaged scene that references those same in-package resources and media."
     }
-    elseif ($IncludeScene.IsPresent) {
+    elseif ($resolvedIncludeScene) {
         "This package stages the validated player assetbundle, the matching player plugin under Custom/Scripts, a package-contained CustomUnityAsset preset that targets the packaged asset and plugin URLs, and a packaged scene that references those same in-package resources."
     }
     else {
@@ -807,7 +835,7 @@ $stageManifest = [ordered]@{
         packagedPluginPath = $packagedPluginPath
         packagedPresetPlayerMediaPath = $resolvedPresetPrimaryMediaPath
     }
-    packagedScene = if ($IncludeScene.IsPresent) {
+    packagedScene = if ($resolvedIncludeScene) {
         [ordered]@{
             sceneTemplatePath = $SceneTemplatePath
             scenePrimaryMediaPath = $resolvedScenePrimaryMediaPath

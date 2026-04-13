@@ -10,7 +10,7 @@ param(
     [switch]$IncludeVarDiagnosticsScene,
     [switch]$IncludeVarShellFamily,
     [string]$VarShellKeysCsv = "",
-    [string]$VarSceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
+    [string]$VarSceneTemplatePath = "",
     [string]$VarScenePrimaryMediaPath = "",
     [string]$VarSceneDiagnosticsFilter = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
@@ -187,13 +187,17 @@ function Convert-PlayerReleaseChangelogToMarkdown {
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
 $versionState = Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot
+$defaultVarSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+if ([string]::IsNullOrWhiteSpace($VarSceneTemplatePath)) {
+    $VarSceneTemplatePath = $defaultVarSceneTemplatePath
+}
 
 if ($PackageOnlyDeploy.IsPresent) {
     $SkipLiveDeploy = $true
     $BuildVarPackage = $true
 }
 
-$effectiveIncludeVarScene = $IncludeVarScene.IsPresent -or $PackageOnlyDeploy.IsPresent
+$effectiveIncludeVarScene = $IncludeVarScene.IsPresent -or $PackageOnlyDeploy.IsPresent -or ($BuildVarPackage.IsPresent -and [string]::Equals(([string]$VarPackageName).Trim(), "DevPlayer", [System.StringComparison]::OrdinalIgnoreCase))
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
     $versionState.Version
 }

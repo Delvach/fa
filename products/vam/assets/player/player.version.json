@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.3",
-    "notes":  "0.6.3 keeps the clean 0.6.0 baseline and trims allocation churn from standalone player state JSON building so the player action and control-surface lane stays leaner without changing transport behavior.",
-    "branch":  "release/0.6.3-state-json-trim",
+    "version":  "0.6.4",
+    "notes":  "0.6.4 keeps the clean 0.6.0 baseline, packages the current control demo scene by default for DevPlayer releases, and switches the dev package rung back to the incrementing AddonPackages identity.",
+    "branch":  "release/0.6.4-packaged-dev-scene",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.3.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.4.json"
 }

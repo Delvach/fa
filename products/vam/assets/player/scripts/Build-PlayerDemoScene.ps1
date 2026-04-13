@@ -1,7 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$Version = "",
-    [string]$SceneTemplatePath = "F:\sim\vam\Saves\scene\buttons_setup_scene.json",
+    [string]$SceneTemplatePath = "",
     [string]$OutputDirectory = "F:\sim\vam\Saves\scene",
     [string]$OutputSceneBaseName = "fa_scene",
     [string]$ReceiptLabel = "player_demo_scene_build",
@@ -528,7 +528,8 @@ $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot
 $RepoRoot = $laneRoots.RepoRoot
 $resolvedVersion = Resolve-SceneVersion -RepoRootValue $RepoRoot -ExplicitVersion $Version
 
-$resolvedTemplatePath = Normalize-PathValue -PathValue $SceneTemplatePath
+$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+$resolvedTemplatePath = Normalize-PathValue -PathValue $(if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) { $defaultSceneTemplatePath } else { $SceneTemplatePath })
 if (-not (Test-Path -LiteralPath $resolvedTemplatePath)) {
     throw "Scene template path not found: $resolvedTemplatePath"
 }
@@ -612,8 +613,24 @@ $scene.atoms = $atoms
 
 $screenAtom = $atoms | Where-Object { [string]$_.id -eq "screen_cua" } | Select-Object -First 1
 if ($null -eq $screenAtom) {
-    throw "Scene template does not contain atom 'screen_cua': $resolvedTemplatePath"
+    $screenAtom = $atoms | Where-Object {
+        if ($null -eq $_ -or -not [string]::Equals([string]$_.type, "CustomUnityAsset", [System.StringComparison]::OrdinalIgnoreCase)) {
+            return $false
+        }
+
+        foreach ($storable in @($_.storables)) {
+            if ($null -ne $storable -and [string]$storable.id -eq "plugin#0_FASyncRuntime") {
+                return $true
+            }
+        }
+
+        return $false
+    } | Select-Object -First 1
 }
+if ($null -eq $screenAtom) {
+    throw "Scene template does not contain a player screen atom: $resolvedTemplatePath"
+}
+$screenAtomId = [string]$screenAtom.id
 
 $screenStorables = New-OrderedStorableList -ExistingStorables @($screenAtom.storables)
 Remove-StorableByPredicate -Storables $screenStorables -Predicate {
@@ -808,7 +825,7 @@ if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
                 startActions = @(
                     [pscustomobject]@{
                         name = $buttonSpec.id
-                        receiverAtom = "screen_cua"
+                        receiverAtom = $screenAtomId
                         receiver = "plugin#0_FASyncRuntime"
                         receiverTargetName = $buttonSpec.action
                     }
@@ -829,7 +846,7 @@ if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
             -ContainerY $sliderSpec.y `
             -ContainerZ $sliderSpec.z `
             -ParentAtomId $sliderSpec.parentAtom `
-            -ReceiverAtomId "screen_cua" `
+            -ReceiverAtomId $screenAtomId `
             -Receiver "plugin#0_FASyncRuntime" `
             -ReceiverTargetName $sliderSpec.receiverTargetName `
             -StartValue $sliderSpec.startValue `

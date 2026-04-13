@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.4",
+  "title": "Package the current control demo scene in the DevPlayer lane",
+  "summary": "0.6.4 keeps the clean 0.6.0 baseline, ingests the current control demo scene into the repo, uses that repo-local scene template for the player scene builder, and makes DevPlayer packages include the scene by default under the incrementing AddonPackages dev rung.",
+  "reasoning": "The lane needs a real packaged scene, not another reminder to request one manually. The deterministic builder already knows how to rewrite the player asset and plugin URLs for a packaged scene, so the missing seam was straightforward: keep the scene template in the repo, let the scene builder target it by default, and make DevPlayer packaging include it automatically with the numeric AddonPackages identity the lane already uses.",
+  "changes": [
+    {
+      "area": "scene-template-ingest",
+      "summary": "Adds the current `controls_example` scene and preview image to `products/vam/assets/player/scene_templates/` so the packaged dev scene no longer depends on a file outside the repo.",
+      "reasoning": "The player package needs a distributable, repo-local scene template instead of an external operator path."
+    },
+    {
+      "area": "scene-builder-defaults",
+      "summary": "Updates the player scene and package scripts to default to the repo-local `controls_example` template and to resolve the screen atom either by `screen_cua` or the current player-bearing CUA pattern.",
+      "reasoning": "That keeps the builder deterministic against the current control demo scene without widening into ad hoc scene discovery."
+    },
+    {
+      "area": "dev-package-defaults",
+      "summary": "Makes `DevPlayer` packages include the packaged scene by default and resolves the next numeric DevPlayer `.var` rung from `AddonPackages` instead of falling back to the semantic player version.",
+      "reasoning": "This restores the lane you asked for: `FrameAngel.DevPlayer.<n>.var` outside, semantic `0.6.x` inside."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.4 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the player from the main repo path with package-first output and confirm validation passes.",
+    "Confirm the resulting `FrameAngel.DevPlayer.<n>.var` includes `fa_player_demo_scene.0.6.4.json` and the preview image under `Saves/scene/FrameAngel/Player/`."
+  ],
+  "knownIssues": [
+    "This slice is packaging and build-lane work only; it does not change audio sync, video sync, or joystick behavior.",
+    "The current control demo scene is packaged as-is from the repo-local witness template."
+  ]
+}

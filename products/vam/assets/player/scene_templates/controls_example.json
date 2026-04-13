@@ -1,0 +1,1018 @@
+{ 
+   "playerHeightAdjust" : "0.06364912", 
+   "monitorCameraRotation" : { 
+      "x" : "359.5729", 
+      "y" : "0", 
+      "z" : "0"
+   }, 
+   "useSceneLoadPosition" : "false", 
+   "atoms" : [ 
+      { 
+         "id" : "WindowCamera", 
+         "on" : "true", 
+         "type" : "WindowCamera", 
+         "position" : { 
+            "x" : "0.351", 
+            "y" : "1.831", 
+            "z" : "0.155"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.351", 
+            "y" : "1.831", 
+            "z" : "0.155"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0.351", 
+                  "y" : "1.831", 
+                  "z" : "0.155"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "DisplayControl", 
+               "position" : { 
+                  "x" : "0.51", 
+                  "y" : "1.831", 
+                  "z" : "0.155"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "WindowCamera:control"
+            }
+         ]
+      }, 
+      { 
+         "id" : "PlayerNavigationPanel", 
+         "on" : "true", 
+         "type" : "PlayerNavigationPanel", 
+         "position" : { 
+            "x" : "0.5", 
+            "y" : "0", 
+            "z" : "0.5"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.5", 
+            "y" : "0", 
+            "z" : "0.5"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "control", 
+               "interactableInPlayMode" : "false", 
+               "xPositionLock" : "true", 
+               "yPositionLock" : "true", 
+               "zPositionLock" : "true", 
+               "xRotationLock" : "true", 
+               "yRotationLock" : "true", 
+               "zRotationLock" : "true", 
+               "position" : { 
+                  "x" : "0.5", 
+                  "y" : "0", 
+                  "z" : "0.5"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "CoreControl", 
+         "on" : "true", 
+         "type" : "CoreControl", 
+         "storables" : [ 
+            { 
+               "id" : "MotionAnimationMaster", 
+               "triggers" : [ 
+               ]
+            }
+         ]
+      }, 
+      { 
+         "id" : "[CameraRig]", 
+         "on" : "true", 
+         "type" : "VRController", 
+         "position" : { 
+            "x" : "0.9196524", 
+            "y" : "0", 
+            "z" : "1.097194"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "199.8551", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+         ]
+      }, 
+      { 
+         "id" : "CustomUnityAsset", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0.1238808", 
+            "y" : "0", 
+            "z" : "0.007098079"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "355.127", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1", 
+            "y" : "1", 
+            "z" : "1.396984E-09"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "asset", 
+               "registerCanvases" : "false", 
+               "assetName" : "assets/frameangel/playerscreen/fa_player_screen.prefab", 
+               "assetUrl" : "FrameAngel.DevPlayer.1:/Custom/Assets/FrameAngel/Player/dev_cua_player.0.6.0.assetbundle"
+            }, 
+            { 
+               "id" : "PluginManager", 
+               "plugins" : { 
+                  "plugin#0" : "FrameAngel.DevPlayer.1:/Custom/Scripts/dev_plugin_player.0.6.0.dll"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "1", 
+                  "y" : "1", 
+                  "z" : "1.396984E-09"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "plugin#0_FASyncRuntime", 
+               "Favorite" : "true", 
+               "Preset Name" : "fifth", 
+               "Favorites" : "fifth", 
+               "Select Existing..." : "fifth"
+            }
+         ]
+      }, 
+      { 
+         "id" : "CUA_ROOM", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "Assets/Greek_ruins.unity", 
+               "assetUrl" : "TacoCat.Greece_ruins.2:/Custom/Assets/[TacoCat]/greek_ruins.assetbundle"
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "CUA_SKY", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-3.364094E-06", 
+            "y" : "-9.607811", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "-1.264502E-05", 
+            "y" : "219.0728", 
+            "z" : "1.557476E-05"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "Assets/skyboxclouds.unity", 
+               "assetUrl" : "TacoCat.Greece_ruins.2:/Custom/Assets/[TacoCat]/skyboxclouds.scene"
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "-3.364094E-06", 
+                  "y" : "-9.607811", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "-1.264502E-05", 
+                  "y" : "219.0728", 
+                  "z" : "1.557476E-05"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "InvisibleLight_SUN", 
+         "on" : "true", 
+         "type" : "InvisibleLight", 
+         "position" : { 
+            "x" : "0.29", 
+            "y" : "1.833", 
+            "z" : "0.238"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.29", 
+            "y" : "1.833", 
+            "z" : "0.238"
+         }, 
+         "containerRotation" : { 
+            "x" : "43.18985", 
+            "y" : "12.7718", 
+            "z" : "129.9093"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "Light", 
+               "intensity" : "1.2", 
+               "shadowStrength" : "1", 
+               "type" : "Directional", 
+               "renderType" : "ForcePixel", 
+               "shadowResolution" : "VeryHigh", 
+               "color" : { 
+                  "h" : "0.086", 
+                  "s" : "0.2265117", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0.29", 
+                  "y" : "1.833", 
+                  "z" : "0.238"
+               }, 
+               "rotation" : { 
+                  "x" : "43.18985", 
+                  "y" : "12.7718", 
+                  "z" : "129.9093"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_toggle_play", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Play/pause"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_previous", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1.3", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Previous"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1.3", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_load", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1", 
+            "y" : "0.6999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Load"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1", 
+                  "y" : "0.6999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "SubScene", 
+         "on" : "true", 
+         "type" : "SubScene", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AnimationMaster", 
+               "triggers" : [ 
+               ]
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "fap", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "1", 
+                  "y" : "1", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_next", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.6999999", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Next"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.6999999", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "slider_progress", 
+         "on" : "true", 
+         "type" : "UISlider", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "1", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "30", 
+               "text" : " "
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "1400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "SliderColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8"
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "display_curr", 
+         "on" : "true", 
+         "type" : "UIText", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "1", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1.47", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "00:00"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "Panel", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1.47", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "display_total", 
+         "on" : "true", 
+         "type" : "UIText", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "1.47", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.53", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "30:00"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "Panel", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.53", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "checkbox_shuffle", 
+         "on" : "true", 
+         "type" : "UIToggle", 
+         "parentAtom" : "fap", 
+         "position" : { 
+            "x" : "1", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.71", 
+            "y" : "0.6999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Shuffle"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "300", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "SliderColor", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.71", 
+                  "y" : "0.6999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "fap:object"
+            }
+         ]
+      }
+   ]
+}
