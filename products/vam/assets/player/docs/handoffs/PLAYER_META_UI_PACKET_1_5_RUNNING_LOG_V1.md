@@ -148,6 +148,27 @@ Important:
 2. the standalone proof presets above are the current direct VaM interaction witness
 3. those are different seams and both are currently useful
 
+## Provisional operator memory to verify
+
+This is not yet promoted to fully verified witness truth, but it should be
+preserved as the current remembered state of the older Meta proof lane:
+
+1. at least one proof surface likely had basic video `play` / `pause`
+2. that same surface may also have had the screen/display working
+3. hover state was not behaving like a finished interactive surface
+4. the slider did not update truthfully
+5. the lane could process a few clicks, but it was not yet real full-state
+   interactive parity
+
+Working interpretation:
+
+1. some Meta proofs likely reached partial action wiring
+2. they did not yet reach full state readback and visual interaction parity
+3. the next interaction pass should classify each proof as:
+   - display only
+   - partial interaction
+   - full interaction
+
 ## Current defaults
 
 Theme:
