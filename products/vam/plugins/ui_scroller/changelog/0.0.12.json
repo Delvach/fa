@@ -1,0 +1,9 @@
+{
+  "version": "0.0.12",
+  "date": "2026-04-13",
+  "changes": [
+    "Rename the joystick scroller artifact stem from fa_ui_scroller to fa_joystick_scroller so the packaged and loose DLL filenames stop colliding conceptually with the nearby lane.",
+    "Rename the scroller catalog and package receipt filenames to joystick_scroller variants while preserving the deterministic Custom/Scripts package seam and the raw Custom/Plugins test seam split.",
+    "Advance the next undeployed dev package identity to FrameAngel.JoystickScrollerDev.6.var so the next package-first build does not mutate the already-tested Dev.5 rung."
+  ]
+}

@@ -7,8 +7,8 @@
     <ProjectGuid>{3C22F6B1-45E8-4F6A-8F65-95A3A0A0F9D8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>frameangel.ui_scroller</RootNamespace>
-    <AssemblyName>fa_ui_scroller</AssemblyName>
+    <RootNamespace>frameangel.joystick_scroller</RootNamespace>
+    <AssemblyName>fa_joystick_scroller</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

@@ -20,6 +20,7 @@ param(
     [string]$VarDemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$VarCreatorName = "FrameAngel",
     [string]$VarPackageName = "DevPlayer",
+    [string]$VarPackageMetadataPath = "",
     [int]$VarPublicRelease = 0,
     [string]$VarDestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipVarDistribute
@@ -385,6 +386,7 @@ $manifest = [ordered]@{
         buildsVarPackage = $BuildVarPackage.IsPresent
         includesPackagedScene = $effectiveIncludeVarScene
         includesPackagedShellFamily = $IncludeVarShellFamily.IsPresent
+        varPackageMetadataPath = $VarPackageMetadataPath
     }
     changelog = [ordered]@{
         sourcePath = $changelogSourcePath
@@ -426,6 +428,8 @@ if ($BuildVarPackage.IsPresent) {
         $VarCreatorName,
         "-PackageName",
         $VarPackageName,
+        "-MetadataPath",
+        $VarPackageMetadataPath,
         "-PublicRelease",
         $VarPublicRelease,
         "-DestinationAddonPackages",

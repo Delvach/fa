@@ -1,0 +1,9 @@
+{
+  "version": "0.0.11",
+  "date": "2026-04-13",
+  "changes": [
+    "Align the packaged Joystick Scroller DLL with the deterministic player package seam by staging it under Custom/Scripts inside the .var while keeping loose Custom/Plugins testing as a separate live path.",
+    "Block mixed live deploy runs that would both distribute a .var to AddonPackages and copy a loose scroller DLL into VaM Custom during the same build.",
+    "Advance the package-first dev test lane to FrameAngel.JoystickScrollerDev.5.var and keep the generated catalog identity aligned with that package rung."
+  ]
+}

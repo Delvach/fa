@@ -22,7 +22,7 @@
     }
   },
   "plugins": {
-    "fa_ui_scroller": {
+    "fa_joystick_scroller": {
       "enabled": true,
       "profile": "safe",
       "keepTypes": [

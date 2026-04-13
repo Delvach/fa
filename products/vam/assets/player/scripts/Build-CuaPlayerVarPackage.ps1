@@ -4,6 +4,7 @@ param(
     [string]$ReleaseManifestPath = "",
     [string]$CreatorName = "FrameAngel",
     [string]$PackageName = "DevPlayer",
+    [string]$MetadataPath = "",
     [string]$PackageVersionTag = "",
     [int]$PublicRelease = 0,
     [string]$OutputRoot = "",
@@ -430,6 +431,21 @@ function New-CustomUnityAssetPreset {
 
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
+$packageMetadataResolverPath = Join-Path $RepoRoot "shared\scripts\vam-packaging\Resolve-FrameAngelVarPackageMetadata.ps1"
+. $packageMetadataResolverPath
+
+$defaultMetadataPath = Join-Path $laneRoots.AssetsPlayerRoot "config\var.package.metadata.json"
+$effectiveMetadataPath = if ([string]::IsNullOrWhiteSpace($MetadataPath)) { $defaultMetadataPath } else { $MetadataPath }
+$resolvedPackageMetadata = Resolve-FrameAngelVarPackageMetadata `
+    -MetadataPath $effectiveMetadataPath `
+    -BasePath $RepoRoot `
+    -CreatorName $CreatorName `
+    -PackageName $PackageName `
+    -DefaultLicenseType "FC" `
+    -DefaultDescription "FrameAngel player direct CUA package"
+$resolvedCreatorName = [string]$resolvedPackageMetadata.creatorName
+$resolvedPackageName = [string]$resolvedPackageMetadata.packageName
+
 $sceneBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerDemoScene.ps1"
 $defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
 if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) {
@@ -438,7 +454,7 @@ if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) {
 else {
     $SceneTemplatePath = Resolve-PathFromBase -PathValue $SceneTemplatePath -BasePath $RepoRoot -Label "Scene template path"
 }
-$resolvedIncludeScene = $IncludeScene.IsPresent -or [string]::Equals(([string]$PackageName).Trim(), "DevPlayer", [System.StringComparison]::OrdinalIgnoreCase)
+$resolvedIncludeScene = $IncludeScene.IsPresent -or [string]::Equals($resolvedPackageName, "DevPlayer", [System.StringComparison]::OrdinalIgnoreCase)
 
 $release = Resolve-ReleaseManifest -LaneRoots $laneRoots -ExplicitVersion $Version -ExplicitReleaseManifestPath $ReleaseManifestPath
 $resolvedVersion = $release.Version
@@ -467,11 +483,11 @@ $resolvedPackageVersionTag = Resolve-VarPackageVersionTag `
     -ResolvedVersion $resolvedVersion `
     -RequestedPackageVersionTag $PackageVersionTag `
     -RequestedPublicRelease $PublicRelease `
-    -ResolvedCreatorName $CreatorName `
-    -ResolvedPackageName $PackageName `
+    -ResolvedCreatorName $resolvedCreatorName `
+    -ResolvedPackageName $resolvedPackageName `
     -ResolvedDestinationAddonPackages $DestinationAddonPackages
-$packageFileName = "{0}.{1}.{2}.var" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
-$packageZipName = "{0}.{1}.{2}.zip" -f $CreatorName, $PackageName, $resolvedPackageVersionTag
+$packageFileName = "{0}.{1}.{2}.var" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag
+$packageZipName = "{0}.{1}.{2}.zip" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag
 $zipPath = Join-Path $packagesRoot $packageZipName
 $varPath = Join-Path $packagesRoot $packageFileName
 $metaPath = Join-Path $stageRoot "meta.json"
@@ -501,8 +517,8 @@ $presetRelativePath = Join-Path "Custom\Atom\CustomUnityAsset" $presetFileName
 $packagedAssetPath = ($assetBundleRelativePath -replace '\\', '/')
 $packagedPluginPath = ($pluginRelativePath -replace '\\', '/')
 $packagedPresetPath = ($presetRelativePath -replace '\\', '/')
-$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedAssetPath
-$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedPluginPath
+$packagedAssetUrl = "{0}.{1}.{2}:/{3}" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag, $packagedAssetPath
+$packagedPluginUrl = "{0}.{1}.{2}:/{3}" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag, $packagedPluginPath
 
 $resolvedScenePrimaryMediaPath = $ScenePrimaryMediaPath
 $resolvedPresetPrimaryMediaPath = ""
@@ -514,7 +530,7 @@ if (-not [string]::IsNullOrWhiteSpace($DemoMediaSourceRoot)) {
         -StageRoot $stageRoot `
         -PackageRelativeRoot $DemoMediaPackageRelativeRoot `
         -BasePath $RepoRoot
-    $demoMediaPackageRootUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $demoMediaStage.packagedRoot
+    $demoMediaPackageRootUrl = "{0}.{1}.{2}:/{3}" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag, $demoMediaStage.packagedRoot
     $resolvedPresetPrimaryMediaPath = $demoMediaPackageRootUrl
     if ([string]::IsNullOrWhiteSpace($resolvedScenePrimaryMediaPath)) {
         $resolvedScenePrimaryMediaPath = $demoMediaPackageRootUrl
@@ -541,7 +557,7 @@ if ($null -ne $shellFamilyStage) {
         $shellBundleFileName = [System.IO.Path]::GetFileName($shellBundleSourcePath)
         $shellBundleRelativePath = Join-Path "Custom\Assets\FrameAngel\Player" $shellBundleFileName
         $packagedShellBundlePath = ($shellBundleRelativePath -replace '\\', '/')
-        $packagedShellAssetUrl = "{0}.{1}.{2}:/{3}" -f $CreatorName, $PackageName, $resolvedPackageVersionTag, $packagedShellBundlePath
+        $packagedShellAssetUrl = "{0}.{1}.{2}:/{3}" -f $resolvedCreatorName, $resolvedPackageName, $resolvedPackageVersionTag, $packagedShellBundlePath
         [void](Copy-FileIntoStage -SourcePath $shellBundleSourcePath -StageRoot $stageRoot -RelativePath $shellBundleRelativePath)
 
         $shellPresetFileName = [System.IO.Path]::GetFileName([string]$shellEntry.presetPath)
@@ -719,12 +735,7 @@ if ($resolvedIncludeScene) {
     }
 }
 
-$meta = [ordered]@{
-    licenseType = "FC"
-    creatorName = $CreatorName
-    packageName = $PackageName
-    description = "FrameAngel player direct CUA package"
-}
+$meta = New-FrameAngelVarPackageMetaObject -ResolvedMetadata $resolvedPackageMetadata
 Write-JsonFile -Path $metaPath -Value $meta
 
 $stagedFiles = New-Object System.Collections.Generic.List[object]
@@ -808,11 +819,13 @@ $stageManifest = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repoRoot = $RepoRoot
     packageMode = "direct_cua"
-    creatorName = $CreatorName
-    packageName = $PackageName
+    creatorName = $resolvedCreatorName
+    packageName = $resolvedPackageName
     publicRelease = $PublicRelease
     packageVersionTag = $resolvedPackageVersionTag
     packageFileName = $packageFileName
+    packageMetadataConfigPath = [string]$resolvedPackageMetadata.metadataConfigPath
+    packageMetadata = $meta
     playerVersion = $resolvedVersion
     releaseManifestPath = $releaseManifestPath
     authoritySeam = if ($resolvedIncludeScene) { "phase_2_package_first_direct_cua_with_packaged_scene" } else { "phase_2_direct_cua_with_packaged_plugin_attach" }
@@ -917,12 +930,14 @@ $report = [ordered]@{
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     repoRoot = $RepoRoot
     version = $resolvedVersion
-    creatorName = $CreatorName
-    packageName = $PackageName
+    creatorName = $resolvedCreatorName
+    packageName = $resolvedPackageName
     publicRelease = $PublicRelease
     packageVersionTag = $resolvedPackageVersionTag
     packageMode = "direct_cua"
     packageFileName = $packageFileName
+    packageMetadataConfigPath = [string]$resolvedPackageMetadata.metadataConfigPath
+    packageMetadata = $meta
     packagePath = $varPath
     stageRoot = $stageRoot
     sourceMetaPath = $metaPath
@@ -945,11 +960,12 @@ Write-JsonFile -Path $reportPath -Value $report
 
 [pscustomobject]@{
     version = $resolvedVersion
-    creatorName = $CreatorName
-    packageName = $PackageName
+    creatorName = $resolvedCreatorName
+    packageName = $resolvedPackageName
     publicRelease = $PublicRelease
     packageVersionTag = $resolvedPackageVersionTag
     packageMode = "direct_cua"
+    packageMetadataConfigPath = [string]$resolvedPackageMetadata.metadataConfigPath
     packagePath = $varPath
     reportPath = $reportPath
     distributed = $distribution.distributed

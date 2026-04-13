@@ -14,6 +14,10 @@ It exists because the lane already depends on these conventions in practice:
 
 This is the operator-facing truth for the current dev lane unless a later repo-local handoff supersedes it.
 
+For shared `.var` metadata rules that now cover both player and joystick scroller, also see:
+
+- `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+
 ## Current Naming
 
 There are two version layers and they are intentionally different.

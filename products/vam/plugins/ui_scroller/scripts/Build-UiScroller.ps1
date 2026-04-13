@@ -12,6 +12,7 @@ param(
     [string]$DeployDir = "F:\sim\vam\Custom\Plugins",
     [string]$LegacyCleanupDir = "F:\sim\vam\Custom\Scripts",
     [string]$DestinationAddonPackages = "F:\sim\vam\AddonPackages",
+    [string]$PackageMetadataPath = "",
     [switch]$SkipVarPackage,
     [switch]$SkipVarDistribute,
     [switch]$AllowExistingVersion
@@ -113,6 +114,25 @@ function Get-UiScrollerCatalogState {
     }
 
     return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
+}
+
+function Remove-LegacyDeployedDlls {
+    param(
+        [string]$PrimaryDir,
+        [string]$LegacyDir
+    )
+
+    if (Test-Path -LiteralPath $PrimaryDir) {
+        @('fa_ui_scroller*.dll', 'fa_joystick_scroller*.dll') | ForEach-Object {
+            Get-ChildItem -LiteralPath $PrimaryDir -Filter $_ -ErrorAction SilentlyContinue | Remove-Item -Force
+        }
+    }
+
+    if (Test-Path -LiteralPath $LegacyDir) {
+        @('fa_ui_scroller*.dll', 'fa_joystick_scroller*.dll') | ForEach-Object {
+            Get-ChildItem -LiteralPath $LegacyDir -Filter $_ -ErrorAction SilentlyContinue | Remove-Item -Force
+        }
+    }
 }
 
 function Convert-ToCSharpStringLiteral {
@@ -228,26 +248,28 @@ $repoRootResolved = if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
 else {
     Resolve-PathFromBase -PathValue $RepoRoot -BasePath (Get-Location).Path -Label "Repo root"
 }
+$packageMetadataResolverPath = Join-Path $repoRootResolved "shared\scripts\vam-packaging\Resolve-FrameAngelVarPackageMetadata.ps1"
+. $packageMetadataResolverPath
 
 $pluginVersionPath = Join-Path $pluginRoot "plugin.version.json"
 $pluginVersionState = Get-PluginVersionState -Path $pluginVersionPath
-$catalogPath = Join-Path $pluginRoot "config\ui_scroller.catalog.json"
+$catalogPath = Join-Path $pluginRoot "config\joystick_scroller.catalog.json"
 $catalogState = Get-UiScrollerCatalogState -Path $catalogPath
 $generatedCatalogPath = Join-Path $pluginRoot "src\FAUiScrollerCatalog.Generated.cs"
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) { [string]$pluginVersionState.version } else { $Version }
-$artifactName = "fa_ui_scroller.$resolvedVersion.dll"
+$artifactName = "fa_joystick_scroller.$resolvedVersion.dll"
 
 if ((-not $AllowExistingVersion) -and ([string]$pluginVersionState.version -ne $resolvedVersion)) {
     throw "Requested version '$resolvedVersion' does not match plugin.version.json ('$($pluginVersionState.version)'). Use -AllowExistingVersion only if you are intentionally rebuilding an existing version."
 }
 
-$projectPath = Join-Path $pluginRoot "vs\fa_ui_scroller\fa_ui_scroller.csproj"
+$projectPath = Join-Path $pluginRoot "vs\fa_joystick_scroller\fa_joystick_scroller.csproj"
 $releaseDir = Join-Path $pluginRoot ("build\releases\" + $resolvedVersion)
-$rawOutputPath = Join-Path $releaseDir "fa_ui_scroller.raw.dll"
+$rawOutputPath = Join-Path $releaseDir "fa_joystick_scroller.raw.dll"
 $finalOutputPath = Join-Path $releaseDir $artifactName
 $obfuscationConfigPath = Join-Path $pluginRoot "config\obfuscation.defaults.json"
 $obfuscationScriptPath = Join-Path $pluginRoot "scripts\Obfuscate-Plugin.ps1"
-$buildOutputPath = Join-Path $pluginRoot "vs\fa_ui_scroller\bin\Release\fa_ui_scroller.dll"
+$buildOutputPath = Join-Path $pluginRoot "vs\fa_joystick_scroller\bin\Release\fa_joystick_scroller.dll"
 
 Ensure-Directory -PathValue $releaseDir
 Write-UiScrollerGeneratedCatalog -CatalogState $catalogState -OutputPath $generatedCatalogPath
@@ -278,7 +300,7 @@ else {
 if ($shouldObfuscate) {
     & $obfuscationScriptPath `
         -RepoRoot $pluginRoot `
-        -PluginKey "fa_ui_scroller" `
+        -PluginKey "fa_joystick_scroller" `
         -InputAssemblyPath $rawOutputPath `
         -OutputAssemblyPath $finalOutputPath `
         -ConfigPath $obfuscationConfigPath `
@@ -299,23 +321,40 @@ else {
     [string]$catalogState.package.devIdentity
 }
 $packageState = Resolve-PackageIdentityState -Identity $selectedPackageIdentity
+$defaultPackageMetadataPath = Join-Path $pluginRoot "config\var.package.metadata.json"
+$effectivePackageMetadataPath = if ([string]::IsNullOrWhiteSpace($PackageMetadataPath)) { $defaultPackageMetadataPath } else { $PackageMetadataPath }
+$resolvedPackageMetadata = Resolve-FrameAngelVarPackageMetadata `
+    -MetadataPath $effectivePackageMetadataPath `
+    -BasePath $repoRootResolved `
+    -CreatorName $packageState.creatorName `
+    -PackageName $packageState.packageName `
+    -DefaultLicenseType "FC" `
+    -DefaultDescription "FrameAngel Joystick Scroller plugin"
 
 $shouldBuildVarPackage = -not $SkipVarPackage.IsPresent
 $shouldDeployRaw = (-not $SkipDeploy.IsPresent) -and ($DeployMode -eq "raw" -or $DeployMode -eq "both")
 $shouldDistributeVar = $shouldBuildVarPackage -and (-not $SkipDeploy.IsPresent) -and (-not $SkipVarDistribute.IsPresent) -and ($DeployMode -eq "package" -or $DeployMode -eq "both")
 
+if ($shouldDeployRaw -and $shouldDistributeVar) {
+    throw "joystick scroller live deploy seam conflict: do not distribute a .var to AddonPackages and deploy a loose joystick scroller DLL into VaM Custom in the same run. Use -DeployMode package for package-first testing or -DeployMode raw for loose Custom\\Plugins testing."
+}
+
 $reportPath = $finalOutputPath + ".build-report.txt"
-$identityPath = Join-Path $releaseDir "ui_scroller.package-identities.json"
+$identityPath = Join-Path $releaseDir "joystick_scroller.package-identities.json"
 
 $packageRoot = Join-Path $pluginRoot ("build\var_packages\" + $resolvedVersion + "\" + $PackageChannel)
 $stageRoot = Join-Path $packageRoot "source"
 $packagesDir = Join-Path $packageRoot "packages"
 $packageManifestPath = Join-Path $stageRoot "frameangel_joystick_scroller_var_manifest.json"
 $metaPath = Join-Path $stageRoot "meta.json"
-$packageReportPath = Join-Path $packageRoot "ui_scroller_var_package_report.json"
+$packageReportPath = Join-Path $packageRoot "joystick_scroller_var_package_report.json"
 $packagePath = Join-Path $packagesDir $packageState.packageFileName
 $distributedPackagePath = ""
-$packagedPluginRelativePath = Join-Path "Custom\Plugins" $artifactName
+# The scroller .var follows the deterministic package layout used by the player
+# lane and stages the packaged plugin under Custom/Scripts. Loose
+# Custom/Plugins testing is a separate live seam and must not be mixed with
+# AddonPackages distribution in the same run.
+$packagedPluginRelativePath = Join-Path "Custom\Scripts" $artifactName
 
 if ($shouldBuildVarPackage) {
     if (Test-Path -LiteralPath $stageRoot) {
@@ -329,12 +368,7 @@ if ($shouldBuildVarPackage) {
     Ensure-Directory -PathValue (Split-Path -Parent $stagedPluginPath)
     Copy-Item -LiteralPath $finalOutputPath -Destination $stagedPluginPath -Force
 
-    $meta = [ordered]@{
-        licenseType = "FC"
-        creatorName = $packageState.creatorName
-        packageName = $packageState.packageName
-        description = "FrameAngel Joystick Scroller plugin"
-    }
+    $meta = New-FrameAngelVarPackageMetaObject -ResolvedMetadata $resolvedPackageMetadata
     Write-JsonFile -Path $metaPath -Value $meta
 
     $stageManifest = [ordered]@{
@@ -350,6 +384,8 @@ if ($shouldBuildVarPackage) {
         creatorName = $packageState.creatorName
         packageName = $packageState.packageName
         packageVersionTag = $packageState.packageVersionTag
+        packageMetadataConfigPath = [string]$resolvedPackageMetadata.metadataConfigPath
+        packageMetadata = $meta
         obfuscated = $shouldObfuscate
         packagedPluginPath = ($packagedPluginRelativePath -replace '\\', '/')
     }
@@ -359,6 +395,7 @@ if ($shouldBuildVarPackage) {
 
     if ($shouldDistributeVar) {
         Ensure-Directory -PathValue $DestinationAddonPackages
+        Remove-LegacyDeployedDlls -PrimaryDir $DeployDir -LegacyDir $LegacyCleanupDir
         $distributedPackagePath = Join-Path $DestinationAddonPackages $packageState.packageFileName
         Copy-Item -LiteralPath $packagePath -Destination $distributedPackagePath -Force
     }
@@ -375,6 +412,8 @@ if ($shouldBuildVarPackage) {
         packageName = $packageState.packageName
         packageVersionTag = $packageState.packageVersionTag
         packageFileName = $packageState.packageFileName
+        packageMetadataConfigPath = [string]$resolvedPackageMetadata.metadataConfigPath
+        packageMetadata = $meta
         packagePath = $packagePath
         stageRoot = $stageRoot
         sourceMetaPath = $metaPath
@@ -417,10 +456,7 @@ Write-JsonFile -Path $identityPath -Value $identityReport
 
 if ($shouldDeployRaw) {
     Ensure-Directory -PathValue $DeployDir
-    Get-ChildItem -LiteralPath $DeployDir -Filter 'fa_ui_scroller*.dll' -ErrorAction SilentlyContinue | Remove-Item -Force
-    if (Test-Path -LiteralPath $LegacyCleanupDir) {
-        Get-ChildItem -LiteralPath $LegacyCleanupDir -Filter 'fa_ui_scroller*.dll' -ErrorAction SilentlyContinue | Remove-Item -Force
-    }
+    Remove-LegacyDeployedDlls -PrimaryDir $DeployDir -LegacyDir $LegacyCleanupDir
     Copy-Item -LiteralPath $finalOutputPath -Destination (Join-Path $DeployDir $artifactName) -Force
 }
 
