@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = "Stop"
 $resolvedAssetLaneRoot = Split-Path -Parent $PSScriptRoot
 $defaultProjectPath = Join-Path $resolvedAssetLaneRoot "unity\ghost_training_export_clone"
-$defaultUnityEditorBridgePackagePath = "C:\projects\frameangel_tools\tools\unity_editor_bridge\current"
+$defaultUnityEditorBridgePackagePath = Join-Path $resolvedAssetLaneRoot "unity_editor_bridge\current"
 $defaultFamilyShellKeys = @(
     "mcbrooke_laptop",
     "ivone_phone",
@@ -58,6 +58,7 @@ function Repair-UnityEditorBridgeDependency {
     $lockPath = Join-Path $TargetProjectPath "Packages\packages-lock.json"
     $liveDependencyValue = "file:" + ($LiveBridgePackagePath -replace "\\", "/")
     $legacyDependencyValues = @(
+        "file:C:/projects/frameangel_tools/tools/unity_editor_bridge/current",
         "file:C:/projects/10-products/vam/vam-plugin-suite/external/unity-editor-bridge",
         "file:C:/projects/frameangel/tools/unity/packages/unity-editor-bridge"
     )

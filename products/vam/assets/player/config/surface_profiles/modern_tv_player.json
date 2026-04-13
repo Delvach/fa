@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "frameangel_player_surface_profile_v1",
+  "surfaceKey": "modern_tv_player",
+  "displayName": "Modern TV Player",
+  "surfaceType": "shell",
+  "shellKey": "modern_tv",
+  "deviceClass": "tv",
+  "orientationSupport": "landscape",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "hostProfilePath": "products/vam/assets/player/config/host_profiles/modern_tv_player.json"
+}

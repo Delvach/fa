@@ -186,18 +186,30 @@ if ($shellProfiles.Count -le 0) {
 
 $normalizedShellKeys = Normalize-ShellKeys -RequestedShellKeys $ShellKeys
 
-$selectedShells = if ($null -ne $normalizedShellKeys -and $normalizedShellKeys.Count -gt 0) {
+$selectedShells = New-Object System.Collections.Generic.List[object]
+if ($null -ne $normalizedShellKeys -and $normalizedShellKeys.Count -gt 0) {
     $requested = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::OrdinalIgnoreCase)
     foreach ($shellKey in $normalizedShellKeys) {
         if (-not [string]::IsNullOrWhiteSpace($shellKey)) {
-            [void]$requested.Add($shellKey)
+            [void]$requested.Add($shellKey.Trim())
         }
     }
 
-    @($shellProfiles | Where-Object { $requested.Contains([string]$_.shellKey) })
+    foreach ($shellProfile in @($shellProfiles)) {
+        $resolvedShellKey = [string]$shellProfile.shellKey
+        if ([string]::IsNullOrWhiteSpace($resolvedShellKey)) {
+            continue
+        }
+
+        if ($requested.Contains($resolvedShellKey.Trim())) {
+            [void]$selectedShells.Add($shellProfile)
+        }
+    }
 }
 else {
-    $shellProfiles
+    foreach ($shellProfile in @($shellProfiles)) {
+        [void]$selectedShells.Add($shellProfile)
+    }
 }
 
 if ($selectedShells.Count -le 0) {
@@ -218,7 +230,7 @@ New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 
 $results = New-Object System.Collections.Generic.List[object]
 
-foreach ($shellProfile in @($selectedShells)) {
+foreach ($shellProfile in $selectedShells) {
     $screenPackageRoot = [string]$shellProfile.packageRootPath
     $shellKey = [string]$shellProfile.shellKey
     $hostPackageId = [string]$shellProfile.hostPackageId

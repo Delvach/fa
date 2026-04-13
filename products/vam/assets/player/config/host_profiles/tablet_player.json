@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "frameangel_player_host_shell_profile_v1",
+  "sourceSummaryPath": "products/vam/assets/player/build/host_shell_exports/ghost_player_host_shell_export_summary.json",
+  "shellKey": "ivad_tablet",
+  "hostDisplayName": "FA CUA Player Tablet",
+  "hostResourceId": "fa_cua_player_tablet_v1",
+  "hostPackageId": "faipe_fa_cua_player_tablet_v1",
+  "screenSurfaceNodeId": "faprimitive_group_root_g007_ivad_tablet_faprimitive_cube_g007_ivad_tablet_screen",
+  "disconnectSurfaceNodeId": "faprimitive_group_root_g007_ivad_tablet_faprimitive_cube_g007_ivad_tablet_disconnect_mask",
+  "screenGlassNodeId": "faprimitive_group_root_g007_ivad_tablet_faprimitive_cube_g007_ivad_tablet_glass",
+  "controlsAnchorNodeId": "faprimitive_group_root_g007_ivad_tablet_faprimitive_group_root_g007_ivad_tablet_controls_anchor",
+  "bottomAnchorNodeId": "faprimitive_group_root_g007_ivad_tablet_faprimitive_group_root_g007_ivad_tablet_bottom_anchor",
+  "deviceClass": "tablet",
+  "orientationSupport": "both",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "autoOrientToGround": false,
+  "safeCornerRadius": 0.02199999988079071
+}

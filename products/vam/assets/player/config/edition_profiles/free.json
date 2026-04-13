@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "frameangel_player_edition_profile_v1",
+  "editionKey": "free",
+  "displayName": "Free",
+  "coreBuildKey": "free_core",
+  "marketingRole": "public_baseline",
+  "inheritsEditionKey": "",
+  "buildRules": {
+    "compilePremiumModules": false,
+    "packageDemoConstraints": false
+  },
+  "notes": [
+    "Stable shipping baseline.",
+    "No premium-only modules compiled in."
+  ]
+}

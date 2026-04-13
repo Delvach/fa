@@ -8,13 +8,18 @@ plugin-root monorepo layout.
 
 ## Current source authority
 
-Temporary authored Unity source for shell recovery is:
+Repo-local authored Unity source for shell recovery is:
 
-`G:\recovery\C-drive\projects\15-training\unity\ghost_training_export_clone`
+`C:\projects\fa\products\vam\assets\player\unity\ghost_training_export_clone`
 
-The clean repo landing zone is:
+Repo-local Unity bridge package for that lane is:
 
-`C:\projects\fa\products\vam\assets\player`
+`C:\projects\fa\products\vam\assets\player\unity_editor_bridge\current`
+
+The current shell lane must not depend on external legacy repos.
+
+Historical recovery source may still exist elsewhere, but it is not current
+authority for the new system.
 
 ## Shell families in scope
 
@@ -80,7 +85,7 @@ Do not hand-rebuild these shells from screenshots.
 Preferred order:
 
 1. export authored shells from the recovery Unity project
-2. keep outputs local to `fa`
+2. keep the Unity source, bridge package, and outputs local to `fa`
 3. validate one shell family at a time
 4. only after that decide whether any source geometry should be migrated out of
    the recovery Unity project into a new clean authoring root

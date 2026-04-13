@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel_player_package_profile_v1",
+  "productId": "player_free",
+  "displayName": "Player",
+  "editionProfilePath": "products/vam/assets/player/config/edition_profiles/free.json",
+  "surfaceProfilePath": "products/vam/assets/player/config/surface_profiles/player.json",
+  "packageIdentity": {
+    "creatorName": "FrameAngel",
+    "packageName": "Player",
+    "licenseType": "CC BY-NC-ND"
+  },
+  "listing": {
+    "description": "FrameAngel Player free edition.",
+    "credits": "",
+    "instructions": "",
+    "promotionalLink": ""
+  },
+  "buildDefaults": {
+    "packageChannel": "release",
+    "includeScene": false,
+    "includeDemoMedia": false,
+    "includeShellFamily": false
+  }
+}

@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>FrameAngel.UnityEditorBridge.Validation</AssemblyName>
+    <RootNamespace>FrameAngel.UnityEditorBridge</RootNamespace>
+    <OutputType>Library</OutputType>
+    <UnityEditorManagedDir Condition="'$(UnityEditorManagedDir)' == ''">C:\Program Files\Unity\Hub\Editor\2022.3.62f3\Editor\Data\Managed</UnityEditorManagedDir>
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(TMP)\FrameAngel.UnityEditorBridge.Validation\obj\</BaseIntermediateOutputPath>
+    <OutputPath Condition="'$(OutputPath)' == ''">$(TMP)\FrameAngel.UnityEditorBridge.Validation\bin\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Runtime\FAPlayerShellAuthoring.cs" Link="Runtime\FAPlayerShellAuthoring.cs" />
+    <Compile Include="..\Runtime\FAPlayerScreenSlotAuthoring.cs" Link="Runtime\FAPlayerScreenSlotAuthoring.cs" />
+    <Compile Include="..\Editor\UnityBridgeModels.cs" Link="Editor\UnityBridgeModels.cs" />
+    <Compile Include="..\Editor\UnityBridgeInnerPieceModels.cs" Link="Editor\UnityBridgeInnerPieceModels.cs" />
+    <Compile Include="..\Editor\UnityBridgeInnerPieceService.cs" Link="Editor\UnityBridgeInnerPieceService.cs" />
+    <Compile Include="..\Editor\UnityBridgeDispatcher.cs" Link="Editor\UnityBridgeDispatcher.cs" />
+    <Compile Include="..\Editor\UnityBridgeInspector.cs" Link="Editor\UnityBridgeInspector.cs" />
+    <Compile Include="..\Editor\UnityBridgeCaptureService.cs" Link="Editor\UnityBridgeCaptureService.cs" />
+    <Compile Include="..\Editor\UnityBridgeWorkspaceService.cs" Link="Editor\UnityBridgeWorkspaceService.cs" />
+    <Compile Include="..\Editor\UnityBridgeMaterialStyleService.cs" Link="Editor\UnityBridgeMaterialStyleService.cs" />
+    <Compile Include="..\Editor\UnityBridgeServer.cs" Link="Editor\UnityBridgeServer.cs" />
+    <Compile Include="..\Editor\UnityBridgeController.cs" Link="Editor\UnityBridgeController.cs" />
+    <Compile Include="..\Editor\UnityBridgeWindow.cs" Link="Editor\UnityBridgeWindow.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="UnityEditor">
+      <HintPath>$(UnityEditorManagedDir)\UnityEditor.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(UnityEditorManagedDir)\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(UnityEditorManagedDir)\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

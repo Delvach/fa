@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.frameangel.unity-editor-bridge": "file:../../../../../../../../frameangel_tools/tools/unity_editor_bridge/current",
+    "com.frameangel.unity-editor-bridge": "file:../../../unity_editor_bridge/current",
     "com.meta.xr.sdk.interaction.ovr": "85.0.0",
     "com.unity.collab-proxy": "2.11.4",
     "com.unity.feature.development": "1.0.1",

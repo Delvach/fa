@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "frameangel_player_host_shell_profile_v1",
+  "sourceSummaryPath": "products/vam/assets/player/build/host_shell_exports/ghost_player_host_shell_export_summary.json",
+  "shellKey": "modern_tv",
+  "hostDisplayName": "FA CUA Player Modern TV",
+  "hostResourceId": "fa_cua_player_modern_tv_v1",
+  "hostPackageId": "faipe_fa_cua_player_modern_tv_v1",
+  "screenSurfaceNodeId": "faprimitive_group_root_g007_modern_tv_faprimitive_cube_g007_modern_tv_screen",
+  "disconnectSurfaceNodeId": "faprimitive_group_root_g007_modern_tv_faprimitive_cube_g007_modern_tv_disconnect_mask",
+  "screenGlassNodeId": "faprimitive_group_root_g007_modern_tv_faprimitive_cube_g007_modern_tv_glass",
+  "controlsAnchorNodeId": "faprimitive_group_root_g007_modern_tv_faprimitive_group_root_g007_modern_tv_controls_anchor",
+  "bottomAnchorNodeId": "faprimitive_group_root_g007_modern_tv_faprimitive_group_root_g007_modern_tv_bottom_anchor",
+  "deviceClass": "tv",
+  "orientationSupport": "landscape",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "autoOrientToGround": false,
+  "safeCornerRadius": 0.009999999776482582
+}

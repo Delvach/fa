@@ -1,0 +1,17 @@
+{
+  "name": "com.frameangel.unity-editor-bridge",
+  "displayName": "FrameAngel Unity Editor Bridge",
+  "version": "0.7.20",
+  "unity": "2022.3",
+  "description": "Bounded Unity Editor HTTP bridge for Kitchen Sync unity_adapter with primitive workspace observe/capture/mutation support plus InnerPiece hybrid package export.",
+  "keywords": [
+    "frameangel",
+    "unity",
+    "bridge",
+    "editor",
+    "kitchen-sync"
+  ],
+  "dependencies": {
+    "com.unity.nuget.newtonsoft-json": "3.2.1"
+  }
+}

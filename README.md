@@ -46,6 +46,12 @@ Tracked Unity authoring source:
 
 - `products/vam/assets/player/unity/player-screen-2018`
 
+Volodeck / XR authoring lane:
+
+- `products/vam/assets/player/unity/ghost_training_export_clone`
+- `products/vam/assets/player/unity_editor_bridge/current`
+- Volodeck is a parity witness for the same exposed player/shell method surface, not a separate authority path
+
 Minimal scripts kept in this repo:
 
 - `products/vam/assets/player/scripts/Build-CuaPlayerResource.ps1`

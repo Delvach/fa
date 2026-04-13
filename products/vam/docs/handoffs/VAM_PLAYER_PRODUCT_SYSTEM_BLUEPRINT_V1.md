@@ -183,6 +183,23 @@ production:
 
 That is the correct foundation for scalable new products.
 
+### Volodeck parity seam
+
+Volodeck should stay in the system as a repo-local parity witness for shell and
+control work.
+
+It should:
+
+1. use the repo-local Unity authoring project
+2. use the repo-local Unity bridge package
+3. exercise the same exposed player and control methods that VaM will use
+
+It should not:
+
+1. become a separate control contract
+2. depend on external legacy repos
+3. become a special-case runtime authority
+
 ## Product Matrix
 
 The first public family is:

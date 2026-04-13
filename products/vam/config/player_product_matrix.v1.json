@@ -19,16 +19,19 @@
   "editionProfiles": {
     "free": {
       "coreBuildKey": "free_core",
-      "marketingRole": "public_baseline"
+      "marketingRole": "public_baseline",
+      "profilePath": "products/vam/assets/player/config/edition_profiles/free.json"
     },
     "pro": {
       "coreBuildKey": "pro_core",
-      "marketingRole": "premium"
+      "marketingRole": "premium",
+      "profilePath": "products/vam/assets/player/config/edition_profiles/pro.json"
     },
     "pro_demo": {
       "coreBuildKey": "pro_core",
       "marketingRole": "demo",
-      "inheritsEdition": "pro"
+      "inheritsEdition": "pro",
+      "profilePath": "products/vam/assets/player/config/edition_profiles/pro_demo.json"
     }
   },
   "surfaces": {
@@ -36,27 +39,36 @@
       "displayName": "Player",
       "surfaceType": "basic_screen",
       "shellKey": "",
+      "profilePath": "products/vam/assets/player/config/surface_profiles/player.json",
       "notes": "Base screen authority seam."
     },
     "modern_tv_player": {
       "displayName": "Modern TV Player",
       "surfaceType": "shell",
-      "shellKey": "modern_tv"
+      "shellKey": "modern_tv",
+      "profilePath": "products/vam/assets/player/config/surface_profiles/modern_tv_player.json",
+      "hostProfilePath": "products/vam/assets/player/config/host_profiles/modern_tv_player.json"
     },
     "laptop_player": {
       "displayName": "Laptop Player",
       "surfaceType": "shell",
-      "shellKey": "mcbrooke_laptop"
+      "shellKey": "mcbrooke_laptop",
+      "profilePath": "products/vam/assets/player/config/surface_profiles/laptop_player.json",
+      "hostProfilePath": "products/vam/assets/player/config/host_profiles/laptop_player.json"
     },
     "phone_player": {
       "displayName": "Phone Player",
       "surfaceType": "shell",
-      "shellKey": "ivone_phone"
+      "shellKey": "ivone_phone",
+      "profilePath": "products/vam/assets/player/config/surface_profiles/phone_player.json",
+      "hostProfilePath": "products/vam/assets/player/config/host_profiles/phone_player.json"
     },
     "tablet_player": {
       "displayName": "Tablet Player",
       "surfaceType": "shell",
-      "shellKey": "ivad_tablet"
+      "shellKey": "ivad_tablet",
+      "profilePath": "products/vam/assets/player/config/surface_profiles/tablet_player.json",
+      "hostProfilePath": "products/vam/assets/player/config/host_profiles/tablet_player.json"
     }
   },
   "products": [
@@ -65,105 +77,120 @@
       "displayName": "Player",
       "packageName": "Player",
       "surfaceKey": "player",
-      "editionProfileKey": "free"
+      "editionProfileKey": "free",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/player_free.json"
     },
     {
       "productId": "player_pro",
       "displayName": "Player Pro",
       "packageName": "PlayerPro",
       "surfaceKey": "player",
-      "editionProfileKey": "pro"
+      "editionProfileKey": "pro",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/player_pro.json"
     },
     {
       "productId": "player_pro_demo",
       "displayName": "Player Pro Demo",
       "packageName": "PlayerProDemo",
       "surfaceKey": "player",
-      "editionProfileKey": "pro_demo"
+      "editionProfileKey": "pro_demo",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/player_pro_demo.json"
     },
     {
       "productId": "modern_tv_player_free",
       "displayName": "Modern TV Player",
       "packageName": "ModernTVPlayer",
       "surfaceKey": "modern_tv_player",
-      "editionProfileKey": "free"
+      "editionProfileKey": "free",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/modern_tv_player_free.json"
     },
     {
       "productId": "modern_tv_player_pro",
       "displayName": "Modern TV Player Pro",
       "packageName": "ModernTVPlayerPro",
       "surfaceKey": "modern_tv_player",
-      "editionProfileKey": "pro"
+      "editionProfileKey": "pro",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/modern_tv_player_pro.json"
     },
     {
       "productId": "modern_tv_player_pro_demo",
       "displayName": "Modern TV Player Pro Demo",
       "packageName": "ModernTVPlayerProDemo",
       "surfaceKey": "modern_tv_player",
-      "editionProfileKey": "pro_demo"
+      "editionProfileKey": "pro_demo",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/modern_tv_player_pro_demo.json"
     },
     {
       "productId": "laptop_player_free",
       "displayName": "Laptop Player",
       "packageName": "LaptopPlayer",
       "surfaceKey": "laptop_player",
-      "editionProfileKey": "free"
+      "editionProfileKey": "free",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/laptop_player_free.json"
     },
     {
       "productId": "laptop_player_pro",
       "displayName": "Laptop Player Pro",
       "packageName": "LaptopPlayerPro",
       "surfaceKey": "laptop_player",
-      "editionProfileKey": "pro"
+      "editionProfileKey": "pro",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/laptop_player_pro.json"
     },
     {
       "productId": "laptop_player_pro_demo",
       "displayName": "Laptop Player Pro Demo",
       "packageName": "LaptopPlayerProDemo",
       "surfaceKey": "laptop_player",
-      "editionProfileKey": "pro_demo"
+      "editionProfileKey": "pro_demo",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/laptop_player_pro_demo.json"
     },
     {
       "productId": "phone_player_free",
       "displayName": "Phone Player",
       "packageName": "PhonePlayer",
       "surfaceKey": "phone_player",
-      "editionProfileKey": "free"
+      "editionProfileKey": "free",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/phone_player_free.json"
     },
     {
       "productId": "phone_player_pro",
       "displayName": "Phone Player Pro",
       "packageName": "PhonePlayerPro",
       "surfaceKey": "phone_player",
-      "editionProfileKey": "pro"
+      "editionProfileKey": "pro",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/phone_player_pro.json"
     },
     {
       "productId": "phone_player_pro_demo",
       "displayName": "Phone Player Pro Demo",
       "packageName": "PhonePlayerProDemo",
       "surfaceKey": "phone_player",
-      "editionProfileKey": "pro_demo"
+      "editionProfileKey": "pro_demo",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/phone_player_pro_demo.json"
     },
     {
       "productId": "tablet_player_free",
       "displayName": "Tablet Player",
       "packageName": "TabletPlayer",
       "surfaceKey": "tablet_player",
-      "editionProfileKey": "free"
+      "editionProfileKey": "free",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/tablet_player_free.json"
     },
     {
       "productId": "tablet_player_pro",
       "displayName": "Tablet Player Pro",
       "packageName": "TabletPlayerPro",
       "surfaceKey": "tablet_player",
-      "editionProfileKey": "pro"
+      "editionProfileKey": "pro",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/tablet_player_pro.json"
     },
     {
       "productId": "tablet_player_pro_demo",
       "displayName": "Tablet Player Pro Demo",
       "packageName": "TabletPlayerProDemo",
       "surfaceKey": "tablet_player",
-      "editionProfileKey": "pro_demo"
+      "editionProfileKey": "pro_demo",
+      "packageProfilePath": "products/vam/assets/player/config/package_profiles/tablet_player_pro_demo.json"
     }
   ],
   "releaseWaves": [
@@ -203,3 +230,4 @@
       ]
     }
   }
+}

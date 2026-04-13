@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "frameangel_player_surface_profile_v1",
+  "surfaceKey": "player",
+  "displayName": "Player",
+  "surfaceType": "basic_screen",
+  "shellKey": "",
+  "deviceClass": "monitor",
+  "orientationSupport": "landscape",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "hostProfilePath": "",
+  "notes": [
+    "Base screen authority seam.",
+    "No shell export dependency."
+  ]
+}

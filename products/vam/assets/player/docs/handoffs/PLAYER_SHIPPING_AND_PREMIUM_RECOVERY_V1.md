@@ -31,14 +31,14 @@ shipping artifacts.
 
 ## `.var` Packaging Recovery
 
-### Verified historical packager
+### Current repo-local packager
 
-The verified historical `.var` packager lives in the monorepo truth root:
+The active `.var` packager now lives in this repo:
 
-- `C:\projects\frameangel\products\vam\assets\player\scripts\Build-CuaPlayerVarPackage.ps1`
+- `C:\projects\fa\products\vam\assets\player\scripts\Build-CuaPlayerVarPackage.ps1`
 
-This is the recovered shipping seam to port forward, not the many recovery worktree
-variants.
+Older monorepo paths are historical substrate only and should not be treated as
+current dependencies.
 
 ### Historical staged layout
 
@@ -97,15 +97,20 @@ layout instead of zipping the current raw `.json` files unchanged.
 
 ## Obfuscation Recovery
 
-### Verified historical seam
+### Current repo-local proof seam
 
-The historical plugin obfuscation seam is:
+There is not yet a repo-local player-specific obfuscation seam in `fa`.
 
-- `C:\projects\frameangel\products\vam\plugins\player\scripts\Obfuscate-Plugin.ps1`
+The current repo-local Obfuscar proof seam lives in:
+
+- `C:\projects\fa\products\vam\plugins\ui_scroller\scripts\Obfuscate-Plugin.ps1`
 
 Backed by:
 
-- `C:\projects\frameangel\products\vam\plugins\player\build\obfuscation.defaults.json`
+- `C:\projects\fa\products\vam\plugins\ui_scroller\config\obfuscation.defaults.json`
+
+That is the reusable repo-local pattern if player obfuscation needs to return,
+but it should not be misread as a current player runtime dependency.
 
 The historical tool used was Obfuscar via:
 

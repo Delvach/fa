@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "frameangel_player_surface_profile_v1",
+  "surfaceKey": "phone_player",
+  "displayName": "Phone Player",
+  "surfaceType": "shell",
+  "shellKey": "ivone_phone",
+  "deviceClass": "phone",
+  "orientationSupport": "portrait",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "hostProfilePath": "products/vam/assets/player/config/host_profiles/phone_player.json",
+  "notes": [
+    "Surface is real now.",
+    "Swipe behavior remains a later runtime/control seam."
+  ]
+}

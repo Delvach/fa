@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "frameangel_player_host_shell_profile_v1",
+  "sourceSummaryPath": "products/vam/assets/player/build/host_shell_exports/ghost_player_host_shell_export_summary.json",
+  "shellKey": "mcbrooke_laptop",
+  "hostDisplayName": "FA CUA Player Laptop",
+  "hostResourceId": "fa_cua_player_laptop_v1",
+  "hostPackageId": "faipe_fa_cua_player_laptop_v1",
+  "screenSurfaceNodeId": "faprimitive_group_root_g007_mcbrooke_laptop_faprimitive_group_root_g007_mcbrooke_laptop_lid_pivot_faprimitive_cube_g007_mcbrooke_laptop_screen",
+  "disconnectSurfaceNodeId": "faprimitive_group_root_g007_mcbrooke_laptop_faprimitive_group_root_g007_mcbrooke_laptop_lid_pivot_faprimitive_cube_g007_mcbrooke_laptop_disconnect_mask",
+  "screenGlassNodeId": "faprimitive_group_root_g007_mcbrooke_laptop_faprimitive_group_root_g007_mcbrooke_laptop_lid_pivot_faprimitive_cube_g007_mcbrooke_laptop_glass",
+  "controlsAnchorNodeId": "faprimitive_group_root_g007_mcbrooke_laptop_faprimitive_group_root_g007_mcbrooke_laptop_lid_pivot_faprimitive_group_root_g007_mcbrooke_laptop_controls_anchor",
+  "bottomAnchorNodeId": "faprimitive_group_root_g007_mcbrooke_laptop_faprimitive_group_root_g007_mcbrooke_laptop_base_pivot_faprimitive_group_root_g007_mcbrooke_laptop_bottom_anchor",
+  "deviceClass": "laptop",
+  "orientationSupport": "landscape",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "autoOrientToGround": false,
+  "safeCornerRadius": 0.014000000432133675
+}

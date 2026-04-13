@@ -1,0 +1,14 @@
+{
+  "name": "FrameAngel.UnityEditorBridge.Runtime",
+  "rootNamespace": "FrameAngel.UnityEditorBridge",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

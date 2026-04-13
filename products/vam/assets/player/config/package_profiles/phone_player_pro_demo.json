@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel_player_package_profile_v1",
+  "productId": "phone_player_pro_demo",
+  "displayName": "Phone Player Pro Demo",
+  "editionProfilePath": "products/vam/assets/player/config/edition_profiles/pro_demo.json",
+  "surfaceProfilePath": "products/vam/assets/player/config/surface_profiles/phone_player.json",
+  "packageIdentity": {
+    "creatorName": "FrameAngel",
+    "packageName": "PhonePlayerProDemo",
+    "licenseType": "CC BY-NC-ND"
+  },
+  "listing": {
+    "description": "FrameAngel Phone Player Pro Demo package.",
+    "credits": "",
+    "instructions": "",
+    "promotionalLink": ""
+  },
+  "buildDefaults": {
+    "packageChannel": "release",
+    "includeScene": true,
+    "includeDemoMedia": true,
+    "includeShellFamily": false
+  }
+}

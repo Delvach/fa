@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel_player_package_profile_v1",
+  "productId": "modern_tv_player_pro_demo",
+  "displayName": "Modern TV Player Pro Demo",
+  "editionProfilePath": "products/vam/assets/player/config/edition_profiles/pro_demo.json",
+  "surfaceProfilePath": "products/vam/assets/player/config/surface_profiles/modern_tv_player.json",
+  "packageIdentity": {
+    "creatorName": "FrameAngel",
+    "packageName": "ModernTVPlayerProDemo",
+    "licenseType": "CC BY-NC-ND"
+  },
+  "listing": {
+    "description": "FrameAngel Modern TV Player Pro Demo package.",
+    "credits": "",
+    "instructions": "",
+    "promotionalLink": ""
+  },
+  "buildDefaults": {
+    "packageChannel": "release",
+    "includeScene": true,
+    "includeDemoMedia": true,
+    "includeShellFamily": false
+  }
+}

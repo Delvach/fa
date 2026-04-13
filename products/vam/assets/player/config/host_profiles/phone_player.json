@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "frameangel_player_host_shell_profile_v1",
+  "sourceSummaryPath": "products/vam/assets/player/build/host_shell_exports/ghost_player_host_shell_export_summary.json",
+  "shellKey": "ivone_phone",
+  "hostDisplayName": "FA CUA Player Phone",
+  "hostResourceId": "fa_cua_player_phone_v1",
+  "hostPackageId": "faipe_fa_cua_player_phone_v1",
+  "screenSurfaceNodeId": "faprimitive_group_root_g007_ivone_phone_faprimitive_cube_g007_ivone_phone_screen",
+  "disconnectSurfaceNodeId": "faprimitive_group_root_g007_ivone_phone_faprimitive_cube_g007_ivone_phone_disconnect_mask",
+  "screenGlassNodeId": "faprimitive_group_root_g007_ivone_phone_faprimitive_cube_g007_ivone_phone_glass",
+  "controlsAnchorNodeId": "faprimitive_group_root_g007_ivone_phone_faprimitive_group_root_g007_ivone_phone_controls_anchor",
+  "bottomAnchorNodeId": "faprimitive_group_root_g007_ivone_phone_faprimitive_group_root_g007_ivone_phone_bottom_anchor",
+  "deviceClass": "phone",
+  "orientationSupport": "portrait",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "autoOrientToGround": false,
+  "safeCornerRadius": 0.02800000086426735
+}

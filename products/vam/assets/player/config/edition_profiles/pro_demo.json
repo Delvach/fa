@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "frameangel_player_edition_profile_v1",
+  "editionKey": "pro_demo",
+  "displayName": "Pro Demo",
+  "coreBuildKey": "pro_core",
+  "marketingRole": "demo",
+  "inheritsEditionKey": "pro",
+  "buildRules": {
+    "compilePremiumModules": true,
+    "packageDemoConstraints": true
+  },
+  "notes": [
+    "Uses the Pro runtime build.",
+    "Differentiation should be packaging, metadata, media, and demo constraints."
+  ]
+}

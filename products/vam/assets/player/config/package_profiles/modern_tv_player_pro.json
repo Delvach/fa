@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel_player_package_profile_v1",
+  "productId": "modern_tv_player_pro",
+  "displayName": "Modern TV Player Pro",
+  "editionProfilePath": "products/vam/assets/player/config/edition_profiles/pro.json",
+  "surfaceProfilePath": "products/vam/assets/player/config/surface_profiles/modern_tv_player.json",
+  "packageIdentity": {
+    "creatorName": "FrameAngel",
+    "packageName": "ModernTVPlayerPro",
+    "licenseType": "FC"
+  },
+  "listing": {
+    "description": "FrameAngel Modern TV Player Pro premium edition.",
+    "credits": "",
+    "instructions": "",
+    "promotionalLink": ""
+  },
+  "buildDefaults": {
+    "packageChannel": "release",
+    "includeScene": false,
+    "includeDemoMedia": false,
+    "includeShellFamily": false
+  }
+}

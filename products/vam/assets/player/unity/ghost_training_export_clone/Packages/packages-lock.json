@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.frameangel.unity-editor-bridge": {
-      "version": "file:../../../../../../../../frameangel_tools/tools/unity_editor_bridge/current",
+      "version": "file:../../../unity_editor_bridge/current",
       "depth": 0,
       "source": "local",
       "dependencies": {

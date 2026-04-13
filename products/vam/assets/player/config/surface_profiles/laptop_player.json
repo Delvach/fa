@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "frameangel_player_surface_profile_v1",
+  "surfaceKey": "laptop_player",
+  "displayName": "Laptop Player",
+  "surfaceType": "shell",
+  "shellKey": "mcbrooke_laptop",
+  "deviceClass": "laptop",
+  "orientationSupport": "landscape",
+  "defaultAspectMode": "fit",
+  "inputStyle": "fixed",
+  "hostProfilePath": "products/vam/assets/player/config/host_profiles/laptop_player.json"
+}

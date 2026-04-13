@@ -85,6 +85,7 @@ Authority docs:
 
 1. `products/vam/assets/player/docs/handoffs/PLAYER_SHELL_RECOVERY_BOUNDARY_V1.md`
 2. `products/vam/assets/player/docs/handoffs/PLAYER_TIER_BOUNDARY_AND_WITNESS_V1.md`
+3. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 
 Files to add:
 
@@ -96,6 +97,7 @@ Files to add:
 Exit condition:
 
 1. every non-basic planned surface has a checked-in host profile and export path
+2. the Volodeck witness path is repo-local and does not depend on legacy repos
 
 ### Packet 4: Code Build Profiles
 

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "frameangel_player_edition_profile_v1",
+  "editionKey": "pro",
+  "displayName": "Pro",
+  "coreBuildKey": "pro_core",
+  "marketingRole": "premium",
+  "inheritsEditionKey": "",
+  "buildRules": {
+    "compilePremiumModules": true,
+    "packageDemoConstraints": false
+  },
+  "notes": [
+    "Premium shipping tier.",
+    "Future premium modules compile into this edition."
+  ]
+}
