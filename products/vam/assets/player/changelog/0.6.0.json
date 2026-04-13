@@ -28,6 +28,7 @@
   ],
   "knownIssues": [
     "0.6.0 is a semantic reset boundary, not a new feature build.",
-    "Wanted post-0.5.0 features still need to be reapplied intentionally from this clean line."
+    "Wanted post-0.5.0 features still need to be reapplied intentionally from this clean line.",
+    "Later note from 0.6.6: this reset boundary carried forward the 0.5.0 seek-resume timing seam unchanged, so it should not be read as preserving 0.4.33's intended delayed post-seek resume behavior for problematic media."
   ]
 }

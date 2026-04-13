@@ -7625,7 +7625,7 @@ public partial class FASyncRuntime : MVRScript
                         {
                             record.seekResumePending = false;
                             record.seekResumeRequestedAt = 0f;
-                            record.nextPlaybackStateApplyTime = Time.unscaledTime;
+                            record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
                             LogStandalonePlayerDiagnostics(
                                 record,
                                 "seek_resume_released",
@@ -8617,7 +8617,7 @@ public partial class FASyncRuntime : MVRScript
                 {
                     record.seekResumePending = false;
                     record.seekResumeRequestedAt = 0f;
-                    record.nextPlaybackStateApplyTime = Time.unscaledTime;
+                    record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
                 }
 
                 LogStandalonePlayerDiagnostics(

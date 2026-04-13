@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.6",
+  "title": "Delay playback resume until the tick after seek completion",
+  "summary": "0.6.6 keeps the clean 0.6.0 baseline and narrows one playback seam: after a movie seek completes, playback resume is no longer allowed to re-enter on the same update tick that released the pending seek state.",
+  "reasoning": "The current live symptom is specific: slider scrub can make a movie briefly speed up when it restarts, then audio sync drifts. Repo history already documented the right lesson in 0.4.33: problematic media should finish seek cleanly before playback resumes. Current code review confirmed that 0.6.5 still sets `nextPlaybackStateApplyTime` to the current tick when pending seek resume is released, which lets the update loop call `Play()` again immediately. This slice keeps the fix bounded to resume timing only and records that 0.6.0 carried the older 0.5.0 seam forward unchanged.",
+  "changes": [
+    {
+      "area": "seek-resume-timing",
+      "summary": "When a pending seek resume is released, the player now waits until the next playback apply window before calling `Play()` again instead of allowing same-tick resume.",
+      "reasoning": "That preserves the current seek architecture while removing the immediate post-seek restart window that can destabilize fragile movie/audio combinations."
+    },
+    {
+      "area": "history-note",
+      "summary": "References the older 0.4.33 seek-resume lesson and records in 0.6.0 that the reset baseline still carried the same-tick resume seam forward.",
+      "reasoning": "This keeps the changelog trail honest so future threads can follow the repo record instead of rediscovering the seam."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.6 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and package the DevPlayer lane from C:\\projects\\fa and distribute the next FrameAngel.DevPlayer.<n>.var to AddonPackages.",
+    "Confirm the current seek release path in FASyncRuntime.Player.cs schedules playback resume for the next apply window instead of the current tick."
+  ],
+  "knownIssues": [
+    "This slice changes post-seek resume timing only; it does not widen into broader audio architecture or other transport behavior.",
+    "Further quality and audio-sync work may still be needed for unusual media, but this release focuses on the same-tick resume seam specifically."
+  ]
+}
