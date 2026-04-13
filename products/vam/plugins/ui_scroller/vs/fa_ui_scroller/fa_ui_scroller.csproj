@@ -36,11 +36,6 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\\..\\config\\ui_scroller.catalog.json">
-      <LogicalName>frameangel.ui_scroller.catalog.json</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(VamManagedDir)\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -61,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\\..\\src\\FAUiScrollerCatalog.cs" />
+    <Compile Include="..\\..\\src\\FAUiScrollerCatalog.Generated.cs" />
     <Compile Include="..\\..\\src\\FAUiCaptureCore.cs" />
     <Compile Include="..\\..\\src\\FAUiInputCore.cs" />
     <Compile Include="..\\..\\src\\FAUiScrollHover.cs" />

@@ -115,6 +115,73 @@ function Get-UiScrollerCatalogState {
     return (Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json)
 }
 
+function Convert-ToCSharpStringLiteral {
+    param([AllowNull()][string]$Value)
+
+    if ($null -eq $Value) {
+        return 'null'
+    }
+
+    return '"' + ($Value.
+        Replace('\', '\\').
+        Replace('"', '\"').
+        Replace("`r", '\r').
+        Replace("`n", '\n').
+        Replace("`t", '\t')) + '"'
+}
+
+function Write-UiScrollerGeneratedCatalog {
+    param(
+        [object]$CatalogState,
+        [string]$OutputPath
+    )
+
+    $content = @(
+        "internal static class FAUiScrollerCatalogGenerated",
+        "{",
+        "    internal static FAUiScrollerCatalog Build()",
+        "    {",
+        "        return new FAUiScrollerCatalog",
+        "        {",
+        "            ui = new FAUiScrollerUiStrings",
+        "            {",
+        "                pluginTitleLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.pluginTitleLabel),",
+        "                pluginTitle = $(Convert-ToCSharpStringLiteral $CatalogState.ui.pluginTitle),",
+        "                enabledLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.enabledLabel),",
+        "                captureNavigationLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.captureNavigationLabel),",
+        "                invertVerticalLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.invertVerticalLabel),",
+        "                scrollSpeedLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.scrollSpeedLabel),",
+        "                stickLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.stickLabel),",
+        "                stickChoiceEither = $(Convert-ToCSharpStringLiteral $CatalogState.ui.stickChoiceEither),",
+        "                stickChoiceRight = $(Convert-ToCSharpStringLiteral $CatalogState.ui.stickChoiceRight),",
+        "                stickChoiceLeft = $(Convert-ToCSharpStringLiteral $CatalogState.ui.stickChoiceLeft),",
+        "                stickChoiceStrongest = $(Convert-ToCSharpStringLiteral $CatalogState.ui.stickChoiceStrongest),",
+        "                defaultStickChoice = $(Convert-ToCSharpStringLiteral $CatalogState.ui.defaultStickChoice),",
+        "                statusLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusLabel),",
+        "                rescanLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.rescanLabel),",
+        "                statusIdle = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusIdle),",
+        "                statusOff = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusOff),",
+        "                statusDisabled = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusDisabled),",
+        "                statusRescanned = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusRescanned),",
+        "                statusTargetMissing = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusTargetMissing),",
+        "                statusHoldingPrefix = $(Convert-ToCSharpStringLiteral $CatalogState.ui.statusHoldingPrefix),",
+        "                noneLabel = $(Convert-ToCSharpStringLiteral $CatalogState.ui.noneLabel)",
+        "            },",
+        "            package = new FAUiScrollerPackageIdentity",
+        "            {",
+        "                releaseIdentity = $(Convert-ToCSharpStringLiteral $CatalogState.package.releaseIdentity),",
+        "                devIdentity = $(Convert-ToCSharpStringLiteral $CatalogState.package.devIdentity)",
+        "            }",
+        "        };",
+        "    }",
+        "}"
+    ) -join [Environment]::NewLine
+
+    $directory = Split-Path -Parent $OutputPath
+    Ensure-Directory -PathValue $directory
+    [System.IO.File]::WriteAllText($OutputPath, $content, (New-Object System.Text.UTF8Encoding($false)))
+}
+
 function Resolve-PackageIdentityState {
     param([string]$Identity)
 
@@ -166,6 +233,7 @@ $pluginVersionPath = Join-Path $pluginRoot "plugin.version.json"
 $pluginVersionState = Get-PluginVersionState -Path $pluginVersionPath
 $catalogPath = Join-Path $pluginRoot "config\ui_scroller.catalog.json"
 $catalogState = Get-UiScrollerCatalogState -Path $catalogPath
+$generatedCatalogPath = Join-Path $pluginRoot "src\FAUiScrollerCatalog.Generated.cs"
 $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) { [string]$pluginVersionState.version } else { $Version }
 $artifactName = "fa_ui_scroller.$resolvedVersion.dll"
 
@@ -182,6 +250,7 @@ $obfuscationScriptPath = Join-Path $pluginRoot "scripts\Obfuscate-Plugin.ps1"
 $buildOutputPath = Join-Path $pluginRoot "vs\fa_ui_scroller\bin\Release\fa_ui_scroller.dll"
 
 Ensure-Directory -PathValue $releaseDir
+Write-UiScrollerGeneratedCatalog -CatalogState $catalogState -OutputPath $generatedCatalogPath
 
 $msbuildArgs = @(
     $projectPath,

@@ -1,6 +1,6 @@
 {
-  "version": "0.0.7",
-  "artifactName": "fa_ui_scroller.0.0.7.dll",
+  "version": "0.0.8",
+  "artifactName": "fa_ui_scroller.0.0.8.dll",
   "channel": "prototype",
-  "summary": "Sets the public plugin title to Joystick Scroller and keeps the package-first build lane with a stable JoystickScrollerDev var for testing."
+  "summary": "Generates the scroller catalog into compile-time C# so the runtime no longer references prohibited System.IO APIs, and packages the dev test lane as FrameAngel.JoystickScrollerDev.1.var."
 }
