@@ -193,9 +193,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.10.dll`
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
 3. interactive preset:
    `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
 4. receipt:
@@ -209,13 +209,18 @@ Current proof interpretation:
 2. the dev interaction seam now uses raw `Custom/Plugins/dev_plugin_player.<version>.dll`
    again, which matches the existing manual authority seam in the player release
    validator
-3. the `.var` package remains the release/output reference, not the live proof
+3. the raw proof now consumes the composed host catalog package root instead of
+   the shell-only root, so the current host bundle carries a visible control
+   carrier while staying in the `2018.1.9f2` VaM-valid bundle class
+4. the `.var` package remains the release/output reference, not the live proof
    dependency for this interactive Meta host artifact
-4. current shell/control confidence is now:
+5. current release reference is:
+   `products/vam/assets/player/build/var_packages/0.6.11/direct_cua/player_var_package_report_latest.json`
+6. current shell/control confidence is now:
    - shell orientation and stance from Volodeck shell export preview
    - control visual fidelity from the authored Meta video-player Volodeck proof
    - interaction contract/build truth from the player-backed raw preset above
-5. current remaining gap is still live session proof:
+7. current remaining gap is still live session proof:
    - Halo is offline
    - Volodeck is not yet treated as an exact emulator for every VaM-internal
      interaction behavior
@@ -265,6 +270,30 @@ Current restored raw hosted-player artifact:
    `2018.1.9f2`
 6. stale incompatible host bundle removed:
    `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
+7. current deployed player plugin:
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+8. current proof receipt records:
+   - `hostPackageRoot = products/vam/assets/player/build/host_catalog/theme_00/modern_tv/faipe_fa_cua_player_modern_tv_v1`
+   - `proofExportAuthority = raw_shell_2018`
+   - `playerPackageFileName = FrameAngel.DevPlayer.11.var`
+
+## Current 0.6.11 recovery lessons
+
+The `0.6.11` recovery exposed two process seams that must stay in repo truth:
+
+1. `Build-PlayerScreenCoreFoundation.ps1` previously removed
+   `dev_cua_player.*.assetbundle` and `dev_plugin_player.*.dll` from live
+   `Custom/...` after building them, then validated the missing paths. The
+   wrapper now preserves the current version's live `dev_*` artifacts during
+   cleanup and only clears stale versions.
+2. The same wrapper previously always emitted `-MetadataPath` into
+   `Build-CuaPlayerVarPackage.ps1` even when no metadata path was set. That
+   created a false packaging failure after the release wrapper had already built
+   and validated the release artifacts. The metadata argument is now only passed
+   when populated.
+3. The `0.6.11` changelog must stay ASCII-clean. Mojibake in the source
+   changelog causes `foundation_release_changelog.json` to fail the release
+   sync validation even when the code seam is correct.
 
 ## Current visual fidelity seam
 
@@ -390,12 +419,15 @@ Operational rule from this checkpoint:
     VaM-valid:
     - `2022.3.62f3` means Volodeck/package witness only
     - `2018.1.9f2` means candidate VaM-valid raw shell seam
-13. Do not send the current `fa_cua_player_modern_tv_v1.assetbundle` hosted
-    proof back to the operator until the host shell export has been switched to
-    the 2018-compatible raw seam.
+13. Do not route the operator back to the stale
+    `fa_cua_player_modern_tv_v1.assetbundle` or the 2022 host seam. Use the
+    current raw preset and host bundle recorded above.
 14. Treat the search-bar and grid-menu proofs as snapshot witnesses only until
     they are rebuilt from a true interactive carrier.
-15. Only after the narrow proof is trustworthy, widen the shell set.
+15. If `Build-PlayerScreenCoreFoundation.ps1` fails after validation, inspect
+    the live `dev_*` cleanup seam and blank `-MetadataPath` argument before
+    assuming the runtime lane regressed.
+16. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 

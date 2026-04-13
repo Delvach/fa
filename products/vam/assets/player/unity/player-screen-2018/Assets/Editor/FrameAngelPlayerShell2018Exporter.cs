@@ -98,6 +98,15 @@ public static class FrameAngelPlayerShell2018Exporter
     }
 
     [Serializable]
+    private sealed class ControlsDoc
+    {
+        public string surfaceNodeId;
+        public string colliderNodeId;
+        public float surfaceWidthMeters;
+        public float surfaceHeightMeters;
+    }
+
+    [Serializable]
     private sealed class MaterialDoc
     {
         public string materialRefId;
@@ -183,6 +192,10 @@ public static class FrameAngelPlayerShell2018Exporter
         PackageManifest packageManifest = LoadJson<PackageManifest>(Path.Combine(resolvedPackageRoot, "manifest.json"));
         GeometryDoc geometry = LoadJson<GeometryDoc>(Path.Combine(resolvedPackageRoot, "geometry.innerpiece.json"));
         MaterialsDoc materials = LoadJson<MaterialsDoc>(Path.Combine(resolvedPackageRoot, "materials.innerpiece.json"));
+        string controlsDocPath = Path.Combine(resolvedPackageRoot, "controls.innerpiece.json");
+        ControlsDoc controls = File.Exists(controlsDocPath)
+            ? LoadJson<ControlsDoc>(controlsDocPath)
+            : null;
 
         string resourceId = ResolveResourceId(options, hostProfile, packageManifest);
         string displayName = ResolveDisplayName(options, hostProfile, packageManifest, resourceId);
@@ -201,7 +214,7 @@ public static class FrameAngelPlayerShell2018Exporter
         EnsureAssetFolder(meshesRoot);
         EnsureAssetFolder(materialsRoot);
 
-        Dictionary<string, Material> materialMap = BuildMaterialMap(materials, materialsRoot);
+        Dictionary<string, Material> materialMap = BuildMaterialMap(materials, materialsRoot, tempRoot + "/Textures");
         Dictionary<string, MeshDoc> meshDocs = BuildMeshDocMap(geometry.meshes);
         Dictionary<string, Mesh> meshMap = BuildMeshMap(geometry.meshes, meshesRoot);
 
@@ -215,12 +228,22 @@ public static class FrameAngelPlayerShell2018Exporter
             RenameNode(root, hostProfile.screenGlassNodeId, "screen_glass");
             RenameNode(root, hostProfile.controlsAnchorNodeId, "controls_anchor");
             RenameNode(root, hostProfile.bottomAnchorNodeId, "bottom_anchor");
+            if (controls != null)
+            {
+                RenameNode(root, controls.surfaceNodeId, "control_surface");
+                if (!IsBlank(controls.colliderNodeId)
+                    && !string.Equals(controls.colliderNodeId, controls.surfaceNodeId, StringComparison.OrdinalIgnoreCase))
+                {
+                    RenameNode(root, controls.colliderNodeId, "control_collider");
+                }
+            }
 
             GameObject screenSurface = FindNode(root, "screen_surface");
             GameObject disconnectSurface = FindNode(root, "disconnect_surface");
             GameObject screenGlass = FindNode(root, "screen_glass");
             GameObject controlsAnchor = FindNode(root, "controls_anchor");
             GameObject bottomAnchor = FindNode(root, "bottom_anchor");
+            GameObject controlSurface = FindNode(root, "control_surface");
 
             if (screenSurface == null)
                 throw new InvalidOperationException("FrameAngelPlayerShell2018Exporter: screen_surface node was not found.");
@@ -228,6 +251,11 @@ public static class FrameAngelPlayerShell2018Exporter
             NormalizeSurfaceAsQuad(screenSurface, quadMeshPath);
             if (disconnectSurface != null)
                 NormalizeSurfaceAsQuad(disconnectSurface, quadMeshPath);
+            if (controlSurface != null && controls != null)
+            {
+                NormalizeControlSurfaceAsQuad(controlSurface, controls, quadMeshPath);
+                ApplySnapshotMaterial(controlSurface, meshDocs, materialMap, materialsRoot + "/control_surface_snapshot.mat");
+            }
 
             ApplyPackageMaterial(screenSurface, hostProfile.screenSurfaceNodeId, geometry, meshDocs, materialMap);
             ApplyPackageMaterial(disconnectSurface, hostProfile.disconnectSurfaceNodeId, geometry, meshDocs, materialMap);
@@ -250,6 +278,10 @@ public static class FrameAngelPlayerShell2018Exporter
                     bottomAnchor.transform.localPosition.y - 0.18f,
                     screenSurface.transform.localPosition.z + 0.01f);
                 controlsAnchor = EnsureAnchor(root.transform, "controls_anchor", defaultControlsAnchor);
+            }
+            else if (controlSurface != null)
+            {
+                controlsAnchor.transform.localPosition = controlSurface.transform.localPosition;
             }
 
             string prefabAbsolutePath = Path.Combine(Directory.GetCurrentDirectory(), prefabPath.Replace('/', Path.DirectorySeparatorChar));
@@ -371,7 +403,7 @@ public static class FrameAngelPlayerShell2018Exporter
         return value;
     }
 
-    private static Dictionary<string, Material> BuildMaterialMap(MaterialsDoc materials, string materialsRoot)
+    private static Dictionary<string, Material> BuildMaterialMap(MaterialsDoc materials, string materialsRoot, string texturesRoot)
     {
         Dictionary<string, Material> map = new Dictionary<string, Material>(StringComparer.Ordinal);
         if (materials == null || materials.materials == null)
@@ -397,7 +429,7 @@ public static class FrameAngelPlayerShell2018Exporter
             }
 
             material.color = ParseColor(source.baseColorHex);
-            material.mainTexture = null;
+            material.mainTexture = ResolveTexture(source, texturesRoot);
             ConfigureMaterial(material);
             EditorUtility.SetDirty(material);
             map[source.materialRefId] = material;
@@ -589,6 +621,36 @@ public static class FrameAngelPlayerShell2018Exporter
         node.transform.localScale = new Vector3(originalScale.x, originalScale.y, 1f);
     }
 
+    private static void NormalizeControlSurfaceAsQuad(GameObject node, ControlsDoc controls, string quadMeshPath)
+    {
+        if (node == null)
+            return;
+
+        float width = controls != null && controls.surfaceWidthMeters > 0.0001f
+            ? controls.surfaceWidthMeters
+            : node.transform.localScale.x;
+        float height = controls != null && controls.surfaceHeightMeters > 0.0001f
+            ? controls.surfaceHeightMeters
+            : node.transform.localScale.y;
+
+        DisableChildren(node.transform);
+        ClearVisualComponents(node);
+        node.transform.localScale = Vector3.one;
+
+        MeshFilter meshFilter = node.GetComponent<MeshFilter>();
+        if (meshFilter == null)
+            meshFilter = node.AddComponent<MeshFilter>();
+        meshFilter.sharedMesh = LoadOrCreateQuadMesh(quadMeshPath);
+
+        MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
+        if (meshRenderer == null)
+            meshRenderer = node.AddComponent<MeshRenderer>();
+        meshRenderer.shadowCastingMode = ShadowCastingMode.Off;
+        meshRenderer.receiveShadows = false;
+
+        node.transform.localScale = new Vector3(width, height, 1f);
+    }
+
     private static void ApplyPackageMaterial(
         GameObject node,
         string nodeId,
@@ -615,6 +677,58 @@ public static class FrameAngelPlayerShell2018Exporter
         MeshRenderer renderer = node.GetComponent<MeshRenderer>();
         if (renderer != null)
             renderer.sharedMaterial = material;
+    }
+
+    private static void ApplySnapshotMaterial(
+        GameObject node,
+        Dictionary<string, MeshDoc> meshDocs,
+        Dictionary<string, Material> materialMap,
+        string snapshotMaterialPath)
+    {
+        if (node == null)
+            return;
+
+        const string snapshotMeshId = "toolkitexport_meta_patterns_contentuiexample_videoplayer_e7cfc411_contentuiexample_videoplayer_canvasroot_controls_snapshot_mesh";
+        MeshDoc meshDoc;
+        if (!meshDocs.TryGetValue(snapshotMeshId, out meshDoc)
+            || meshDoc == null
+            || string.IsNullOrEmpty(meshDoc.materialRefId))
+        {
+            return;
+        }
+
+        Material sourceMaterial;
+        if (!materialMap.TryGetValue(meshDoc.materialRefId, out sourceMaterial) || sourceMaterial == null)
+            return;
+
+        MeshRenderer renderer = node.GetComponent<MeshRenderer>();
+        if (renderer != null)
+            renderer.sharedMaterial = CreateCompatibleSnapshotMaterial(sourceMaterial, snapshotMaterialPath);
+    }
+
+    private static Material CreateCompatibleSnapshotMaterial(Material sourceMaterial, string snapshotMaterialPath)
+    {
+        Shader shader = Shader.Find("Unlit/Texture");
+        if (shader == null)
+            shader = Shader.Find("Standard");
+
+        Material material = AssetDatabase.LoadAssetAtPath<Material>(snapshotMaterialPath);
+        if (material == null)
+        {
+            material = new Material(shader);
+            AssetDatabase.CreateAsset(material, snapshotMaterialPath);
+        }
+        else
+        {
+            material.shader = shader;
+        }
+
+        material.color = Color.white;
+        material.mainTexture = sourceMaterial != null ? sourceMaterial.mainTexture : null;
+        if (material.HasProperty("_Cull"))
+            material.SetInt("_Cull", (int)CullMode.Off);
+        EditorUtility.SetDirty(material);
+        return material;
     }
 
     private static void PromoteDisplaySurfaceToVisibleFront(
@@ -719,6 +833,49 @@ public static class FrameAngelPlayerShell2018Exporter
         }
 
         return found;
+    }
+
+    private static Texture2D ResolveTexture(MaterialDoc source, string texturesRoot)
+    {
+        if (source == null || string.IsNullOrEmpty(source.texturePngBase64))
+            return null;
+
+        string normalizedBase64 = source.texturePngBase64.Trim();
+        int dataPrefixSeparator = normalizedBase64.IndexOf(',');
+        if (normalizedBase64.StartsWith("data:", StringComparison.OrdinalIgnoreCase) && dataPrefixSeparator >= 0)
+            normalizedBase64 = normalizedBase64.Substring(dataPrefixSeparator + 1);
+
+        byte[] pngBytes;
+        try
+        {
+            pngBytes = Convert.FromBase64String(normalizedBase64);
+        }
+        catch
+        {
+            return null;
+        }
+
+        string textureAssetPath = texturesRoot + "/" + Sanitize(source.materialRefId) + ".png";
+        string absolutePath = Path.Combine(Directory.GetCurrentDirectory(), textureAssetPath.Replace('/', Path.DirectorySeparatorChar));
+        string absoluteDirectory = Path.GetDirectoryName(absolutePath);
+        if (!string.IsNullOrEmpty(absoluteDirectory) && !Directory.Exists(absoluteDirectory))
+            Directory.CreateDirectory(absoluteDirectory);
+
+        File.WriteAllBytes(absolutePath, pngBytes);
+        AssetDatabase.ImportAsset(textureAssetPath, ImportAssetOptions.ForceUpdate);
+
+        TextureImporter importer = AssetImporter.GetAtPath(textureAssetPath) as TextureImporter;
+        if (importer != null)
+        {
+            importer.textureType = TextureImporterType.Default;
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.SaveAndReimport();
+        }
+
+        return AssetDatabase.LoadAssetAtPath<Texture2D>(textureAssetPath);
     }
 
     private static GameObject EnsureAnchor(Transform parent, string nodeId, Vector3 localPosition)

@@ -83,6 +83,17 @@ Current rule:
 3. do not collapse those two authorities into one claim until a single export
    seam proves both
 
+Current `modern_tv` recovery witness:
+
+1. visual witness authority stays in the authored Volodeck surface proof and
+   shell preview
+2. VaM-load witness authority is now the raw `0.6.11` interactive proof:
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+   - `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+3. that raw proof is only trustworthy because it now exports from the composed
+   host package root while keeping the `2018.1.9f2` bundle class
+
 Meta UI toolkit should use this same parity witness seam once Packet `1.5` begins.
 
 ## Operator gate
@@ -103,6 +114,8 @@ proofing:
 2. record the live raw asset/plugin/preset paths and the packaged release
    reference in the same receipt
 3. do not let the raw dev seam silently replace the package lane in canon
+4. when a versioned release wrapper is part of the same slice, do not let its
+   cleanup pass delete the current live `dev_*` artifacts before validation
 
 If the current slice is using a 2022 export to generate a host shell:
 

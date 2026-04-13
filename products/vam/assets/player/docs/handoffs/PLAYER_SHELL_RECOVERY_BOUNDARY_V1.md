@@ -55,6 +55,18 @@ VaM-valid raw shell seam:
    - `C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerShellAssetBundles.ps1`
    - `C:\projects\fa\products\vam\assets\player\unity\player-screen-2018\Assets\Editor\FrameAngelPlayerShell2018Exporter.cs`
 4. use that seam when an interactive host must actually load in VaM
+5. current `modern_tv` interactive proof authority is the raw `0.6.11` seam:
+   - host bundle:
+     `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+   - preset:
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+   - plugin:
+     `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+6. that proof now exports from the composed host package root under
+   `C:\projects\fa\products\vam\assets\player\build\host_catalog\theme_00\modern_tv\...`
+   rather than from the shell-only package root, which is what carries the
+   visible `meta_ui_video_player` control carrier into the VaM-valid raw host
+   bundle
 
 ## Build output homes
 
@@ -100,6 +112,9 @@ Preferred order:
 2. keep the Unity source, bridge package, and outputs local to `fa`
 3. when VaM load validity matters, route the shell back through the raw 2018
    export seam rather than assuming the 2022 export is compatible
-4. validate one shell family at a time
-5. only after that decide whether any source geometry should be migrated out of
+4. when building a versioned release wrapper, preserve the current live
+   `dev_cua_player.<version>.assetbundle` and `dev_plugin_player.<version>.dll`
+   during cleanup; only stale versions should be removed
+5. validate one shell family at a time
+6. only after that decide whether any source geometry should be migrated out of
    the recovery Unity project into a new clean authoring root

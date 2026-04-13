@@ -79,6 +79,36 @@ function Remove-FilesByPattern {
     }
 }
 
+function Remove-FilesByPatternExcept {
+    param(
+        [string]$DirectoryPath,
+        [string]$Filter,
+        [string[]]$ExcludeLiteralPaths = @()
+    )
+
+    if (-not (Test-Path -LiteralPath $DirectoryPath)) {
+        return
+    }
+
+    $excludeLookup = @{}
+    foreach ($excludePath in $ExcludeLiteralPaths) {
+        if ([string]::IsNullOrWhiteSpace($excludePath)) {
+            continue
+        }
+
+        $excludeLookup[$excludePath.ToLowerInvariant()] = $true
+    }
+
+    Get-ChildItem -LiteralPath $DirectoryPath -Filter $Filter -File -ErrorAction SilentlyContinue | ForEach-Object {
+        $candidatePath = $_.FullName
+        if ($excludeLookup.ContainsKey($candidatePath.ToLowerInvariant())) {
+            return
+        }
+
+        Remove-Item -LiteralPath $candidatePath -Force
+    }
+}
+
 function Read-PlayerReleaseChangelog {
     param(
         [string]$Path,
@@ -316,11 +346,11 @@ Write-TextFile -Path $releaseChangelogMarkdownPath -Value (Convert-PlayerRelease
 if (-not $SkipLiveDeploy.IsPresent) {
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Atom\CustomUnityAsset" -Filter "Preset_FA Player Asset *.vap"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_player_asset.*.assetbundle"
-    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "dev_cua_player.*.assetbundle"
+    Remove-FilesByPatternExcept -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "dev_cua_player.*.assetbundle" -ExcludeLiteralPaths @($liveAssetPath)
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_cua_player.*.dll"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_player_plugin.*.dll"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_cua_player.*.dll"
-    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "dev_plugin_player.*.dll"
+    Remove-FilesByPatternExcept -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "dev_plugin_player.*.dll" -ExcludeLiteralPaths @($livePluginPath)
 }
 
 $validationArgs = @(
@@ -428,13 +458,17 @@ if ($BuildVarPackage.IsPresent) {
         $VarCreatorName,
         "-PackageName",
         $VarPackageName,
-        "-MetadataPath",
-        $VarPackageMetadataPath,
         "-PublicRelease",
         $VarPublicRelease,
         "-DestinationAddonPackages",
         $VarDestinationAddonPackages
     )
+    if (-not [string]::IsNullOrWhiteSpace($VarPackageMetadataPath)) {
+        $varArgs += @(
+            "-MetadataPath",
+            $VarPackageMetadataPath
+        )
+    }
     if ($effectiveIncludeVarScene) {
         $varArgs += @(
             "-IncludeScene",

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.11",
+  "title": "Restore the modern_tv hosted interactive proof lane",
+  "summary": "0.6.11 restores the TV-hosted interactive proof seam by rebuilding the VaM-valid raw modern_tv host from the composed control package, carrying a visible control surface into the 2018 export, and re-enabling the existing hosted player control-surface binder on the direct CUA path so the hosted proof can use the player's real action and state contract instead of remaining inert.",
+  "reasoning": "The raw interactive proof had reached a bad split. The TV shell could be exported in a VaM-valid 2018 bundle, but that raw path only carried shell geometry, so the direct CUA host had no authored control surface to bind. The crisper 2022 witness lane did have the composed Meta controls, but that bundle class was not VaM-valid. The player runtime also still explicitly kept the packaged CUA control surface inert even though the hosted action ids, control-surface contract, pointer runtime, and player readback path already existed in code. This slice closes that gap by putting the composed control package back onto the VaM-valid raw export seam and letting the hosted player use the existing control-surface binding path again.",
+  "changes": [
+    {
+      "area": "raw-host-export",
+      "summary": "The 2018 raw shell exporter now accepts the composed host package as input, restores embedded control textures, and normalizes the composed Meta video-player surface into a visible control snapshot on the VaM-valid host bundle.",
+      "reasoning": "The previous raw export only carried the shell, which left the modern_tv proof without a visible control carrier even though the host catalog already knew about meta_ui_video_player."
+    },
+    {
+      "area": "interactive-proof-builder",
+      "summary": "The raw hosted interactive proof now points the 2018 export seam at the composed host catalog package instead of the shell-only package root.",
+      "reasoning": "That keeps the direct CUA proof on the VaM-valid bundle class while carrying the authored control contract and control snapshot forward."
+    },
+    {
+      "area": "hosted-player-binding",
+      "summary": "The direct CUA hosted-player path now uses the existing hosted control-surface binding instead of leaving the authored control surface inert and invisible.",
+      "reasoning": "The player already had the real action ids, slider handling, pointer runtime, and state readback. The inert branch was blocking the proof lane from using that contract."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.11 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the modern_tv raw hosted interactive proof from C:\\projects\\fa and confirm the receipt records hostPackageRoot under build/host_catalog/theme_00/modern_tv/... rather than the shell-only host_shell_exports path.",
+    "Confirm the deployed modern_tv host bundle remains a 2018.1.9f2 UnityFS bundle and the interactive preset still points at fa_cua_player_modern_tv.assetbundle plus dev_plugin_player.0.6.11.dll.",
+    "Use the Volodeck witness lane to confirm orientation/layout remains correct before operator VaM testing."
+  ],
+  "knownIssues": [
+    "This restores a visible interactive hosted control carrier first; it does not yet make the Meta control visuals fully stateful. Hover/readback visuals are still a later slice.",
+    "The search bar and grid menu proofs remain snapshot carriers until they are rebuilt from a true interactive carrier."
+  ]
+}

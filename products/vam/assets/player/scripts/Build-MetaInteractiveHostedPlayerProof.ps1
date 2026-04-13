@@ -391,6 +391,7 @@ if ([string]::Equals([string]$playerPluginBinding.mode, "raw", [System.StringCom
     $rawShellOutputRoot = Join-Path $resolvedOutputRoot "raw_shell_export"
     $rawShellResult = & $rawShellScriptPath `
         -RepoRoot $resolvedRepoRoot `
+        -PackageRootOverride $hostPackageRoot `
         -ShellKeys $ShellKey `
         -OutputRoot $rawShellOutputRoot `
         -DeployAssetsRoot $DeployAssetsRoot `
