@@ -291,6 +291,11 @@ public partial class FASyncRuntime : MVRScript
             playerPresetsById[preset.presetId] = preset;
         }
 
+        playerPresetChoiceIds.Add(PlayerPresetNoneChoice);
+        playerPresetChoiceDisplays.Add("(none)");
+        playerFavoritePresetChoiceIds.Add(PlayerPresetNoneChoice);
+        playerFavoritePresetChoiceDisplays.Add("(none)");
+
         List<string> sortedPresetIds = new List<string>(playerPresetsById.Keys);
         sortedPresetIds.Sort(StringComparer.OrdinalIgnoreCase);
         for (int presetIndex = 0; presetIndex < sortedPresetIds.Count; presetIndex++)
@@ -304,18 +309,6 @@ public partial class FASyncRuntime : MVRScript
                 playerFavoritePresetChoiceIds.Add(presetId);
                 playerFavoritePresetChoiceDisplays.Add(string.IsNullOrEmpty(preset.displayName) ? presetId : preset.displayName);
             }
-        }
-
-        if (playerPresetChoiceIds.Count <= 0)
-        {
-            playerPresetChoiceIds.Add(PlayerPresetNoneChoice);
-            playerPresetChoiceDisplays.Add("(none)");
-        }
-
-        if (playerFavoritePresetChoiceIds.Count <= 0)
-        {
-            playerFavoritePresetChoiceIds.Add(PlayerPresetNoneChoice);
-            playerFavoritePresetChoiceDisplays.Add("(none)");
         }
 
         playerPresetUiSyncGuard = true;
@@ -338,17 +331,6 @@ public partial class FASyncRuntime : MVRScript
         }
 
         string resolvedSelection = NormalizePlayerPresetChoiceId(selectionBeforeRefresh);
-        if (string.IsNullOrEmpty(resolvedSelection))
-        {
-            for (int i = 0; i < playerPresetChoiceIds.Count; i++)
-            {
-                if (!string.Equals(playerPresetChoiceIds[i], PlayerPresetNoneChoice, StringComparison.OrdinalIgnoreCase))
-                {
-                    resolvedSelection = playerPresetChoiceIds[i];
-                    break;
-                }
-            }
-        }
 
         bool selectionChanged = !string.Equals(resolvedSelection, playerSelectedPresetId, StringComparison.OrdinalIgnoreCase);
         SelectPlayerPresetId(resolvedSelection, forceEditorSync || selectionChanged);

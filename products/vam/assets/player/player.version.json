@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.12",
-    "notes":  "0.6.12 fixes the 0.6.11 alpha image autoplay regression at its real seams, restores truthful playlist index behavior when shuffle is turned off, and hardens app-focus resume so switching away stops restarting movie playback from the beginning.",
+    "version":  "0.6.13",
+    "notes":  "0.6.13 makes preset selection truthful by always keeping a real none state instead of silently selecting the alphabetically first saved preset, which prevents stale presets from steering startup or load behavior before the operator explicitly chooses one.",
     "branch":  "feature/docs-canon-release-strategy",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.12.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.13.json"
 }

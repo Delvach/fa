@@ -33,7 +33,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that advanced the `0.6.12` `modern_tv` hosted interactive proof seam and corrected the 0.6.11 alpha autoplay and app-focus regressions
+3. the active feature work beyond that advanced the `0.6.13` `modern_tv` hosted interactive proof seam, corrected the 0.6.11 alpha autoplay and app-focus regressions, and hardened preset selection so stale presets do not silently become the default
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -52,15 +52,17 @@ Primary current docs:
 The current real `modern_tv` hosted-player proof is:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.12.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.13.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.12.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.13.alpha.assetbundle`
 3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.12.alpha.dll`
-4. package reference:
-   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.12.var`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.13.alpha.dll`
+4. baseline direct-player raw asset:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.13.alpha.assetbundle`
 5. proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
+6. build-only package report reference:
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.13\direct_cua\player_var_package_report_latest.json`
 
 Important:
 
@@ -70,6 +72,7 @@ Important:
 4. keep the matching version or iteration conversation log updated under
    `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
+6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
 
 ## Volodeck boundary
 

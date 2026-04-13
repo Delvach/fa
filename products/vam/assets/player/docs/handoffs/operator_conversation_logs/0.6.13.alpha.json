@@ -1,0 +1,120 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.13",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T17:00:00-06:00",
+  "endedAt": "2026-04-13T17:08:36.5641674-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.13\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.13\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.13.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timestamps inside this slice are approximate unless anchored to repo receipts.",
+      "This log preserves the preset-selection recovery and redeploy truth even though the client does not export exact per-message telemetry."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T23:06:59.3059009Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.13\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T23:07:00.1751933Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.13\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-13T23:07:33.0673166Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T17:07:47.3290551-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.13.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.13-preset-default-suspicion",
+      "after": "2026-04-13T17:00:00-06:00",
+      "before": "2026-04-13T23:06:59.3059009Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator noticed that a saved preset starting with 0 behaved differently and suspected that an older preset overlap was still steering behavior even after the main runtime regressions had been addressed.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.13-preset-root-cleared",
+      "after": "2026-04-13T17:00:00-06:00",
+      "before": "2026-04-13T23:06:59.3059009Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Cleared the player preset root at Custom\\\\PluginData\\\\FrameAngel\\\\Player\\\\presets so stale saved presets could no longer overlap with the current alpha retest.",
+      "reconstructedFrom": [
+        "live shell actions",
+        "preset reset receipt"
+      ]
+    },
+    {
+      "entryId": "0.6.13-root-cause-confirmed",
+      "after": "2026-04-13T17:00:00-06:00",
+      "before": "2026-04-13T23:06:59.3059009Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Confirmed the chooser seam in code: the preset UI already had a none token internally, but it only surfaced that choice when there were zero saved presets, and otherwise catalog refresh silently selected the alphabetically first real preset. That made a stale 0-prefixed preset a plausible hidden default winner.",
+      "reconstructedFrom": [
+        "live code inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.13-alpha-build",
+      "timestamp": "2026-04-13T23:07:33.0673166Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.13, refreshed the foundation outputs and package report, redeployed the modern_tv raw dev alpha proof, and also refreshed the baseline direct-player raw asset from the same validated player core.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.13\\foundation_release_validation.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.13\\direct_cua\\player_var_package_report_latest.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.13.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.13 is the next semantic version because the preset chooser logic changed after 0.6.12 had already been built and committed.",
+    "The live authority seam for this slice remains dev_deploy raw Custom artifacts, not the .var package.",
+    "Preset selection must stay on an explicit none state until the operator intentionally chooses a preset."
+  ],
+  "openQuestions": [
+    "Does 0.6.13 alpha fully eliminate the hidden default-preset overlap when the preset root is clean?",
+    "Should the preset browser listing mismatch be addressed next, or kept separate from the core player/runtime lane?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.13.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.13\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.13\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.13.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.13.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.13.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.13.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.13.alpha.dll"
+  ],
+  "notes": [
+    "The BrowserAssist preset listing mismatch remains logged but out of scope for this slice.",
+    "The baseline player and the modern_tv proof both ride the same 0.6.13 player core in this dev_deploy alpha."
+  ]
+}

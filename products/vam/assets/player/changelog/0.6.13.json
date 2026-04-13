@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.13",
+  "title": "Keep preset selection on none until the operator chooses one",
+  "summary": "0.6.13 hardens preset selection truth by always keeping a visible none choice in the preset choosers and by stopping catalog refresh from silently selecting the alphabetically first saved preset.",
+  "reasoning": "The 0.6.12 retest made it clear that stale presets could still contaminate startup behavior even after the autoplay and focus-resume fixes, because the preset chooser always drifted to the first real preset when no explicit selection was being preserved. A preset starting with 0 could therefore become the hidden winner, and with Load Preset On Select enabled that was too much unexplained state. This slice fixes the chooser itself instead of asking the operator to manually police preset ordering.",
+  "changes": [
+    {
+      "area": "preset-chooser-none",
+      "summary": "The standard preset chooser and favorites chooser now always include a real none option at the top.",
+      "reasoning": "The operator needs an explicit neutral state even when saved presets exist."
+    },
+    {
+      "area": "preset-default-selection",
+      "summary": "Preset catalog refresh no longer auto-selects the alphabetically first saved preset when no explicit selection is being preserved.",
+      "reasoning": "Catalog refresh should stay neutral instead of inventing a hidden default."
+    }
+  ],
+  "verification": [
+    "Stamp 0.6.13 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the player runtime cleanly from vs/fa_cua_player/fa_cua_player.csproj.",
+    "Refresh the 0.6.13 foundation outputs and raw modern_tv alpha proof deploy.",
+    "Clear stale player preset files and confirm the chooser remains on none instead of selecting the first saved preset.",
+    "Retest image and movie load behavior without any saved preset overlap."
+  ],
+  "knownIssues": [
+    "Legacy Meta proof fallback constants still need their own cleanup slice and are not part of this preset-selection hardening change.",
+    "The preset browser listing mismatch remains outside this slice."
+  ]
+}
