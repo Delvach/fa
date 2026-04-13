@@ -5,7 +5,7 @@
   "deployLabel": "dev_deploy",
   "captureMode": "live_with_exact_repo_anchors",
   "startedAt": "2026-04-13T17:00:00-06:00",
-  "endedAt": "2026-04-13T17:08:36.5641674-06:00",
+  "endedAt": "2026-04-13T17:38:25.7561145-06:00",
   "timeAuthority": {
     "exactSources": [
       "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.13\\foundation_release_validation.json",
@@ -91,16 +91,44 @@
         "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
         "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.13.alpha.json"
       ]
+    },
+    {
+      "entryId": "0.6.13-operator-confirmed-fix",
+      "after": "2026-04-13T23:07:33.0673166Z",
+      "before": "2026-04-13T17:38:25.7561145-06:00",
+      "timestampKind": "approx_after_exact_build_receipt",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator confirmed that the 0.6.13 alpha chooser change resolved the overlap and that the preset seam now behaved correctly.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.13-architecture-split-confirmed",
+      "after": "2026-04-13T23:07:33.0673166Z",
+      "before": "2026-04-13T17:38:25.7561145-06:00",
+      "timestampKind": "approx_after_exact_build_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Recorded the next-lane split: shells are ready for operator-led Unity work, true interactive Meta runtime surfaces remain the active assistant-owned lane, an updated base scene is still pending from the operator for deterministic scene-generator revision, and a runtime-owned control rig is viable but intentionally scheduled as a modular v2 or v3 feature rather than a v1 dependency.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "repo running log checkpoint"
+      ]
     }
   ],
   "decisions": [
     "0.6.13 is the next semantic version because the preset chooser logic changed after 0.6.12 had already been built and committed.",
     "The live authority seam for this slice remains dev_deploy raw Custom artifacts, not the .var package.",
-    "Preset selection must stay on an explicit none state until the operator intentionally chooses a preset."
+    "Preset selection must stay on an explicit none state until the operator intentionally chooses a preset.",
+    "Shell authoring can proceed on the current foundation while true interactive Meta surfaces continue as the assistant-owned runtime lane.",
+    "A runtime-owned control rig belongs in the capability schedule as a modular v2 or v3 feature, not as a v1 dependency."
   ],
   "openQuestions": [
-    "Does 0.6.13 alpha fully eliminate the hidden default-preset overlap when the preset root is clean?",
-    "Should the preset browser listing mismatch be addressed next, or kept separate from the core player/runtime lane?"
+    "Should the preset browser listing mismatch be addressed next, or kept separate from the core player/runtime lane?",
+    "What exact updated base scene layout should the deterministic scene generator target once the operator refreshes the authored control placement?",
+    "Which first Meta runtime surface should be promoted from proof to true interaction after the modern_tv hosted baseline: video player only, or a slightly broader control carrier?"
   ],
   "relatedArtifacts": [
     "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.13.json",

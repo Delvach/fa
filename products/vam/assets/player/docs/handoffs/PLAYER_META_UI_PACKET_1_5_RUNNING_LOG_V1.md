@@ -517,3 +517,31 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 5. decide whether the next Meta UI proof surface after video player should be search bar or grid menu
 6. update the version/capability schedule row for `v1.5` once the actual toolkit feature set is chosen
 7. if needed, build a deterministic VaM witness scene for the standalone Meta proof set so operator testing does not start from manual preset loading every time
+
+## Stability checkpoint 2026-04-13T17:38:25.7561145-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.13 alpha`
+preset overlap recovery.
+
+1. `0.6.13 alpha` fixed the hidden default-preset overlap by forcing the preset
+   chooser to remain on `(none)` until the operator explicitly chooses a saved
+   preset.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.13.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.13.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.13.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.13.alpha.dll`
+3. shells are now established enough for operator-led Unity shell work.
+4. true interactive Meta runtime surfaces are still the active assistant-owned
+   product lane.
+5. the operator still needs to provide an updated base scene layout before the
+   deterministic scene generator is revised around the new control placement.
+6. plugin UI redesign is intentionally later than runtime stability and preset
+   truth, but it is now unblocked behaviorally.
+7. an optional runtime-owned control rig is architecturally valid, but it is a
+   scheduled `v2` or `v3` modular feature, not a `v1` dependency.
+8. keep using the shared player control contract as the root truth so authored
+   scene controls, plugin UI, Meta runtime surfaces, and any future runtime
+   control rig all bind to the same actions/state.
+9. do not layer compensating fixes over stale behavior if the original seam can
+   be corrected directly.
