@@ -68,6 +68,7 @@ public partial class FASyncRuntime : MVRScript
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
     private const double StandalonePlayerPeriodicAvSyncThresholdSeconds = 0.20d;
+    private const double StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds = 3.0d;
     private const double StandalonePlayerAbLoopMinimumSpanSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
     private const int StandalonePlayerRandomHistoryLimit = 64;
@@ -8228,6 +8229,21 @@ public partial class FASyncRuntime : MVRScript
 
         record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
 
+        bool isAudioPlayingNow = false;
+        try
+        {
+            isAudioPlayingNow = record.audioSource.isPlaying;
+        }
+        catch
+        {
+        }
+
+        if (!isAudioPlayingNow
+            || currentTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+        {
+            return false;
+        }
+
         double audioTimeSeconds = 0d;
         string audioTimelineError = "";
         if (!TryReadStandalonePlayerAudioTimeline(record, out audioTimeSeconds, out audioTimelineError))
@@ -8240,8 +8256,12 @@ public partial class FASyncRuntime : MVRScript
         if (durationSeconds > 0.0001d)
             audioTimeSeconds = Math.Min(durationSeconds, Math.Max(0d, audioTimeSeconds));
 
+        if (audioTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+            return false;
+
         double driftSeconds = Math.Abs(currentTimeSeconds - audioTimeSeconds);
-        if (driftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds)
+        if (driftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds
+            || driftSeconds > StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds)
             return false;
 
         return TrySeekStandalonePlayerRecordToSeconds(record, audioTimeSeconds, true, out errorMessage);

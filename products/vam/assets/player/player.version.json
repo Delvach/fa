@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.9",
-    "notes":  "0.6.9 adds a conservative once-per-second audio/video correction pass for playing movies, using the existing seek-resume seam only when measured drift is meaningfully large.",
-    "branch":  "release/0.6.9-periodic-av-resync",
+    "version":  "0.6.10",
+    "notes":  "0.6.10 keeps the once-per-second movie correction pass but adds plausibility guards so routed video audio cannot trigger bad correction seeks from a bogus zero or wildly wrong audio clock after slider scrubs.",
+    "branch":  "release/0.6.10-periodic-av-sync-guard",
     "baseBranch":  "release/0.6.0-devplayer-baseline",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.9.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.10.json"
 }

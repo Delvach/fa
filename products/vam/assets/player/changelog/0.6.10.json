@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.10",
+  "title": "Guard periodic movie correction against bad routed-audio clocks",
+  "summary": "0.6.10 keeps the once-per-second movie correction pass from 0.6.9, but only allows it to act when the routed audio clock looks plausible instead of letting a bogus near-zero or wildly wrong audio time force a bad correction seek after slider scrubs.",
+  "reasoning": "Live testing immediately showed that 0.6.9 could break movie playback after slider seeks: the selected frame appeared briefly, then the movie went black and quiet. The periodic sync seam was the only new playback change, and code review showed it was trusting AudioSource.time as if it were always a stable authority for VideoPlayer-routed audio. That is too permissive. This slice keeps the bounded once-per-second correction idea, but adds plausibility guards so correction only runs when the audio source is actually playing, the audio time has advanced beyond zero, and the measured drift is large enough to matter but not so large that it is obviously a bad authority signal.",
+  "changes": [
+    {
+      "area": "periodic-av-sync",
+      "summary": "The once-per-second movie correction pass now refuses to act unless the routed audio source is actively playing and its time has advanced beyond the startup floor.",
+      "reasoning": "This prevents bogus near-zero audio clocks from pulling playback into a bad corrective seek immediately after slider scrubs."
+    },
+    {
+      "area": "drift-guard",
+      "summary": "Periodic correction now only acts on moderate drift and skips obviously wrong huge deltas instead of treating them as trustworthy sync targets.",
+      "reasoning": "A wildly wrong audio clock is more likely to be a bad authority signal than a real correction target."
+    },
+    {
+      "area": "history-note",
+      "summary": "Records directly in 0.6.9 that the first periodic correction pass was too permissive about AudioSource.time.",
+      "reasoning": "This keeps the changelog trail honest so future threads can see exactly why 0.6.10 exists."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.10 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and package the DevPlayer lane from C:\\projects\\fa and deploy the next FrameAngel.DevPlayer.<n>.var to AddonPackages.",
+    "Load a movie, scrub with the slider, and confirm the selected point stays live instead of going black and quiet after the periodic sync window."
+  ],
+  "knownIssues": [
+    "This keeps the once-per-second correction cadence but still avoids a broader audio clock or decoder architecture change.",
+    "Some fragile media may still need deeper transport work later, but this slice is intentionally limited to guarding the new periodic correction seam."
+  ]
+}

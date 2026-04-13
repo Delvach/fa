@@ -27,6 +27,7 @@
     "In VR or desktop, load a movie, scrub with the slider, and confirm playback no longer speeds up while overall sync remains steadier during longer playback."
   ],
   "knownIssues": [
+    "Historical note added in 0.6.10: 0.6.9 used AudioSource.time too permissively as a periodic correction authority for routed video audio, which could trigger bad correction seeks after slider scrubs on some media. 0.6.10 tightens that guard.",
     "This slice keeps the correction cadence intentionally conservative at once per second and does not yet attempt a broader audio clock architecture.",
     "Some unusual media may still need deeper transport or codec-specific handling later, but this release stays bounded to active periodic correction."
   ]
