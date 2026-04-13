@@ -206,6 +206,16 @@ Expected outputs:
 - distributed package under
   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.<n>.var`
 
+Important:
+
+1. `player_var_package_report_latest.json` is a build artifact, not live
+   prerelease authority by itself
+2. a prerelease `.var` is only live authority when both are true:
+   - the package report shows `distributed:true`
+   - the exact `.var` is physically present in `F:\sim\vam\AddonPackages`
+3. if those are not both true, treat the package as built-but-undistributed
+   inventory, not the current live test seam
+
 ## Versioned Release Boundary Rules
 
 Every testable player release slice must include:

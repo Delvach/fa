@@ -32,6 +32,12 @@ contradictory handoff state, and superseded witness artifacts.
    testing.
 6. Keep `main` as tested truth and keep uncommitted dirt near zero.
 7. Preserve the operator's unrelated local edits.
+8. When hydrating or handing off, report these separately and in this order:
+   - current checkout branch and commit
+   - current live authority seam
+   - historical packaged inventory or built-but-undistributed package state
+9. Do not let a build report or staged package path masquerade as live package
+   authority.
 
 ## Volodeck and VaM hygiene
 

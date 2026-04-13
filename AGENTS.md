@@ -2,6 +2,15 @@
 
 Updated: `2026-04-13`
 
+## Instruction hierarchy
+
+For this repo:
+
+1. this file is the main repo authority
+2. deeper `AGENTS.md` files are additive only
+3. if a deeper file contradicts this file or the current canon docs, update the
+   deeper file or ignore it
+
 ## Core retrieval rule
 
 This repo now carries the working truth for the current player and Meta lanes.
@@ -166,6 +175,13 @@ Working rule:
 4. if a slice is being tested in `Custom/...`, treat raw `Custom/...` as the
    only live authority
 5. do not mix those seams for one version boundary
+6. treat `player_var_package_report_latest.json` as a build artifact, not live
+   prerelease authority, unless it shows `distributed:true` and the exact `.var`
+   is physically present in `F:\sim\vam\AddonPackages`
+7. when hydrating or handing off, report these separately and in this order:
+   - current checkout branch and commit
+   - current live authority seam
+   - historical packaged inventory or built-but-undistributed package state
 
 If there is any doubt about which copy VaM is loading, the lane is not ready to
 call tested.

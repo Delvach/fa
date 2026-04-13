@@ -1,5 +1,11 @@
 # Unity Editor Bridge Contract
 
+This subtree inherits the repo-root authority from:
+
+- `C:\projects\fa\AGENTS.md`
+
+If this file conflicts with repo-root canon, the repo-root canon wins.
+
 This subtree is the clean home for the reusable FrameAngel Unity editor bridge
 package.
 
