@@ -61,6 +61,7 @@ Defaults:
 6. Ran the first narrow proof successfully with `modern_tv`, `theme_00`, no preview, and no deploy.
 7. Hardened the underlying host-catalog scripts so they can resolve Packet `1.5` defaults instead of assuming one fixed proof surface by default.
 8. Re-ran the same narrow proof after that hardening and got a second clean receipt.
+9. Refreshed the live standalone Meta proof set into VaM raw `Custom` paths so there are actual interactive Meta presets available in VaM right now.
 
 ## What the new wrapper does
 
@@ -99,6 +100,53 @@ First successful narrow proof in this slice:
 Latest successful narrow proof after host-catalog hardening:
 
 1. `products/vam/assets/player/build/meta_ui_packet_1_5_runs/meta_ui_packet_1_5_foundation_20260413T172437Z.json`
+
+## Current interactive Meta witness set in VaM
+
+The following interactive proof assets and presets are now freshly deployed:
+
+1. video player proof
+   - assetbundle:
+     `F:\sim\vam\Custom\Assets\FrameAngel\Meta\fa_meta_video_player_proof.assetbundle`
+   - preset:
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA Meta Video Player Proof.vap`
+   - receipt:
+     `products/vam/assets/player/build/meta_proof_cua/meta_video_player_proof_cua_build_receipt.json`
+2. video player snapshot proof
+   - assetbundle:
+     `F:\sim\vam\Custom\Assets\FrameAngel\Meta\fa_meta_video_player_snapshot.assetbundle`
+   - preset:
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA Meta Video Player Snapshot.vap`
+   - receipt:
+     `products/vam/assets/player/build/meta_snapshot_cua/meta_video_player_snapshot_cua_build_receipt.json`
+3. search bar proof
+   - assetbundle:
+     `F:\sim\vam\Custom\Assets\FrameAngel\Meta\fa_meta_search_bar_proof.assetbundle`
+   - preset:
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA Meta Search Bar Proof.vap`
+   - receipt:
+     `products/vam/assets/player/build/meta_search_bar_cua/fa_meta_search_bar_proof_build_receipt.json`
+4. grid menu 2x4 proof
+   - assetbundle:
+     `F:\sim\vam\Custom\Assets\FrameAngel\Meta\fa_meta_grid_menu_2x4_proof.assetbundle`
+   - preset:
+     `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA Meta Grid Menu 2x4 Proof.vap`
+   - receipt:
+     `products/vam/assets/player/build/meta_grid_menu_2x4_cua/fa_meta_grid_menu_2x4_proof_build_receipt.json`
+
+## Current operator witness path
+
+To see actual interactive Meta components in VaM right now:
+
+1. add a `CustomUnityAsset` atom
+2. load one of the deployed `Preset_FA Meta ... Proof.vap` presets above
+3. use the proof preset directly as the witness, not the Packet `1.5` host catalog outputs
+
+Important:
+
+1. the Packet `1.5` host catalog work is the modular shell/family foundation
+2. the standalone proof presets above are the current direct VaM interaction witness
+3. those are different seams and both are currently useful
 
 ## Current defaults
 
@@ -143,3 +191,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 4. decide whether to keep `theme_00` as only a fixture in the defaults file or widen Packet `1.5` into multiple toolkit theme/profile rows
 5. decide whether the next Meta UI proof surface after video player should be search bar or grid menu
 6. update the version/capability schedule row for `v1.5` once the actual toolkit feature set is chosen
+7. if needed, build a deterministic VaM witness scene for the standalone Meta proof set so operator testing does not start from manual preset loading every time
