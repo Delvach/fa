@@ -1,53 +1,164 @@
-Use OpenMemory as the first retrieval surface. Start with a term cluster, not a single fuzzy word.
-Read the top answer-first entries, then open the cited source paths and code paths to verify them.
-Treat OpenMemory as primary memory, but let live code, receipts, manifests, and runtime proof win ties.
-Do not bulk hydrate across repos unless the lane genuinely requires it.
+# FrameAngel Repo Agent Canon
+
+Updated: `2026-04-13`
+
+## Core retrieval rule
+
+This repo now carries the working truth for the current player and Meta lanes.
+
+Use this order:
+
+1. repo-local canon docs
+2. live code
+3. receipts, manifests, and staged package reports
+4. runtime proof
+5. OpenMemory only when historical retrieval is genuinely needed
+
+If OpenMemory is used:
+
+1. start with a term cluster, not one fuzzy term
+2. read answer-first hits
+3. open the cited source paths and verify against live repo truth
+4. let live code, receipts, manifests, and runtime proof win ties
+
+Do not bulk hydrate across repos unless the lane truly requires it.
 Keep canon, working hypothesis, and historical substrate separate.
-Every versioned player change that is built for testing or release must get its own git commit in this repo.
-Use verbose commit messages with a clear subject and a body that records the version, the seam changed, and the operator-visible outcome.
-Every versioned player change that is built for testing or release must also have a matching changelog file under `products/vam/assets/player/changelog/<version>.json`.
+
+## Current product state
+
+As of this update:
+
+1. `main` is the latest merged tested player line
+2. the current stable player baseline is `0.6.10`
+3. the active feature work beyond that restored the `0.6.11` `modern_tv` hosted interactive proof seam
+4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
+
+Primary current docs:
+
+1. `C:\projects\fa\products\vam\docs\handoffs\VAM_PLAYER_PRODUCT_SYSTEM_BLUEPRINT_V1.md`
+2. `C:\projects\fa\products\vam\docs\handoffs\VAM_PLAYER_PRODUCT_SYSTEM_EXECUTION_PLAN_V1.md`
+3. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_META_UI_PACKET_1_5_RUNNING_LOG_V1.md`
+4. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
+5. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_SHELL_RECOVERY_BOUNDARY_V1.md`
+6. `C:\projects\fa\products\vam\docs\handoffs\REPO_AGENT_AND_PROCESS_HYGIENE_V1.md`
+
+## Current interactive Meta proof authority
+
+The current real `modern_tv` hosted-player proof is:
+
+1. preset:
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_FA CUA Player Modern TV Interactive Proof.vap`
+2. host bundle:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv.assetbundle`
+3. raw plugin:
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.11.dll`
+4. package reference:
+   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.11.var`
+5. proof receipt:
+   `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
+
+Important:
+
+1. the current proof authority is the raw `2018.1.9f2` host export seam
+2. do not send the operator back to the stale `fa_cua_player_modern_tv_v1.assetbundle` 2022 seam
+3. search-bar and grid-menu Meta proofs are still snapshot carriers, not full interactive widgets
+
+## Volodeck boundary
+
+Volodeck is a parity witness, not a separate product runtime.
+
+Use it for:
+
+1. visual orientation
+2. shell stance and layout
+3. control placement and motion
+4. pre-VaM proof images and receipts
+
+Do not use it to justify fake parity:
+
+1. no custom Volodeck-only control path
+2. no Volodeck-specific harness logic bloating the product components
+3. no claim of exact VaM interaction emulation unless the live seam actually matches
+
+Current honest split:
+
+1. Volodeck/2022 is the best visual witness seam
+2. raw 2018 shell export is the current VaM-valid host-load seam
+3. `.var` packaging is the release/distribution seam
+
+## Versioned player rule
+
+Every versioned player change built for testing or release must:
+
+1. get its own git commit in this repo
+2. use a verbose commit message with:
+   - version
+   - seam changed
+   - operator-visible outcome
+3. update `products/vam/assets/player/player.version.json`
+4. update `products/vam/plugins/player/src/shared-runtime/BuildRuntimeInfo.cs`
+5. add matching `products/vam/assets/player/changelog/<version>.json`
+6. build
+7. deploy in the intended seam
+8. leave receipts/manifests behind
+
 Do not leave version bumps, deployment-worthy fixes, or release-boundary changes uncommitted.
-## Branch workflow rule
 
-Use a minimal branch discipline for this lane:
+## Build and deploy lanes
 
-1. start every non-trivial slice from `main` on a named branch
-2. use `feature/<seam>` for bounded feature work
-3. use `release/<version>-<seam>` for any slice expected to produce a tested versioned player build
-4. do not perform versioned build/test work directly on `main`
+Use the right seam for the task:
+
+1. raw `Custom/...` lane:
+   - fastest interactive dev seam
+   - valid for hosted-player proofing and manual attach workflows
+2. `.var` lane:
+   - release/distribution seam
+   - must stay healthy even when raw proofing is used
+3. Volodeck lane:
+   - preflight visual witness seam
+
+Do not let one seam silently replace another in canon.
+
+## Branch discipline
+
+Use minimal branch discipline.
+
+1. stay on the branch you were assigned
+2. do not make extra branches unless the user explicitly allows it
+3. if a branch is needed, use:
+   - `feature/<seam>` for bounded feature work
+   - `release/<version>-<seam>` for versioned player slices
+4. do not do versioned build/test work directly on `main`
+5. `main` must remain the latest merged tested player line
+
+Do not make a copy of the repo unless the user explicitly allows it.
 
 ## Unity parking rule
 
-If the local Unity authoring project becomes dirty before runtime or release work is ready:
+If Unity authoring dirt appears before runtime or release work is ready:
 
-1. commit and park those Unity changes on their own branch such as `unity/<seam>` or `park/unity-<seam>`
-2. return runtime work to a fresh branch from `main`
-3. only merge or cherry-pick the parked Unity commits forward when the runtime or release slice actually needs them
+1. park or isolate it intentionally
+2. do not let unrelated Unity churn ride along with runtime/release commits
+3. only merge or cherry-pick Unity authoring forward when the current seam truly needs it
 
-Do not let unrelated Unity authoring churn ride along with runtime or release commits.
+## Agent and process hygiene
 
-## Merge back to main rule
+Keep sidecars bounded and short-lived.
 
-A tested versioned player change must merge back to `main` from its branch only after:
+1. when a sidecar result becomes repo truth, close the sidecar the same session
+2. maintain running logs and handoff docs for long lanes
+3. if the thread freezes, reopen repo truth before reopening exploration
+4. do not accumulate stale completed agents
 
-1. the change was actually tested in the intended local witness path
-2. the version stamp was updated
-3. the matching `products/vam/assets/player/changelog/<version>.json` exists
-4. the tested versioned player commit already exists in git with the version, seam, and operator-visible outcome recorded
+## Coding hard rules
 
-`main` must remain the latest tested player line, not a parking lot for partial release work.
+NEVER:
 
-## Commit and changelog alignment rule
+1. use `System.IO` in product code
+2. use reflection in product code
 
-For versioned player work:
+## Final reminder
 
-1. keep the tested seam, the version stamp, and the matching `changelog/<version>.json` aligned in the same branch
-2. do not merge a version bump without its matching changelog
-3. do not merge a changelog-only version entry before the tested code that justifies it
-4. do not squash away the explicit tested version commit if that would sever the version boundary from its changelog and receipt trail
+This repo has the knowledge needed for the current player, shell, Meta UI, packaging, and release lanes.
 
-Do not use `list_mcp_resources` to decide whether OpenMemory exists in this repo.
-In this lane, OpenMemory is the local HTTP retrieval surface:
-- `POST http://127.0.0.1:8081/api/ui/search`
-- `POST http://127.0.0.1:8081/api/ui/context`
-- `GET http://127.0.0.1:8081/api/ui/browse?kind=tag&value=<term>`
+Start from repo truth, keep the seams separate, and do not drift.
