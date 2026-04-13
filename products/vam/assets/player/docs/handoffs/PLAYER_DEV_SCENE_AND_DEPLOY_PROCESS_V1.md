@@ -23,6 +23,7 @@ This note is not the full modular family architecture. For that, use:
 For shared `.var` metadata rules that now cover both player and joystick scroller, also see:
 
 - `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+- `products/vam/docs/handoffs/VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
 
 Meta UI toolkit is the next prerequisite after the current architecture solidifies,
 but it should be layered into the new modular lane, not improvised inside the

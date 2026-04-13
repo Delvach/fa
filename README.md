@@ -23,6 +23,7 @@ Modular player family strategy:
 Shared package metadata/process:
 
 1. `products/vam/docs/handoffs/VAM_VAR_PACKAGE_PROCESS_AND_METADATA_V1.md`
+2. `products/vam/docs/handoffs/VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
 
 Historical base-player boundary:
 

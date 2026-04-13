@@ -41,6 +41,7 @@ Primary current docs:
 4. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 5. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_SHELL_RECOVERY_BOUNDARY_V1.md`
 6. `C:\projects\fa\products\vam\docs\handoffs\REPO_AGENT_AND_PROCESS_HYGIENE_V1.md`
+7. `C:\projects\fa\products\vam\docs\handoffs\VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
 
 ## Current interactive Meta proof authority
 

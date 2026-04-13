@@ -9,6 +9,11 @@ This note records the repo-local process for building FrameAngel `.var` packages
 
 The goal is to stop hand-editing `meta.json`, stop rediscovering Package Builder conventions, and keep package metadata reusable without letting package identity drift away from the actual built artifact.
 
+For the canonical deploy labels, naming patterns, version/iteration rules, and
+typo-recovery rules, also use:
+
+- `C:\projects\fa\products\vam\docs\handoffs\VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
+
 ## Shared Metadata Canon
 
 The shared resolver lives at:
