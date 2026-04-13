@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.2",
+  "title": "Trim hot-tick audio reapply from standalone playback",
+  "summary": "0.6.2 keeps the clean 0.6.0 baseline and removes redundant per-frame audio-state reapply work from the standalone player runtime tick so playback does less hot-loop churn.",
+  "reasoning": "The current player needs are audio sync, video sync, and general playback smoothness. The repo-local decision trace already records the stable seam here: standalone audio state belongs on explicit mutation paths such as load, mute, volume, and hosted audio refresh, not on the always-on playback loop.",
+  "changes": [
+    {
+      "area": "standalone-runtime-tick",
+      "summary": "Removes unconditional `ApplyStandalonePlayerAudioState(record)` work from `TickStandalonePlayerRuntime()`.",
+      "reasoning": "This was previously documented as the stable overhead trim in the learning lane and is the cleanest bounded carry-forward into the 0.6.x baseline."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.2 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the package-first player release from the 0.6.x baseline and confirm release validation passes.",
+    "Verify normal movie playback still has working audio, then compare broad playback feel against the 0.6.0 baseline for reduced churn."
+  ],
+  "knownIssues": [
+    "This slice is intentionally narrow and does not yet change codec, decode, or seek-resume behavior.",
+    "The future dev package should include a packaged scene, but that packaging policy update is kept out of this playback-maintenance slice."
+  ]
+}

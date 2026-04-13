@@ -7484,8 +7484,6 @@ public partial class FASyncRuntime : MVRScript
                 continue;
 
             TickStandalonePlayerTransitionFade(record);
-            if (!record.seekResumePending)
-                ApplyStandalonePlayerAudioState(record);
 
             if (record.mediaIsStillImage)
             {

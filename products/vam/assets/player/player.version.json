@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.0",
-    "notes":  "0.6.0 resets the active player line to the confirmed 0.5.0 baseline and restarts deployment identity under FrameAngel.DevPlayer.1 with dev_cua_player and dev_plugin_player artifact names.",
-    "branch":  "release/0.6.0-devplayer-baseline",
-    "baseBranch":  "release/0.6.0-baseline-reset",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.0.json"
+    "version":  "0.6.2",
+    "notes":  "0.6.2 keeps the clean 0.6.0 baseline and removes the redundant standalone hot-tick audio reapply so playback can stay leaner while we work the next sync lane.",
+    "branch":  "release/0.6.2-audio-tick-trim",
+    "baseBranch":  "release/0.6.0-devplayer-baseline",
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.2.json"
 }
