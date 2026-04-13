@@ -5,6 +5,7 @@ Updated: `2026-04-13`
 ## Core retrieval rule
 
 This repo now carries the working truth for the current player and Meta lanes.
+OpenMemory is no longer a source-of-truth surface for this repo.
 
 Use this order:
 
@@ -12,14 +13,16 @@ Use this order:
 2. live code
 3. receipts, manifests, and staged package reports
 4. runtime proof
-5. OpenMemory only when historical retrieval is genuinely needed
+5. OpenMemory only when historical retrieval is genuinely needed and the repo
+   does not already carry the answer cleanly
 
 If OpenMemory is used:
 
-1. start with a term cluster, not one fuzzy term
-2. read answer-first hits
-3. open the cited source paths and verify against live repo truth
-4. let live code, receipts, manifests, and runtime proof win ties
+1. treat it as historical substrate, not authority
+2. start with a term cluster, not one fuzzy term
+3. read answer-first hits
+4. open the cited source paths and verify against live repo truth
+5. let repo docs, live code, receipts, manifests, and runtime proof win ties
 
 Do not bulk hydrate across repos unless the lane truly requires it.
 Keep canon, working hypothesis, and historical substrate separate.
