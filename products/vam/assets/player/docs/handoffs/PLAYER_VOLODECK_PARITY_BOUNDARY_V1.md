@@ -29,6 +29,7 @@ Current deterministic entry points:
 1. `C:\projects\fa\products\vam\assets\player\scripts\Export-GhostPlayerHostCuaFamily.ps1`
 2. `C:\projects\fa\products\vam\assets\player\scripts\Export-GhostPlayerHostCatalog.ps1`
 3. `GhostMetaUiSetBootstrap.CreateStudySceneBatch`
+4. `C:\projects\fa\products\vam\assets\player\scripts\Build-PlayerMetaUiPacket15Foundation.ps1`
 
 ## Hard rule
 

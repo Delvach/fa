@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "frameangel_meta_ui_packet_1_5_defaults_v1",
+  "themeIndex": 0,
+  "controlSurfaceId": "meta_patterns_contentuiexample_videoplayer_e7cfc411",
+  "shellKeys": [
+    "modern_tv",
+    "mcbrooke_laptop",
+    "ivone_phone",
+    "ivad_tablet",
+    "retro_tv"
+  ],
+  "toolkitDeployRoot": "F:\\sim\\vam\\Custom\\PluginData\\FrameAngel\\meta_toolkit_demo",
+  "hostCatalogDeployRoot": "F:\\sim\\vam\\Custom\\PluginData\\FrameAngel\\cua_player_host_catalog"
+}

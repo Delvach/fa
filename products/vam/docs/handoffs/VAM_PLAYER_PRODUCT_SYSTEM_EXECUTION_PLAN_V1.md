@@ -54,6 +54,8 @@ Authority files:
 
 1. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
+3. `products/vam/assets/player/docs/handoffs/PLAYER_META_UI_PACKET_1_5_RUNNING_LOG_V1.md`
+4. `products/vam/assets/player/scripts/Build-PlayerMetaUiPacket15Foundation.ps1`
 
 Exit condition:
 
