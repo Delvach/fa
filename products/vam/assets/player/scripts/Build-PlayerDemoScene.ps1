@@ -570,8 +570,8 @@ if ((Test-Path -LiteralPath $sceneOutputPath) -and -not $AllowExistingVersion.Is
     throw ("Scene output already exists for version {0}: {1}" -f $resolvedVersion, $sceneOutputPath)
 }
 
-$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
-$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
 
 if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
     if (-not (Test-Path -LiteralPath $liveAssetPath)) {
@@ -586,14 +586,14 @@ if ([string]::IsNullOrWhiteSpace($PluginPath)) {
 }
 
 $assetUrl = if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
-    "Custom/Assets/FrameAngel/Player/fa_player_asset.{0}.assetbundle" -f $resolvedVersion
+    "Custom/Assets/FrameAngel/Player/dev_cua_player.{0}.assetbundle" -f $resolvedVersion
 }
 else {
     $AssetUrl.Trim()
 }
 
 $pluginPath = if ([string]::IsNullOrWhiteSpace($PluginPath)) {
-    "Custom/Plugins/fa_cua_player.{0}.dll" -f $resolvedVersion
+    "Custom/Plugins/dev_plugin_player.{0}.dll" -f $resolvedVersion
 }
 else {
     $PluginPath.Trim()

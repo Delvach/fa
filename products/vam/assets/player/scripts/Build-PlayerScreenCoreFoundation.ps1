@@ -19,7 +19,7 @@ param(
     [string]$VarDemoMediaSourceRoot = "",
     [string]$VarDemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$VarCreatorName = "FrameAngel",
-    [string]$VarPackageName = "Player",
+    [string]$VarPackageName = "DevPlayer",
     [int]$VarPublicRelease = 0,
     [string]$VarDestinationAddonPackages = "F:\sim\vam\AddonPackages",
     [switch]$SkipVarDistribute
@@ -203,10 +203,10 @@ else {
 
 $releaseRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "releases" $resolvedVersion)
 $latestManifestPath = Join-Path $laneRoots.AssetsPlayerBuildRoot "releases\player_screen_core_release_latest.json"
-$repoAssetPath = Join-Path $releaseRoot ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
-$repoPluginPath = Join-Path $releaseRoot ("fa_cua_player.{0}.dll" -f $resolvedVersion)
-$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
-$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+$repoAssetPath = Join-Path $releaseRoot ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+$repoPluginPath = Join-Path $releaseRoot ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
 $manifestPath = Join-Path $releaseRoot "foundation_release_manifest.json"
 $validatorScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Validate-PlayerScreenCoreRelease.ps1"
 $varPackagerScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerVarPackage.ps1"
@@ -285,7 +285,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Build-PlayerAssetBundle.ps1 failed."
 }
 
-$repoBuiltPluginPath = Join-Path $RepoRoot "deployed\plugins\fa_cua_player.$resolvedVersion.dll"
+$repoBuiltPluginPath = Join-Path $RepoRoot "deployed\plugins\dev_plugin_player.$resolvedVersion.dll"
 if (-not (Test-Path -LiteralPath $repoBuiltPluginPath)) {
     throw "Built plugin artifact not found: $repoBuiltPluginPath"
 }
@@ -310,8 +310,12 @@ Write-TextFile -Path $releaseChangelogMarkdownPath -Value (Convert-PlayerRelease
 
 if (-not $SkipLiveDeploy.IsPresent) {
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Atom\CustomUnityAsset" -Filter "Preset_FA Player Asset *.vap"
+    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_player_asset.*.assetbundle"
+    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "dev_cua_player.*.assetbundle"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_cua_player.*.dll"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_player_plugin.*.dll"
+    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_cua_player.*.dll"
+    Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "dev_plugin_player.*.dll"
 }
 
 $validationArgs = @(

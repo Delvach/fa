@@ -102,11 +102,11 @@ if ([string]::IsNullOrWhiteSpace($ReleaseRoot)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($RepoAssetPath)) {
-    $RepoAssetPath = Join-Path $ReleaseRoot ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
+    $RepoAssetPath = Join-Path $ReleaseRoot ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
 }
 
 if ([string]::IsNullOrWhiteSpace($RepoPluginPath)) {
-    $RepoPluginPath = Join-Path $ReleaseRoot ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+    $RepoPluginPath = Join-Path $ReleaseRoot ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
 }
 
 if ([string]::IsNullOrWhiteSpace($ChangelogSourcePath)) {
@@ -127,11 +127,11 @@ if ([string]::IsNullOrWhiteSpace($ChangelogMarkdownPath)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($LiveAssetPath)) {
-    $LiveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("fa_player_asset.{0}.assetbundle" -f $resolvedVersion)
+    $LiveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
 }
 
 if ([string]::IsNullOrWhiteSpace($LivePluginPath)) {
-    $LivePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+    $LivePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
 }
 
 if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
@@ -148,7 +148,10 @@ $legacyLiveAssetDllPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player"
 $legacyLivePluginAliasPath = Join-Path "F:\sim\vam\Custom\Plugins" ("fa_player_plugin.{0}.dll" -f $resolvedVersion)
 $livePresetMatches = Get-MatchingFiles -DirectoryPath "F:\sim\vam\Custom\Atom\CustomUnityAsset" -Filter "Preset_FA Player Asset *.vap"
 $liveAssetDllMatches = Get-MatchingFiles -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_cua_player.*.dll"
-$livePluginAliasMatches = Get-MatchingFiles -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_player_plugin.*.dll"
+$livePluginAliasMatches = @(
+    Get-MatchingFiles -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_player_plugin.*.dll"
+    Get-MatchingFiles -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_cua_player.*.dll"
+) | Select-Object -Unique
 
 $failures = New-Object System.Collections.Generic.List[object]
 $checks = New-Object System.Collections.Generic.List[object]
@@ -271,7 +274,7 @@ if (-not $SkipLiveDeployChecks.IsPresent) {
     }
 }
 
-$warnings.Add("This validator now treats raw CustomUnityAsset loading plus one manual fa_cua_player attach as the authority seam for the screen-core lane.") | Out-Null
+$warnings.Add("This validator now treats raw CustomUnityAsset loading plus one manual dev_plugin_player attach as the authority seam for the screen-core lane.") | Out-Null
 $warnings.Add("Phase 1 authority is the authored screen plus VaM controls that call exposed player methods directly; Meta UI components are not first-release proof.") | Out-Null
 $warnings.Add("Visual correctness still requires live VaM closure and Volodeck comparator proof; this validator only keeps the release shape deterministic.") | Out-Null
 $warnings.Add("If a future slice intentionally reintroduces asset.assetDllUrl or preset bootstrap, it should ship as a separate seam instead of silently mutating this one.") | Out-Null
@@ -302,10 +305,10 @@ $receipt = [ordered]@{
     legacyLivePluginAliasMatches = $livePluginAliasMatches
     mirroredVamRules = @(
         "Load the raw versioned assetbundle directly in the CustomUnityAsset atom.",
-        "Attach the matching fa_cua_player.<version>.dll manually from Custom/Plugins.",
+        "Attach the matching dev_plugin_player.<version>.dll manually from Custom/Plugins.",
         "Do not treat a same-version preset as part of the authority seam for this lane.",
         "Do not treat an asset-side DLL copy as part of the authority seam for this lane.",
-        "The canonical player runtime DLL name stays fa_cua_player.<version>.dll."
+        "The canonical player runtime DLL name stays dev_plugin_player.<version>.dll."
     )
     checks = $checks.ToArray()
     warnings = $warnings.ToArray()

@@ -75,7 +75,7 @@ else {
 
 $unityProjectPath = $laneRoots.PlayerScreenUnityProjectRoot
 $exportMethod = "FrameAngelPlayerHost2018Exporter.BuildAndDeployBatch"
-$bundleFileName = "fa_player_asset.{0}.assetbundle" -f $resolvedVersion
+$bundleFileName = "dev_cua_player.{0}.assetbundle" -f $resolvedVersion
 $presetFileName = "Preset_FA Player Asset {0}.vap" -f $resolvedVersion
 $exportRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "assetbundle_exports" $resolvedVersion)
 $logPath = Join-Path $exportRoot "unity_batch.log"

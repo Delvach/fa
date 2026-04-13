@@ -2,8 +2,8 @@
   "schemaVersion": "frameangel_player_release_changelog_v1",
   "version": "0.6.0",
   "title": "Reset the active player line to the confirmed 0.5.0 baseline",
-  "summary": "0.6.0 does not widen the player surface. It promotes the operator-confirmed 0.5.0 code into a fresh semantic line so future work can be reapplied one bounded feature at a time without inheriting the later 0.5.x repair churn.",
-  "reasoning": "The last stable player truth for this lane is the confirmed 0.5.0 rung. A fresh semantic boundary is needed both to avoid VaM cache ambiguity and to give the next feature work a clean base instead of continuing from the later autoplay-repair line.",
+  "summary": "0.6.0 does not widen the player surface. It promotes the operator-confirmed 0.5.0 code into a fresh semantic line, and restarts package and artifact naming under FrameAngel.DevPlayer with dev_cua_player and dev_plugin_player filenames so the next baseline does not alias older cached builds.",
+  "reasoning": "The last stable player truth for this lane is the confirmed 0.5.0 rung. A fresh semantic boundary is needed both to avoid VaM cache ambiguity and to give the next feature work a clean base instead of continuing from the later autoplay-repair line. Restarting the package and internal artifact names at the same boundary also makes AddonPackages cleanup and future baseline tracking much easier.",
   "changes": [
     {
       "area": "semantic-reset-boundary",
@@ -14,10 +14,16 @@
       "area": "release-line-reset",
       "summary": "Marks the new active branch as a clean post-0.5.0 restart point for the next bounded feature slices.",
       "reasoning": "The player line can now re-add wanted features intentionally instead of dragging the 0.5.x repair churn forward."
+    },
+    {
+      "area": "deployment-identity-reset",
+      "summary": "Restarts the package identity at FrameAngel.DevPlayer.1.var and uses dev_cua_player.<version>.assetbundle plus dev_plugin_player.<version>.dll as the internal shipped filenames.",
+      "reasoning": "A new package and artifact namespace keeps the confirmed baseline from colliding with older cached Player-line deployments."
     }
   ],
   "verification": [
     "Confirm the 0.6.0 branch is byte-for-byte the 0.5.0 player code except for version stamps and the new changelog boundary.",
+    "Build the next baseline package as FrameAngel.DevPlayer.1.var and confirm the packaged asset and plugin paths use dev_cua_player.0.6.0.assetbundle and dev_plugin_player.0.6.0.dll.",
     "Use 0.6.0 as the clean source branch for the next bounded feature slice instead of continuing from the later 0.5.x repair branches."
   ],
   "knownIssues": [

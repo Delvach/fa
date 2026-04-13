@@ -103,8 +103,8 @@ if (-not (Test-Path -LiteralPath $guardScriptPath)) {
 
 $resolvedVersion = Resolve-PlayerVersion -RepoRootValue $RepoRoot -ExplicitVersion $Version -RuntimeInfoPath $runtimeInfoPath
 $repoArtifactDir = Join-Path $RepoRoot "deployed\plugins"
-$repoArtifactPath = Join-Path $repoArtifactDir ("fa_cua_player.{0}.dll" -f $resolvedVersion)
-$liveArtifactPath = Join-Path $DeployDir ("fa_cua_player.{0}.dll" -f $resolvedVersion)
+$repoArtifactPath = Join-Path $repoArtifactDir ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+$liveArtifactPath = Join-Path $DeployDir ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
 
 if (-not $AllowExistingVersion.IsPresent) {
     $collisionPaths = @($repoArtifactPath)

@@ -3,7 +3,7 @@ param(
     [string]$Version = "",
     [string]$ReleaseManifestPath = "",
     [string]$CreatorName = "FrameAngel",
-    [string]$PackageName = "Player",
+    [string]$PackageName = "DevPlayer",
     [string]$PackageVersionTag = "",
     [int]$PublicRelease = 0,
     [string]$OutputRoot = "",
