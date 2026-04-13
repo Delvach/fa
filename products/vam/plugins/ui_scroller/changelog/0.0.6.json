@@ -1,0 +1,9 @@
+{
+  "version": "0.0.6",
+  "date": "2026-04-11",
+  "changes": [
+    "Make the FAUiScrollHover MonoBehaviour public so Obfuscar preserves its Unity lifecycle callback names instead of renaming them.",
+    "Keep the hardened lane intact while fixing the last validation finding in the helper type that Unity still depends on at runtime.",
+    "Continue single-file versioned deployment under Custom/Plugins for cache-safe testing of the obfuscated build."
+  ]
+}

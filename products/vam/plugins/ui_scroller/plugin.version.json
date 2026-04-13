@@ -1,0 +1,6 @@
+{
+  "version": "0.0.6",
+  "artifactName": "fa_ui_scroller.0.0.6.dll",
+  "channel": "prototype",
+  "summary": "Preserves the full Unity-facing surface under obfuscation by keeping both the host and the hover helper public where Unity needs stable callback names."
+}

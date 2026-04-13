@@ -1,0 +1,9 @@
+{
+  "version": "0.0.2",
+  "date": "2026-04-11",
+  "changes": [
+    "Switch scroll speed from normalized-position movement to content-pixel movement so short-overflow panels and long-overflow panels feel more consistent.",
+    "Increase the default scroll speed and repurpose the slider range for pixel-based tuning.",
+    "Continue single-file versioned deployment under Custom/Plugins to reduce cache ambiguity during live testing."
+  ]
+}

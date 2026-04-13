@@ -1,0 +1,9 @@
+{
+  "version": "0.0.3",
+  "date": "2026-04-11",
+  "changes": [
+    "Integrate bounded Obfuscar hardening into the ui_scroller lane with a lane-local obfuscation config and reusable obfuscation script.",
+    "Add a Build-UiScroller.ps1 wrapper that builds the raw DLL, obfuscates it by default, writes release receipts, and deploys exactly one versioned plugin DLL.",
+    "Keep the FAUiScroller host type stable while hardening the rest of the assembly so live VaM testing can verify hardening without changing the single-file deployment rule."
+  ]
+}

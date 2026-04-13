@@ -1,0 +1,34 @@
+{
+  "tool": {
+    "package": "Obfuscar.GlobalTool",
+    "version": "2.2.44",
+    "toolPath": "tools/obfuscar"
+  },
+  "defaults": {
+    "enabled": true,
+    "profile": "safe"
+  },
+  "profiles": {
+    "safe": {
+      "keepPublicApi": true,
+      "hidePrivateApi": true,
+      "renameFields": true,
+      "renameProperties": true,
+      "renameEvents": true,
+      "hideStrings": true,
+      "reuseNames": true,
+      "useUnicodeNames": false,
+      "suppressIldasm": true
+    }
+  },
+  "plugins": {
+    "fa_ui_scroller": {
+      "enabled": true,
+      "profile": "safe",
+      "keepTypes": [
+        "FAUiScroller",
+        "FAUiScrollHover"
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "date": "2026-04-11",
+  "changes": [
+    "Start versioned ui_scroller deployment under a single Custom/Plugins DLL to reduce cache ambiguity.",
+    "Keep scroll ownership alive across empty panel body space by retaining the latched scroll target while the pointer remains inside the target viewport.",
+    "Switch stick reads to JoystickControl-only input so left and right controller activity do not contaminate each other through generic raw axis aliases.",
+    "Default stick mode to Either so left-handed and right-handed use both work without manual retargeting."
+  ]
+}
