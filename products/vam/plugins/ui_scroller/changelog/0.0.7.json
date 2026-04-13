@@ -1,0 +1,9 @@
+{
+  "version": "0.0.7",
+  "date": "2026-04-13",
+  "changes": [
+    "Rename the public plugin title to Joystick Scroll while keeping the release package identity on the FrameAngel.JoystickScroller line.",
+    "Add a package-first build lane so development can test the plugin from FrameAngel.JoystickScrollerDev.var instead of raw DLL deploys.",
+    "Keep obfuscation in the bounded post-build lane so packaged and released plugin builds stay hardened."
+  ]
+}

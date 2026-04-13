@@ -1,7 +1,7 @@
 {
   "ui": {
     "pluginTitleLabel": "Plugin Title",
-    "pluginTitle": "Joystick Scroller",
+    "pluginTitle": "Joystick Scroll",
     "enabledLabel": "Enabled",
     "captureNavigationLabel": "Capture Navigation",
     "invertVerticalLabel": "Invert Vertical",
@@ -24,6 +24,6 @@
   },
   "package": {
     "releaseIdentity": "FrameAngel.JoystickScroller.1.var",
-    "devIdentity": "FrameAngel.DevJoystickScroller.1.var"
+    "devIdentity": "FrameAngel.JoystickScrollerDev.var"
   }
 }
