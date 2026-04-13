@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.12",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T16:00:00-06:00",
+  "endedAt": "2026-04-13T16:52:19.9944255-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.12\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.12\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    ],
+    "limitations": [
+      "Operator chat timestamps inside this slice are approximate unless anchored to repo receipts.",
+      "This log preserves the live test truth and root-cause findings even though the exact chat telemetry is not exported by the client."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T22:51:20.2577661Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.12\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T22:51:21.2597792Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.12\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-13T22:51:38.5509061Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.12-alpha-manual-attach-proof",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T22:51:20.2577661Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Manual raw dev attach still worked even while the regressions were present: adding a CustomUnityAsset, selecting the modern TV assetbundle, and attaching the player plugin produced a live screen with the expected gradient, which confirmed the host shell and plugin seam were basically healthy before the playback-state bugs were corrected.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live operator screenshots"
+      ]
+    },
+    {
+      "entryId": "0.6.12-alpha-retest-findings",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T22:51:20.2577661Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The 0.6.11 alpha dev_deploy retest proved the regression was real: image directories autoplayed immediately, switching away from VaM paused playback and returning restarted movies from the beginning, and turning shuffle off could move backward unexpectedly.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live operator screenshots"
+      ]
+    },
+    {
+      "entryId": "0.6.12-alpha-preset-listing-out-of-scope",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T22:51:20.2577661Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The raw alpha preset file existed on disk but was not visible through the current preset browser path. That mismatch was logged as real context but intentionally held out of scope so the slice could stay focused on the playback regressions instead of widening into browser indexing behavior.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "filesystem witness"
+      ]
+    },
+    {
+      "entryId": "0.6.12-root-cause-analysis",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T22:51:20.2577661Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Isolated the regression to root seams instead of layering around it: direct standalone load decided desiredPlaying before a directory resolved to the actual first media file, the hosted Meta proof bridge still hardcoded play=true for selected and sample loads, preset save/apply logic still treated still images as playWhenLoaded=true, shuffle-off did not reanchor currentIndex to the currently loaded media, and the runtime had no focus-aware resume seam to protect playback state when app focus changed.",
+      "reconstructedFrom": [
+        "live code inspection",
+        "player runtime diffs"
+      ]
+    },
+    {
+      "entryId": "0.6.12-legacy-residue-note",
+      "after": "2026-04-13T14:23:03-06:00",
+      "before": "2026-04-13T22:51:20.2577661Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "Flagged that leftover legacy Meta proof constants and path names should not have crept into the repo and should be treated as a separate cleanup seam rather than being allowed to define current canon.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "shared code screenshot"
+      ]
+    },
+    {
+      "entryId": "0.6.12-alpha-build",
+      "timestamp": "2026-04-13T22:51:38.5509061Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built the 0.6.12 foundation outputs, refreshed the DevPlayer package report without distributing it, and deployed a fresh modern_tv alpha raw dev_deploy artifact set using the corrected runtime.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.12\\foundation_release_validation.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.12\\direct_cua\\player_var_package_report_latest.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.12 is the next semantic version because 0.6.11 was already used for tested code and the runtime changed.",
+    "The live authority seam for this slice remains dev_deploy raw Custom artifacts, not the .var package.",
+    "The regression fix was implemented at root seams first instead of layering new behavior on top of stale mistakes.",
+    "The preset-browser listing mismatch stays logged but out of scope for this alpha because the authoritative test seam is the versioned raw filesystem path."
+  ],
+  "openQuestions": [
+    "Does 0.6.12 alpha stop immediate autoplay for image directory loads in the raw dev_deploy seam?",
+    "Does 0.6.12 alpha preserve movie position across app switching well enough, or is a deeper playback-state correction still needed?",
+    "Should the legacy Meta proof fallback constants be removed entirely in the next cleanup slice once the current alpha is confirmed?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.12.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.12\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.12\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.12.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.12.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.12.alpha.dll"
+  ],
+  "notes": [
+    "The base player runtime fixes in this slice are shared with the hosted modern_tv proof because both run through the same player core.",
+    "The BrowserAssist preset listing mismatch was intentionally left out of scope for this slice."
+  ]
+}

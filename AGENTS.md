@@ -33,7 +33,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that restored the `0.6.11` `modern_tv` hosted interactive proof seam
+3. the active feature work beyond that advanced the `0.6.12` `modern_tv` hosted interactive proof seam and corrected the 0.6.11 alpha autoplay and app-focus regressions
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -52,13 +52,13 @@ Primary current docs:
 The current real `modern_tv` hosted-player proof is:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.12.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.12.alpha.assetbundle`
 3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.12.alpha.dll`
 4. package reference:
-   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.11.var`
+   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.12.var`
 5. proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
 

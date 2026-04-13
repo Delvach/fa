@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.11",
-    "notes":  "0.6.11 restores the TV-hosted interactive proof lane by rebuilding the VaM-valid raw modern_tv host from the composed control package and re-enabling the existing hosted player control-surface binding on the direct CUA path.",
+    "version":  "0.6.12",
+    "notes":  "0.6.12 fixes the 0.6.11 alpha image autoplay regression at its real seams, restores truthful playlist index behavior when shuffle is turned off, and hardens app-focus resume so switching away stops restarting movie playback from the beginning.",
     "branch":  "feature/docs-canon-release-strategy",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.11.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.12.json"
 }

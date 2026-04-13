@@ -167,6 +167,8 @@ public partial class FASyncRuntime : MVRScript
     private string playerPendingParitySummary = "";
     private string playerPendingTimelineSummary = "";
     private string playerPendingPlaylistSummary = "";
+    private bool runtimeApplicationFocusActive = true;
+    private int runtimeApplicationFocusGeneration = 0;
     private string pendingPlayerMediaBrowserSuccessStatus = "";
     private bool pendingPlayerMediaBrowserTargetsMetaProof = false;
     private bool playerMediaBrowserOpen = false;
@@ -287,6 +289,25 @@ public partial class FASyncRuntime : MVRScript
         if (syncDevMode && IsVrRuntimeActive())
             TickVrInputs();
 #endif
+    }
+
+    private void OnApplicationFocus(bool focusStatus)
+    {
+        if (runtimeApplicationFocusActive == focusStatus)
+            return;
+
+        runtimeApplicationFocusActive = focusStatus;
+        runtimeApplicationFocusGeneration++;
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        bool focusStatus = !pauseStatus;
+        if (runtimeApplicationFocusActive == focusStatus)
+            return;
+
+        runtimeApplicationFocusActive = focusStatus;
+        runtimeApplicationFocusGeneration++;
     }
 
     private void OnDestroy()

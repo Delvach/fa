@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.12",
+  "title": "Correct hosted alpha autoplay and app-switch regressions",
+  "summary": "0.6.12 fixes the real seams exposed by the 0.6.11 alpha dev_deploy retest: image directories no longer autoplay because hosted proof, direct load, and preset application now follow the resolved media kind, turning shuffle off restores the current playlist index instead of stepping backward, and app switching now resumes from the captured playback position instead of restarting movies from the beginning.",
+  "reasoning": "The 0.6.11 alpha retest proved the regression was real. The player core still knew that still images should pause, but three later seams were overriding that truth: the direct non-hosted load path decided desiredPlaying before a directory path resolved to the actual first image, the Meta proof bridge forced play=true on its seed loads, and preset save/apply logic still preserved still images as playWhenLoaded=true. Separately, app switching was hitting the runtime's blind play-retry path with no focus-aware resume state, which made movie playback pause on focus loss and restart from the beginning on return. This slice corrects those source seams directly instead of layering more behavior on top.",
+  "changes": [
+    {
+      "area": "direct-load-path",
+      "summary": "The direct standalone load path now resolves the selected media before deciding desiredPlaying and before calling the record loader.",
+      "reasoning": "Directory selections must be judged by the actual first media file, not by the directory path string."
+    },
+    {
+      "area": "meta-proof-seed",
+      "summary": "The hosted Meta proof bridge no longer hardcodes play=true for selected or sample media loads.",
+      "reasoning": "Images should inherit the same media-kind autoplay rule as the base player instead of being forced into playback by the proof bootstrap."
+    },
+    {
+      "area": "preset-application",
+      "summary": "Player presets no longer save still images as desiredPlaying=true and no longer apply playWhenLoaded=true to still-image media.",
+      "reasoning": "Old preset state should not be able to resurrect image autoplay after the runtime already knows the target media is a still image."
+    },
+    {
+      "area": "playlist-random",
+      "summary": "Turning shuffle off now reanchors the current playlist index to the currently loaded media before clearing the random order state.",
+      "reasoning": "Disabling random should preserve the operator's current media truth instead of making next or previous move relative to stale random indices."
+    },
+    {
+      "area": "app-focus-resume",
+      "summary": "The standalone runtime now captures playback position across application focus loss and suppresses blind play or AV-sync retries while unfocused.",
+      "reasoning": "Returning to the app should resume from the known playback position instead of restarting from the beginning due to retry logic running against focus-churned state."
+    }
+  ],
+  "verification": [
+    "Stamp 0.6.12 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the player runtime cleanly from vs/fa_cua_player/fa_cua_player.csproj.",
+    "Deploy a fresh 0.6.12 alpha dev_deploy for the modern_tv proof with versioned raw preset, assetbundle, and plugin names.",
+    "Retest image directory load and confirm still images pause immediately instead of autoplaying.",
+    "Retest movie playback across app switching and confirm focus return no longer restarts from the beginning.",
+    "Turn shuffle off during playlist playback and confirm the next/previous index tracks the current media rather than moving backward unexpectedly."
+  ],
+  "knownIssues": [
+    "Legacy Meta proof fallback constants still need a separate cleanup pass; they are not the primary source of the 0.6.11 alpha regressions fixed here.",
+    "The BrowserAssist preset listing mismatch was intentionally not investigated in this slice."
+  ]
+}

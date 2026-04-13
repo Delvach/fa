@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using FrameAngel.Runtime.Shared;
 using MeshVR;
 using MVR.FileManagementSecure;
 using UnityEngine;
@@ -966,6 +967,8 @@ public partial class FASyncRuntime : MVRScript
         SetPendingPlayerStateSummary("state=load_requested source=preset");
 
         bool playImmediately = preset.playWhenLoaded && !preset.hasTimeSeconds && !PresetShouldStartAtAbLoopStart(preset);
+        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(selectedMediaPath))
+            playImmediately = false;
         string extraArgsBody = "\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
             + ",\"play\":" + (playImmediately ? "true" : "false");
@@ -1192,7 +1195,7 @@ public partial class FASyncRuntime : MVRScript
         if (record == null)
             return true;
         if (record.mediaIsStillImage)
-            return true;
+            return false;
 
         try
         {

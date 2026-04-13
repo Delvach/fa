@@ -17,7 +17,7 @@ Packet `1.5` is governed by:
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
-7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.11.alpha.json`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.12.alpha.json`
 
 ## Working rule
 
@@ -189,17 +189,17 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.12 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.12.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.12.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.12.alpha.vap`
 4. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 5. markdown receipt:
@@ -210,14 +210,14 @@ Current proof interpretation:
 1. this artifact is player-backed and no longer ships an empty `PluginManager`
 2. the dev interaction seam now uses raw `Custom/Plugins/dev_plugin_player.<version>.dll`
    through the canonical `dev_deploy` alpha naming as
-   `plugin_player_dev.0.6.11.alpha.dll`
+   `plugin_player_dev.0.6.12.alpha.dll`
 3. the raw proof now consumes the composed host catalog package root instead of
    the shell-only root, so the current host bundle carries a visible control
    carrier while staying in the `2018.1.9f2` VaM-valid bundle class
 4. the `.var` package remains the release/output reference, not the live proof
    dependency for this interactive Meta host artifact
 5. current release reference is:
-   `products/vam/assets/player/build/var_packages/0.6.11/direct_cua/player_var_package_report_latest.json`
+   `products/vam/assets/player/build/var_packages/0.6.12/direct_cua/player_var_package_report_latest.json`
 6. current shell/control confidence is now:
    - shell orientation and stance from Volodeck shell export preview
    - control visual fidelity from the authored Meta video-player Volodeck proof
@@ -226,6 +226,12 @@ Current proof interpretation:
    - Halo is offline
    - Volodeck is not yet treated as an exact emulator for every VaM-internal
      interaction behavior
+8. manual raw attach remains a valid witness path even if the current preset
+   browser path does not surface the versioned alpha preset:
+   - add a `CustomUnityAsset`
+   - load `asset_dev_modern_tv.0.6.12.alpha.assetbundle`
+   - attach `plugin_player_dev.0.6.12.alpha.dll`
+   - confirm the hosted screen comes up before judging interaction behavior
 
 Current supporting visual preflight sources:
 
@@ -233,6 +239,34 @@ Current supporting visual preflight sources:
    `products/vam/assets/player/build/host_shell_exports/modern_tv/faipe_fa_cua_player_modern_tv_7b8977e1e4de/preview/thumbnail.png`
 2. authored control surface preview:
    `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_surface_preview.png`
+
+## Current 0.6.12 alpha regression truths
+
+The 0.6.11 alpha dev_deploy retest exposed three real runtime seams, all now
+carried forward into the 0.6.12 alpha fix packet:
+
+1. direct standalone load was deciding `desiredPlaying` before a directory path
+   resolved to the actual first media file, which let image directories inherit
+   video-style autoplay
+2. the hosted Meta proof bridge still forced `play:true` during selected/sample
+   media seed loads, which overrode the base player image-pause rule
+3. preset save/apply logic still treated still images as `playWhenLoaded=true`,
+   which let older presets resurrect autoplay even after the runtime knew the
+   target media was an image
+
+The same retest also showed:
+
+1. turning shuffle off could leave the current playlist index anchored to stale
+   random-order state
+2. switching away from VaM could pause movie playback, then the return path
+   would restart from the beginning because the runtime retried play without a
+   focus-aware resume point
+3. the raw assetbundle and plugin could still be attached manually and produce a
+   live hosted screen, which means the main regression was playback-state truth,
+   not a broken host-shell load seam
+4. the alpha preset file existed on disk but not in the current preset browser
+   path; that is logged as a separate seam and intentionally not treated as the
+   root cause of the playback regressions
 
 ## Current VaM validity findings
 
@@ -262,22 +296,22 @@ Current restored raw hosted-player artifact:
 1. `Build-PlayerShellAssetBundles.ps1` and
    `FrameAngelPlayerShell2018Exporter.cs` were restored from repo history as the
    raw 2018 shell seam
-2. `Build-MetaInteractiveHostedPlayerProof.ps1 -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha`
+2. `Build-MetaInteractiveHostedPlayerProof.ps1 -Version 0.6.12 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha`
    now routes through that seam
 3. current deployed interactive proof preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.11.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.12.alpha.vap`
 4. current deployed host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.11.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.12.alpha.assetbundle`
 5. current deployed host bundle class:
    `2018.1.9f2`
 6. stale incompatible host bundle removed:
    `F:\sim\vam\Custom\Assets\FrameAngel\Player\fa_cua_player_modern_tv_v1.assetbundle`
 7. current deployed player plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.11.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.12.alpha.dll`
 8. current proof receipt records:
    - `hostPackageRoot = products/vam/assets/player/build/host_catalog/theme_00/modern_tv/faipe_fa_cua_player_modern_tv_v1`
    - `proofExportAuthority = raw_shell_2018`
-   - `playerPackageFileName = FrameAngel.DevPlayer.11.var`
+   - `playerPackageFileName = FrameAngel.DevPlayer.12.var`
 
 ## Current 0.6.11 recovery lessons
 
@@ -445,7 +479,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 ## Recommended first interactive proof command
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.11 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.12 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 ## Next implementation targets after the first proof

@@ -199,8 +199,12 @@ public partial class FASyncRuntime : MVRScript
         record.playbackKey = playbackKey;
         record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, instance.defaultAspectMode);
         record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
-        record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, mediaPath, record.desiredPlaying);
         ApplyStandalonePlayerPlaylistArgs(record, argsJson, mediaPath);
+        string selectedMediaPath = GetStandalonePlayerCurrentPlaylistPath(record);
+        if (string.IsNullOrEmpty(selectedMediaPath))
+            selectedMediaPath = mediaPath;
+        record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, selectedMediaPath, record.desiredPlaying);
+        SetPendingPlayerSelection(selectedMediaPath);
         record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);
         if (record.randomEnabled)
             EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
@@ -219,7 +223,7 @@ public partial class FASyncRuntime : MVRScript
             record.volume = record.muted ? 0f : record.storedVolume;
         }
 
-        if (!TryLoadStandalonePlayerRecordPath(record, instance, slot, mediaPath, out errorMessage))
+        if (!TryLoadStandalonePlayerRecordPath(record, instance, slot, selectedMediaPath, out errorMessage))
         {
             resultJson = BuildBrokerResult(false, errorMessage, "{}");
             return false;
