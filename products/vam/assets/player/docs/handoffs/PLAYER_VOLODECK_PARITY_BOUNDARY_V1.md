@@ -13,6 +13,7 @@ For the broader modular product-system plan that Volodeck supports, use:
 2. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_EXECUTION_PLAN_V1.md`
 3. `products/vam/docs/handoffs/VAM_PLAYER_PRODUCT_SYSTEM_SURFACE_EDITION_PACKAGE_PROFILE_STRATEGY_V1.md`
 4. `products/vam/config/player_version_capability_schedule.v1.json`
+5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_VISUAL_AND_INTERACTION_GUARDRAILS_V1.md`
 
 ## Current repo-local authority
 
@@ -52,6 +53,17 @@ Volodeck is the fastest pre-VaM witness seam for:
 4. exported host/package validation before operator testing
 
 Meta UI toolkit should use this same parity witness seam once Packet `1.5` begins.
+
+## Operator gate
+
+Do not send work to the operator for testing until Volodeck has already produced:
+
+1. a contextual witness image that is not too far out to judge the resource
+2. a tighter surface witness image that is not so zoomed in that layout/orientation is lost
+3. a receipt that records the exact harness command and output paths
+
+If the witness is blank, tiny, overly cropped, or only proves one framing, it is
+not ready for operator testing.
 
 ## Deterministic posture
 

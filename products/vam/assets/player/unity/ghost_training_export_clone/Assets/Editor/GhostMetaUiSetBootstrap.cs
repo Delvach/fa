@@ -224,6 +224,162 @@ public static class GhostMetaUiSetBootstrap
         Debug.Log($"GhostMetaUiSetBootstrap: captured preview for {scene.path} to {capturePath}");
     }
 
+    public static void CaptureVideoPlayerProofScenePreviewBatch()
+    {
+        string capturePath = GetCommandLineArgument("-metaUiSetCapturePath");
+        if (string.IsNullOrWhiteSpace(capturePath))
+        {
+            throw new InvalidOperationException("Missing -metaUiSetCapturePath for GhostMetaUiSetBootstrap.CaptureVideoPlayerProofScenePreviewBatch");
+        }
+
+        string absoluteScenePath = GetAbsoluteScenePath(VideoPlayerProofScenePath);
+        if (!File.Exists(absoluteScenePath))
+        {
+            CreateVideoPlayerProofSceneInternal();
+        }
+
+        string captureDirectory = Path.GetDirectoryName(capturePath) ?? string.Empty;
+        Directory.CreateDirectory(captureDirectory);
+        Scene scene = EditorSceneManager.OpenScene(VideoPlayerProofScenePath, OpenSceneMode.Single);
+        Canvas.ForceUpdateCanvases();
+
+        GameObject proofRoot = FindSceneObjectByName(scene, "GhostMetaVideoPlayerProof");
+        if (proofRoot == null)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: video player proof root was not found in " + scene.path);
+        }
+
+        GhostMetaVideoPlayerProof proofBinder = proofRoot.GetComponent<GhostMetaVideoPlayerProof>();
+        GhostMetaControlSurfaceProofMetadata metadata = proofRoot.GetComponent<GhostMetaControlSurfaceProofMetadata>();
+        if (metadata != null)
+        {
+            metadata.ConfigureForVideoPlayerProof(proofBinder);
+        }
+
+        Camera camera = Camera.main ?? UnityEngine.Object.FindObjectOfType<Camera>();
+        if (camera == null)
+        {
+            var cameraObject = new GameObject("MetaVideoPlayerProofPreviewCamera");
+            camera = cameraObject.AddComponent<Camera>();
+        }
+
+        camera.fieldOfView = 32f;
+        camera.nearClipPlane = 0.01f;
+        camera.farClipPlane = 20f;
+
+        RectTransform preferredSurfaceRoot = metadata != null ? metadata.surfaceRoot : null;
+        Bounds captureBounds;
+        if (!TryGetCaptureBounds(proofRoot, preferredSurfaceRoot, out captureBounds))
+        {
+            captureBounds = new Bounds(proofRoot.transform.position, Vector3.one * 0.25f);
+        }
+
+        float aspect = 1600f / 900f;
+        float halfFovRadians = camera.fieldOfView * 0.5f * Mathf.Deg2Rad;
+        float verticalDistance = Mathf.Max(0.15f, captureBounds.extents.y / Mathf.Tan(halfFovRadians));
+        float horizontalHalfFovRadians = Mathf.Atan(Mathf.Tan(halfFovRadians) * aspect);
+        float horizontalDistance = Mathf.Max(0.15f, captureBounds.extents.x / Mathf.Tan(horizontalHalfFovRadians));
+        float distance = Mathf.Max(verticalDistance, horizontalDistance) + (captureBounds.extents.magnitude * 0.4f);
+        Vector3 forward = proofRoot.transform.forward.sqrMagnitude > 0f ? proofRoot.transform.forward.normalized : Vector3.forward;
+        Vector3 up = proofRoot.transform.up.sqrMagnitude > 0f ? proofRoot.transform.up.normalized : Vector3.up;
+        camera.transform.position = captureBounds.center - (forward * distance) + (up * (captureBounds.extents.y * 0.08f));
+        camera.transform.rotation = Quaternion.LookRotation(captureBounds.center - camera.transform.position, up);
+
+        camera.clearFlags = CameraClearFlags.SolidColor;
+        camera.backgroundColor = new Color(0.93f, 0.95f, 0.97f, 1f);
+
+        RenderTexture renderTexture = new RenderTexture(1600, 900, 24);
+        var previousTarget = camera.targetTexture;
+        var previousActive = RenderTexture.active;
+        Texture2D texture = null;
+        try
+        {
+            camera.targetTexture = renderTexture;
+            RenderTexture.active = renderTexture;
+            camera.Render();
+
+            texture = new Texture2D(renderTexture.width, renderTexture.height, TextureFormat.RGB24, false);
+            texture.ReadPixels(new Rect(0, 0, renderTexture.width, renderTexture.height), 0, 0);
+            texture.Apply();
+
+            byte[] png = texture.EncodeToPNG();
+            File.WriteAllBytes(capturePath, png);
+        }
+        finally
+        {
+            camera.targetTexture = previousTarget;
+            RenderTexture.active = previousActive;
+
+            if (texture != null)
+            {
+                UnityEngine.Object.DestroyImmediate(texture);
+            }
+
+            renderTexture.Release();
+            UnityEngine.Object.DestroyImmediate(renderTexture);
+        }
+
+        Debug.Log($"GhostMetaUiSetBootstrap: captured video player proof scene preview for {scene.path} to {capturePath}");
+    }
+
+    public static void CaptureVideoPlayerProofSurfaceBatch()
+    {
+        string capturePath = GetCommandLineArgument("-metaUiSetCapturePath");
+        if (string.IsNullOrWhiteSpace(capturePath))
+        {
+            throw new InvalidOperationException("Missing -metaUiSetCapturePath for GhostMetaUiSetBootstrap.CaptureVideoPlayerProofSurfaceBatch");
+        }
+
+        string captureMetaPath = GetCommandLineArgument("-metaUiSetCaptureMetaPath");
+        string absoluteScenePath = GetAbsoluteScenePath(VideoPlayerProofScenePath);
+        if (!File.Exists(absoluteScenePath))
+        {
+            CreateVideoPlayerProofSceneInternal();
+        }
+
+        string captureDirectory = Path.GetDirectoryName(capturePath) ?? string.Empty;
+        Directory.CreateDirectory(captureDirectory);
+        if (!string.IsNullOrWhiteSpace(captureMetaPath))
+        {
+            string captureMetaDirectory = Path.GetDirectoryName(captureMetaPath) ?? string.Empty;
+            Directory.CreateDirectory(captureMetaDirectory);
+        }
+
+        Scene scene = EditorSceneManager.OpenScene(VideoPlayerProofScenePath, OpenSceneMode.Single);
+        Canvas.ForceUpdateCanvases();
+
+        GameObject proofRoot = FindSceneObjectByName(scene, "GhostMetaVideoPlayerProof");
+        if (proofRoot == null)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: video player proof root was not found in " + scene.path);
+        }
+
+        GhostMetaVideoPlayerProof proofBinder = proofRoot.GetComponent<GhostMetaVideoPlayerProof>();
+        GhostMetaControlSurfaceProofMetadata metadata = proofRoot.GetComponent<GhostMetaControlSurfaceProofMetadata>();
+        if (metadata != null)
+        {
+            metadata.ConfigureForVideoPlayerProof(proofBinder);
+        }
+
+        RectTransform surfaceRoot = metadata != null ? metadata.surfaceRoot : null;
+        if (surfaceRoot == null)
+        {
+            Transform controlsRoot = FindChildRecursive(proofRoot.transform, "Controls");
+            surfaceRoot = controlsRoot as RectTransform;
+        }
+
+        if (surfaceRoot == null)
+        {
+            throw new InvalidOperationException(
+                "GhostMetaUiSetBootstrap: video player proof surface root was not found in " + scene.path);
+        }
+
+        CaptureRectTransformToPng(scene.path, "GhostMetaVideoPlayerProofSurface", surfaceRoot, capturePath, captureMetaPath);
+        Debug.Log($"GhostMetaUiSetBootstrap: captured video player proof surface to {capturePath}");
+    }
+
     public static void CaptureFlatGalleryElementBatch()
     {
         string capturePath = GetCommandLineArgument("-metaUiSetCapturePath");
@@ -485,6 +641,66 @@ public static class GhostMetaUiSetBootstrap
             UnityEngine.Object.DestroyImmediate(renderTexture);
             UnityEngine.Object.DestroyImmediate(cameraObject);
         }
+    }
+
+    private static bool TryGetCaptureBounds(GameObject root, RectTransform preferredRectTransform, out Bounds bounds)
+    {
+        if (preferredRectTransform != null && TryGetRectTransformBounds(preferredRectTransform, out bounds))
+        {
+            return true;
+        }
+
+        bool hasBounds = false;
+        bounds = default;
+        if (root != null)
+        {
+            Renderer[] renderers = root.GetComponentsInChildren<Renderer>(true);
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                Renderer renderer = renderers[i];
+                if (renderer == null || !renderer.enabled)
+                {
+                    continue;
+                }
+
+                if (!hasBounds)
+                {
+                    bounds = renderer.bounds;
+                    hasBounds = true;
+                }
+                else
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+
+            if (hasBounds && bounds.size != Vector3.zero)
+            {
+                return true;
+            }
+        }
+
+        bounds = default;
+        return false;
+    }
+
+    private static bool TryGetRectTransformBounds(RectTransform rectTransform, out Bounds bounds)
+    {
+        if (rectTransform == null)
+        {
+            bounds = default;
+            return false;
+        }
+
+        Vector3[] corners = new Vector3[4];
+        rectTransform.GetWorldCorners(corners);
+        bounds = new Bounds(corners[0], Vector3.zero);
+        for (int i = 1; i < corners.Length; i++)
+        {
+            bounds.Encapsulate(corners[i]);
+        }
+
+        return bounds.size != Vector3.zero;
     }
 
     private static GameObject FindSceneObjectByName(Scene scene, string objectName)

@@ -63,6 +63,8 @@ Defaults:
 8. Re-ran the same narrow proof after that hardening and got a second clean receipt.
 9. Refreshed the live standalone Meta proof set into VaM raw `Custom` paths so there are actual interactive Meta presets available in VaM right now.
 10. Corrected the Meta video player proof export seam so the live proof script now builds from the authored Volodeck scene in `ghost_training_export_clone` instead of the older snapshot-only `player-screen-2018` exporter.
+11. Added a deterministic Volodeck witness wrapper for the authored Meta video-player proof so the lane now emits both a contextual scene preview and a tighter surface preview before operator testing.
+12. Tightened the wide witness framing after the first scene preview proved too far out to be trustworthy, and recorded that lesson in the Volodeck guardrails canon.
 
 ## What the new wrapper does
 
@@ -101,6 +103,32 @@ First successful narrow proof in this slice:
 Latest successful narrow proof after host-catalog hardening:
 
 1. `products/vam/assets/player/build/meta_ui_packet_1_5_runs/meta_ui_packet_1_5_foundation_20260413T172437Z.json`
+
+## Current Volodeck visual witness for the authored Meta video-player proof
+
+Current harness command:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaVideoPlayerProofVolodeckWitness.ps1 -RepoRoot C:\projects\fa
+```
+
+Current outputs:
+
+1. contextual scene preview:
+   `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_scene_preview.png`
+2. tighter surface preview:
+   `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_surface_preview.png`
+3. surface capture metadata:
+   `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/video_player_proof_surface_preview.meta.json`
+4. receipt:
+   `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/meta_video_player_proof_volodeck_witness_receipt.json`
+
+Working interpretation:
+
+1. the first wide preview in this slice was too far out to be an honest visual proof
+2. the harness was then tightened so the contextual shot is now actually useful
+3. the tighter surface shot is currently the better judge for icon crispness and layout truth
+4. do not send the operator to test from receipts alone; use these witness images first
 
 ## Current interactive Meta witness set in VaM
 
@@ -169,6 +197,7 @@ Working interpretation:
 2. they are not trustworthy as the main interactive visual-fidelity proof path
 3. use the authored Volodeck proof path when judging whether controls/icons are crisp enough to promote
 4. `Build-MetaControlSurfaceProofCua.ps1` still routes through the older snapshot exporter and should not be treated as the primary authored video-player proof witness until it is explicitly upgraded
+5. the authored Volodeck proof path now has its own dedicated witness wrapper so future threads do not need to improvise framing
 
 ## Provisional operator memory to verify
 
@@ -215,11 +244,13 @@ Default shell set:
 2. Confirm branch and working tree state.
 3. Confirm `AGENTS.md` is still the only unrelated dirty file.
 4. For Meta proof visual-fidelity work, verify that `Build-MetaVideoPlayerProofCua.ps1` still points at `GhostMetaVideoPlayerProofCustomUnityAssetExporter.ExportMetaVideoPlayerProofBatch` in `ghost_training_export_clone`.
-5. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
-6. Inspect the successful narrow proof receipt above before changing inputs.
-7. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
-8. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
-9. Only after the narrow proof is trustworthy, widen the shell set.
+5. Run `Build-MetaVideoPlayerProofVolodeckWitness.ps1` and inspect both generated images before making any quality claims.
+6. Use `PLAYER_VOLODECK_VISUAL_AND_INTERACTION_GUARDRAILS_V1.md` to judge whether the witness is actually informative.
+7. Syntax-check `Build-PlayerMetaUiPacket15Foundation.ps1`.
+8. Inspect the successful narrow proof receipt above before changing inputs.
+9. Run the wrapper with a narrow shell set first, preferably `modern_tv`.
+10. Inspect the emitted receipt under `build/meta_ui_packet_1_5_runs`.
+11. Only after the narrow proof is trustworthy, widen the shell set.
 
 ## Recommended first proof command
 
