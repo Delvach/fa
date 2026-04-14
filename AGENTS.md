@@ -42,7 +42,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that now uses the `0.6.24` raw core-player `dev_deploy` seam as an exact runtime rollback slice, restoring the last clearly user-confirmed working core-player baseline from `0.6.10` after the later recovery line kept drifting and reopening the same failures
+3. the active feature work beyond that now uses the `0.6.25` raw core-player `dev_deploy` seam, keeping the exact `0.6.24` rollback baseline intact while preserving the one-second sync cadence and moving its correction authority onto a player-owned master timeline instead of `AudioSource.time`
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -61,13 +61,13 @@ Primary current docs:
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.24.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.25.alpha.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.24.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.25.alpha.dll`
 3. raw deploy receipt:
-   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.24.alpha.json`
+   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.25.alpha.json`
 4. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.24\direct_cua\player_var_package_report_latest.json`
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.25\direct_cua\player_var_package_report_latest.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
@@ -89,12 +89,13 @@ Important:
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
 7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, and the rollback line still carries the visible resize buttons from the `0.6.14` core
-8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.24` recovery seam intentionally stays on the exact `0.6.10` core-player runtime and does not carry later resize or playlist policy experiments
-9. the `0.6.24` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
+8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.25` recovery seam intentionally stays on the exact `0.6.24` rollback baseline and does not carry later resize or playlist policy experiments
+9. the `0.6.25` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
 10. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
 11. the current hosted and baseline 2018 asset names are intentionally short:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
+12. the current one-second sync seam remains active for this lane, but its correction authority is the player-owned master timeline refreshed by `clockResyncOccurred`, not `AudioSource.time`
 
 ## Volodeck boundary
 

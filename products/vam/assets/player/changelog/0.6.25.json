@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.25",
+  "title": "Keep periodic sync but move correction authority onto a player-owned timeline",
+  "summary": "0.6.25 keeps the restored 0.6.24 core-player baseline intact and keeps the once-per-second sync cadence, but stops using AudioSource.time as the correction target. Instead, the periodic sync seam now follows a player-owned master timeline and uses clockResyncOccurred to keep that timeline anchored.",
+  "changes": [
+    "Add a player-owned master timeline anchor to the standalone player record and keep the once-per-second sync cadence pointed at that internal timeline instead of AudioSource.time.",
+    "Wire VideoPlayer.clockResyncOccurred into the standalone runtime so Unity clock resync events refresh the player-owned timeline anchor instead of sitting as a dead hook.",
+    "Keep skipOnDrop = false in this slice and leave the surrounding playback, seek, focus, playlist, and surface behavior unchanged.",
+    "Stamp version 0.6.25 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.25 raw core-player alpha seam with package inventory generated via -SkipVarDistribute."
+  ],
+  "reasoning": [
+    "The restored 0.6.24 baseline brought back the last clearly working core-player behavior, but it also restored the 0.6.10 once-per-second AV correction seam.",
+    "The operator intent for that seam was always to keep periodic sync, not remove it. The actual bug is the authority model: the current code reads AudioSource.time and hard-seeks video to it.",
+    "This slice is intentionally narrow and avoids layering a new frame-drop posture, surface change, or playlist policy change on top."
+  ],
+  "operatorVisibleOutcomes": [
+    "Movies should keep the once-per-second sync behavior, but correction should stop treating audio as hidden time authority.",
+    "This slice should feel like the 0.6.24 rollback baseline, but with the periodic sync seam following the player timeline instead of letting audio drag video around under stress."
+  ],
+  "knownIssues": [
+    "This slice changes correction authority, not the 1-second cadence itself.",
+    "If stressed movie playback still degrades after this slice, the next lane should stay narrow and focus on transport timing or a different clock posture instead of dropping back to audio-driven hard seeks."
+  ]
+}

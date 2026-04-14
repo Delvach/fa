@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.25",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-14T00:52:00-06:00",
+  "endedAt": "2026-04-14T01:04:48.3174161-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.25\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.25\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.25.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.25 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "entries": [
+    {
+      "entryId": "0.6.25-operator-authority-correction",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator explicitly corrected the drift: the one-second sync seam was supposed to solve the playback issue, not be removed, and neither audio nor video should be treated as the authority on time.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.25-assistant-draft-caught-before-live",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "A first repo-only 0.6.25 draft wrongly retired the periodic sync seam again by following the old drift packet. That draft was caught before live raw deploy and replaced instead of becoming authority.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live repo history"
+      ]
+    },
+    {
+      "entryId": "0.6.25-foundation-build",
+      "timestamp": "2026-04-14T07:04:29.6493025Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.25 cleanly after keeping the one-second sync cadence and moving correction authority onto a player-owned timeline instead of AudioSource.time.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.25\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.25-package-inventory-built",
+      "timestamp": "2026-04-14T07:04:30.4772618Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.25 package inventory with -SkipVarDistribute and confirmed it remains build-only with distributed:false.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.25\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.25-core-player-alpha",
+      "timestamp": "2026-04-14T01:04:48.3174161-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Deployed the raw direct core-player asset and plugin as the live 0.6.25 alpha dev_deploy seam after restoring the periodic sync seam and moving its correction authority onto a player-owned master timeline anchored by clockResyncOccurred.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.25.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.25 keeps the one-second sync cadence instead of retiring it.",
+    "The correction target for periodic sync is no longer AudioSource.time; the runtime now treats a player-owned master timeline as the authority and uses clockResyncOccurred to refresh that timeline anchor.",
+    "The live authority seam for this slice is the raw direct core-player dev_deploy asset plus plugin, not the hosted modern_tv witness seam and not the .var package."
+  ],
+  "openQuestions": [
+    "Does the player-owned timeline plus clockResyncOccurred seam reduce fast-forward bursts and long-lived AV drift on the same problematic VR movie tests without reopening the earlier movie playback failure?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.25.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.25\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.25\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.25.alpha.json",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.25.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.25.alpha.dll"
+  ],
+  "notes": [
+    "This slice explicitly records the correction to the earlier drifted assumption: the bug was the authority model inside periodic sync, not the existence of periodic sync itself.",
+    "The 0.6.25 package report exists only as build inventory and does not compete with the raw direct core-player dev_deploy authority."
+  ]
+}

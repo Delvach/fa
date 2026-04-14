@@ -188,6 +188,9 @@ public partial class FASyncRuntime : MVRScript
         public bool hasObservedPlaybackTime = false;
         public double lastObservedPlaybackTimeSeconds = 0d;
         public float lastPlaybackMotionObservedAt = 0f;
+        public bool hasMasterTimeline = false;
+        public double masterTimelineSeconds = 0d;
+        public float masterTimelineObservedAt = 0f;
         public bool naturalEndHandled = false;
         public bool hasAbLoopStart = false;
         public double abLoopStartSeconds = 0d;
@@ -6985,6 +6988,53 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
+    private void ResetStandalonePlayerMasterTimeline(StandalonePlayerRecord record)
+    {
+        if (record == null)
+            return;
+
+        record.hasMasterTimeline = false;
+        record.masterTimelineSeconds = 0d;
+        record.masterTimelineObservedAt = 0f;
+    }
+
+    private void SetStandalonePlayerMasterTimeline(StandalonePlayerRecord record, double timelineSeconds, bool isRunning)
+    {
+        if (record == null)
+            return;
+
+        if (double.IsNaN(timelineSeconds) || double.IsInfinity(timelineSeconds))
+            timelineSeconds = 0d;
+
+        record.hasMasterTimeline = true;
+        record.masterTimelineSeconds = Math.Max(0d, timelineSeconds);
+        record.masterTimelineObservedAt = isRunning ? Time.unscaledTime : 0f;
+    }
+
+    private bool TryReadStandalonePlayerMasterTimeline(
+        StandalonePlayerRecord record,
+        double durationSeconds,
+        out double timelineSeconds)
+    {
+        timelineSeconds = 0d;
+        if (record == null || !record.hasMasterTimeline)
+            return false;
+
+        timelineSeconds = Math.Max(0d, record.masterTimelineSeconds);
+        if (record.masterTimelineObservedAt > 0f)
+        {
+            timelineSeconds += Math.Max(0d, (double)(Time.unscaledTime - record.masterTimelineObservedAt));
+        }
+
+        if (durationSeconds > 0.0001d)
+            timelineSeconds = Math.Min(durationSeconds, timelineSeconds);
+
+        if (double.IsNaN(timelineSeconds) || double.IsInfinity(timelineSeconds))
+            timelineSeconds = 0d;
+
+        return timelineSeconds > 0d;
+    }
+
     private bool TryLoadStandalonePlayerRecordPath(
         StandalonePlayerRecord record,
         InnerPieceInstanceRecord instance,
@@ -7035,6 +7085,7 @@ public partial class FASyncRuntime : MVRScript
         record.hasObservedPlaybackTime = false;
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
+        ResetStandalonePlayerMasterTimeline(record);
         record.naturalEndHandled = false;
         ClearStandalonePlayerAbLoopState(record);
 
@@ -8052,6 +8103,7 @@ public partial class FASyncRuntime : MVRScript
             return TryAdvanceStandalonePlayerAfterNaturalEnd(record, out errorMessage);
 
         record.desiredPlaying = false;
+        SetStandalonePlayerMasterTimeline(record, record.lastObservedPlaybackTimeSeconds, false);
         record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
         TryRefreshStandalonePlayerPausedFrame(record);
         return true;
@@ -8071,6 +8123,7 @@ public partial class FASyncRuntime : MVRScript
             record.videoPlayer.time = 0d;
             record.videoPlayer.Play();
             record.desiredPlaying = true;
+            SetStandalonePlayerMasterTimeline(record, 0d, true);
             record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
             record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
             record.hasObservedPlaybackTime = false;
@@ -8122,6 +8175,7 @@ public partial class FASyncRuntime : MVRScript
 
             record.videoPlayer.time = targetTimeSeconds;
             ResetStandalonePlayerPlaybackMotionState(record, targetTimeSeconds);
+            SetStandalonePlayerMasterTimeline(record, targetTimeSeconds, shouldResumePlayback);
 
             if (shouldResumePlayback)
             {
@@ -8244,6 +8298,13 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        double expectedTimeSeconds = 0d;
+        if (!TryReadStandalonePlayerMasterTimeline(record, durationSeconds, out expectedTimeSeconds)
+            || expectedTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+        {
+            return false;
+        }
+
         double audioTimeSeconds = 0d;
         string audioTimelineError = "";
         if (!TryReadStandalonePlayerAudioTimeline(record, out audioTimeSeconds, out audioTimelineError))
@@ -8259,12 +8320,18 @@ public partial class FASyncRuntime : MVRScript
         if (audioTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
             return false;
 
-        double driftSeconds = Math.Abs(currentTimeSeconds - audioTimeSeconds);
-        if (driftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds
-            || driftSeconds > StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds)
+        double audioDriftSeconds = Math.Abs(audioTimeSeconds - expectedTimeSeconds);
+        if (audioDriftSeconds > StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds)
             return false;
 
-        return TrySeekStandalonePlayerRecordToSeconds(record, audioTimeSeconds, true, out errorMessage);
+        double videoDriftSeconds = Math.Abs(currentTimeSeconds - expectedTimeSeconds);
+        if (videoDriftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds
+            || videoDriftSeconds > StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds)
+        {
+            return false;
+        }
+
+        return TrySeekStandalonePlayerRecordToSeconds(record, expectedTimeSeconds, true, out errorMessage);
     }
 
     private const int ScreenCoreOverlayBackingRenderQueue = 4495;
@@ -8574,6 +8641,7 @@ public partial class FASyncRuntime : MVRScript
                 record.seekResumePending = false;
                 record.seekResumeTargetSeconds = 0d;
                 record.seekResumeRequestedAt = 0f;
+                ResetStandalonePlayerMasterTimeline(record);
                 record.prepared = false;
                 record.needsScreenRefresh = true;
                 record.lastError = string.IsNullOrEmpty(message)
@@ -8615,6 +8683,7 @@ public partial class FASyncRuntime : MVRScript
                 {
                     record.seekResumePending = false;
                     record.seekResumeRequestedAt = 0f;
+                    SetStandalonePlayerMasterTimeline(record, record.seekResumeTargetSeconds, record.desiredPlaying && !record.mediaIsStillImage);
                     record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
                     record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
                 }
@@ -8623,7 +8692,17 @@ public partial class FASyncRuntime : MVRScript
         }
 
         if (!record.runtimeClockResyncHooked)
+        {
+            record.videoPlayer.clockResyncOccurred += delegate(VideoPlayer source, double seconds)
+            {
+                if (record == null)
+                    return;
+
+                SetStandalonePlayerMasterTimeline(record, seconds, record.desiredPlaying && !record.mediaIsStillImage);
+                record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+            };
             record.runtimeClockResyncHooked = true;
+        }
 
         // For the first hosted bind we still need a tiny eager RT, but once a
         // live hosted screen already has a real RT attached we should not
