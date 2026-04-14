@@ -59,9 +59,8 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
     private const float StandalonePlayerPeriodicAvSyncIntervalSeconds = 1.0f;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
-    private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.12f;
+    private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
-    private const float StandalonePlayerInteractiveScrubUiRefreshIntervalSeconds = 0.08f;
     private const float StandalonePlayerTransitionFadeDurationSeconds = 0.25f;
     private const float StandalonePlayerVolumeCurveExponent = 2f;
     private const int StandalonePlayerPlaceholderWidth = 256;
@@ -5764,12 +5763,28 @@ public partial class FASyncRuntime : MVRScript
                 playing = false;
             }
 
-            ReadStandalonePlayerPresentationState(
-                record,
-                out _,
-                out _,
-                out _,
-                out scrubNormalized);
+            double currentTimeSeconds = 0d;
+            double currentDurationSeconds = 0d;
+            try
+            {
+                if (record.videoPlayer != null)
+                {
+                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
+                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                }
+            }
+            catch
+            {
+                currentTimeSeconds = 0d;
+                currentDurationSeconds = 0d;
+            }
+
+            if (!double.IsNaN(currentDurationSeconds)
+                && !double.IsInfinity(currentDurationSeconds)
+                && currentDurationSeconds > 0.0001d)
+            {
+                scrubNormalized = Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
+            }
         }
 
         string resolvedAtomUid = !string.IsNullOrEmpty(atomUid) ? atomUid : (binding.atomUid ?? "");
@@ -7544,91 +7559,6 @@ public partial class FASyncRuntime : MVRScript
             return Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
 
         return 0d;
-    }
-
-    private void ReadStandalonePlayerPresentationState(
-        StandalonePlayerRecord record,
-        out bool isPlaying,
-        out double currentTimeSeconds,
-        out double currentDurationSeconds,
-        out double currentTimeNormalized)
-    {
-        isPlaying = false;
-        currentTimeSeconds = 0d;
-        currentDurationSeconds = 0d;
-        currentTimeNormalized = 0d;
-
-        if (record == null)
-            return;
-
-        if (!ShouldReportStandalonePlayerZeroTimeline(record))
-        {
-            try
-            {
-                if (record.videoPlayer != null)
-                {
-                    isPlaying = record.videoPlayer.isPlaying;
-                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
-                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
-                }
-            }
-            catch
-            {
-                isPlaying = false;
-                currentTimeSeconds = 0d;
-                currentDurationSeconds = 0d;
-            }
-        }
-
-        if (double.IsNaN(currentTimeSeconds) || double.IsInfinity(currentTimeSeconds))
-            currentTimeSeconds = 0d;
-        if (double.IsNaN(currentDurationSeconds) || double.IsInfinity(currentDurationSeconds))
-            currentDurationSeconds = 0d;
-
-        if (!record.mediaIsStillImage
-            && TryReadStandalonePlayerMasterTimeline(record, currentDurationSeconds, out double masterTimelineSeconds))
-        {
-            if (record.seekResumePending
-                || currentTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds
-                || Math.Abs(masterTimelineSeconds - currentTimeSeconds) > StandalonePlayerPlaybackMotionEpsilonSeconds)
-            {
-                currentTimeSeconds = masterTimelineSeconds;
-            }
-        }
-
-        currentTimeNormalized = GetStandalonePlayerPresentationNormalized(record, currentTimeSeconds, currentDurationSeconds);
-        if (double.IsNaN(currentTimeNormalized) || double.IsInfinity(currentTimeNormalized))
-            currentTimeNormalized = 0d;
-    }
-
-    private void RefreshStandalonePlayerInteractiveScrubUi(StandalonePlayerRecord record)
-    {
-        if (record == null)
-            return;
-
-        float now = Time.unscaledTime;
-        if (now < standalonePlayerInteractiveScrubUiRefreshAt)
-            return;
-
-        standalonePlayerInteractiveScrubUiRefreshAt = now + StandalonePlayerInteractiveScrubUiRefreshIntervalSeconds;
-
-        ReadStandalonePlayerPresentationState(
-            record,
-            out _,
-            out double currentTimeSeconds,
-            out double currentDurationSeconds,
-            out double currentTimeNormalized);
-
-        UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
-
-        string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
-        if (string.IsNullOrEmpty(hostAtomUid))
-            return;
-
-        if (!TryResolveHostedPlayerAtom(hostAtomUid, out Atom hostAtom) || hostAtom == null)
-            return;
-
-        RefreshAttachedDemoSceneUiState(record, hostAtom, currentTimeSeconds, currentDurationSeconds, currentTimeNormalized);
     }
 
     private string GetStandalonePlayerCurrentPlaylistPath(StandalonePlayerRecord record)
@@ -10200,12 +10130,35 @@ public partial class FASyncRuntime : MVRScript
         string selectedShader = ExtractJsonArgString(debugJson, "selectedShader");
         string selectedTexture = ExtractJsonArgString(debugJson, "selectedTexture");
 
-        ReadStandalonePlayerPresentationState(
-            record,
-            out bool isPlaying,
-            out double currentTimeSeconds,
-            out double currentDurationSeconds,
-            out double currentTimeNormalized);
+        bool isPlaying = false;
+        double currentTimeSeconds = 0d;
+        double currentDurationSeconds = 0d;
+        double currentTimeNormalized = 0d;
+        if (!ShouldReportStandalonePlayerZeroTimeline(record))
+        {
+            try
+            {
+                if (record.videoPlayer != null)
+                {
+                    isPlaying = record.videoPlayer.isPlaying;
+                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
+                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                }
+            }
+            catch
+            {
+                isPlaying = false;
+                currentTimeSeconds = 0d;
+                currentDurationSeconds = 0d;
+            }
+        }
+        if (double.IsNaN(currentTimeSeconds) || double.IsInfinity(currentTimeSeconds))
+            currentTimeSeconds = 0d;
+        if (double.IsNaN(currentDurationSeconds) || double.IsInfinity(currentDurationSeconds))
+            currentDurationSeconds = 0d;
+        currentTimeNormalized = GetStandalonePlayerPresentationNormalized(record, currentTimeSeconds, currentDurationSeconds);
+        if (double.IsNaN(currentTimeNormalized) || double.IsInfinity(currentTimeNormalized))
+            currentTimeNormalized = 0d;
 
         int renderTextureWidth = 0;
         int renderTextureHeight = 0;
@@ -10983,12 +10936,34 @@ public partial class FASyncRuntime : MVRScript
             displayHeightMeters = plane.heightMeters;
         }
 
-        ReadStandalonePlayerPresentationState(
-            record,
-            out bool isPlaying,
-            out double currentTimeSeconds,
-            out double currentDurationSeconds,
-            out double currentTimeNormalized);
+        bool isPlaying = false;
+        double currentTimeSeconds = 0d;
+        double currentDurationSeconds = 0d;
+        double currentTimeNormalized = 0d;
+        if (!ShouldReportStandalonePlayerZeroTimeline(record))
+        {
+            try
+            {
+                if (record.videoPlayer != null)
+                {
+                    isPlaying = record.videoPlayer.isPlaying;
+                    currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
+                    currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
+                }
+            }
+            catch
+            {
+                isPlaying = false;
+            }
+        }
+
+        if (double.IsNaN(currentTimeSeconds) || double.IsInfinity(currentTimeSeconds))
+            currentTimeSeconds = 0d;
+        if (double.IsNaN(currentDurationSeconds) || double.IsInfinity(currentDurationSeconds))
+            currentDurationSeconds = 0d;
+        currentTimeNormalized = GetStandalonePlayerPresentationNormalized(record, currentTimeSeconds, currentDurationSeconds);
+        if (double.IsNaN(currentTimeNormalized) || double.IsInfinity(currentTimeNormalized))
+            currentTimeNormalized = 0d;
 
         sb.Append('{');
         sb.Append("\"playbackKey\":\"").Append(EscapeJsonString(record.playbackKey)).Append("\",");
