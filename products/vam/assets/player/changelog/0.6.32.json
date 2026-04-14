@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.32",
+  "title": "Make button 5 a hard disable for player gaze and focus behavior",
+  "summary": "0.6.32 removes the extra grab-navigation handoff logic added in 0.6.30 and 0.6.31. While button 5 is held, the player now fully disables its own gaze and focus behavior and gets out of the way instead of trying to manage a special navigation state.",
+  "changes": [
+    "Detect the grab-navigation override before any gaze or focus resolution work runs.",
+    "If button 5 is held, fully release player focus and capture if owned, or stay idle if not owned.",
+    "Stop maintaining the special grab-navigation handoff state and snapshot juggling introduced by the previous two slices.",
+    "Leave the rest of the player behavior unchanged."
+  ],
+  "reasoning": [
+    "The previous handoff slices still felt like they were partially capturing control, which means they were still too opinionated.",
+    "The simplest rule is the safest one here: if button 5 is pressed, the player should not do gaze or focus behavior at all.",
+    "This keeps the fix inside the same input seam and avoids layering new logic on top of a seam that was already becoming too clever."
+  ],
+  "operatorVisibleOutcomes": [
+    "While button 5 is held, the player should completely stop trying to claim gaze or input focus.",
+    "VaM navigation behavior should be free to do its own thing while the override is held, without the player fighting it."
+  ],
+  "knownIssues": [
+    "This slice does not add the queued post-navigation deadband yet.",
+    "This slice does not change slideshow, A-B policy, volume gestures, or spatial audio."
+  ]
+}

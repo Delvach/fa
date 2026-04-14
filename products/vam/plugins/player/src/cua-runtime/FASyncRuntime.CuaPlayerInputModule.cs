@@ -108,7 +108,6 @@ public partial class FASyncRuntime : MVRScript
 
     private static FASyncRuntime cuaPlayerInputOwner;
     private static bool cuaPlayerNavigationCaptureActive;
-    private static bool cuaPlayerGrabNavigateHandoffActive;
     private static bool cuaPlayerNavigationSnapshotKnown;
     private static CuaPlayerNavigationSnapshot cuaPlayerNavigationSnapshot;
 
@@ -179,6 +178,19 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
+        bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
+        if (grabNavigateOverrideActive)
+        {
+            ResetCuaPlayerTriggerTapState();
+            cuaPlayerFocusActive = false;
+            cuaPlayerLastGrabNavigateOverrideActive = true;
+            if (ReferenceEquals(cuaPlayerInputOwner, this) || cuaPlayerNavigationCaptureActive)
+                ReleaseCuaPlayerInputFocus("grab_nav_override");
+            else
+                UpdateCuaPlayerInputState(false, false, "grab_nav", Vector2.zero, "grab_nav_override");
+            return;
+        }
+
         bool gazeActive = TryResolveCuaPlayerGazeHit(out string gazeReason);
         float now = Time.unscaledTime;
         if (gazeActive)
@@ -187,7 +199,6 @@ public partial class FASyncRuntime : MVRScript
         Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
         bool navigationActive = IsCuaPlayerNavigationActive(navigation);
         bool triggerModifierActive = ReadCuaPlayerTriggerModifier();
-        bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
         cuaPlayerLastTriggerModifierActive = triggerModifierActive;
         float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
         float vertical = Mathf.Abs(navigation.y) >= CuaPlayerNavigationDeadzone ? navigation.y : 0f;
@@ -196,27 +207,6 @@ public partial class FASyncRuntime : MVRScript
 
         string currentHostAtomUid = ResolveCuaPlayerCurrentHostAtomUid();
         UpdateCuaPlayerVisibleScreenState(currentHostAtomUid);
-
-        bool shouldYieldToGrabNavigate = grabNavigateOverrideActive
-            && (cuaPlayerGrabNavigateHandoffActive
-                || cuaPlayerFocusActive
-                || cuaPlayerNavigationCaptureActive
-                || ReferenceEquals(cuaPlayerInputOwner, this)
-                || gazeActive);
-
-        if (!shouldYieldToGrabNavigate && cuaPlayerGrabNavigateHandoffActive)
-            SetCuaPlayerGrabNavigateHandoffState(false);
-
-        if (shouldYieldToGrabNavigate)
-        {
-            ResetCuaPlayerTriggerTapState();
-            SetCuaPlayerGrabNavigateHandoffState(true);
-
-            cuaPlayerFocusActive = false;
-            cuaPlayerLastGrabNavigateOverrideActive = true;
-            UpdateCuaPlayerInputState(false, gazeActive, "grab_nav", Vector2.zero, gazeReason);
-            return;
-        }
 
         cuaPlayerLastGrabNavigateOverrideActive = false;
 
@@ -334,12 +324,6 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        if (!enabled && cuaPlayerGrabNavigateHandoffActive)
-        {
-            SetCuaPlayerGrabNavigateHandoffState(false);
-            return;
-        }
-
         if (enabled)
         {
             if (!cuaPlayerNavigationSnapshotKnown)
@@ -357,7 +341,6 @@ public partial class FASyncRuntime : MVRScript
             desired.rayLineLeftEnabled = false;
             desired.rayLineRightEnabled = false;
             WriteCuaPlayerNavigationSnapshot(sc, desired);
-            cuaPlayerGrabNavigateHandoffActive = false;
             cuaPlayerNavigationCaptureActive = true;
             return;
         }
@@ -388,9 +371,7 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerImageStepDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
         cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
-        if (cuaPlayerGrabNavigateHandoffActive)
-            SetCuaPlayerGrabNavigateHandoffState(false);
-        else if (wasOwner || cuaPlayerNavigationCaptureActive)
+        if (wasOwner || cuaPlayerNavigationCaptureActive)
             SetInputCaptureState(false);
 
         UpdateCuaPlayerInputState(false, false, "idle", Vector2.zero, reason);
@@ -920,56 +901,6 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return false;
-    }
-
-    private void SetCuaPlayerGrabNavigateHandoffState(bool enabled)
-    {
-        SuperController sc = SuperController.singleton;
-        if (sc == null)
-        {
-            cuaPlayerGrabNavigateHandoffActive = false;
-            cuaPlayerNavigationCaptureActive = false;
-            cuaPlayerNavigationSnapshotKnown = false;
-            if (ReferenceEquals(cuaPlayerInputOwner, this))
-                cuaPlayerInputOwner = null;
-            return;
-        }
-
-        if (enabled)
-        {
-            if (!cuaPlayerNavigationSnapshotKnown)
-            {
-                cuaPlayerNavigationSnapshot = ReadCuaPlayerNavigationSnapshot(sc);
-                cuaPlayerNavigationSnapshotKnown = true;
-            }
-
-            CuaPlayerNavigationSnapshot desired = cuaPlayerNavigationSnapshot;
-            desired.disableNavigation = true;
-            desired.disableInternalKeyBindings = true;
-            desired.disableInternalNavigationKeyBindings = true;
-            if (desired.hasDisableAllNavigationToggle)
-                desired.disableAllNavigationToggle = false;
-            if (desired.hasDisableGrabNavigationToggle)
-                desired.disableGrabNavigationToggle = false;
-            desired.alwaysEnablePointers = false;
-            desired.rayLineLeftEnabled = false;
-            desired.rayLineRightEnabled = false;
-            WriteCuaPlayerNavigationSnapshot(sc, desired);
-            cuaPlayerGrabNavigateHandoffActive = true;
-            cuaPlayerNavigationCaptureActive = false;
-            if (ReferenceEquals(cuaPlayerInputOwner, this))
-                cuaPlayerInputOwner = null;
-            return;
-        }
-
-        if (cuaPlayerNavigationSnapshotKnown)
-            WriteCuaPlayerNavigationSnapshot(sc, cuaPlayerNavigationSnapshot);
-
-        cuaPlayerGrabNavigateHandoffActive = false;
-        cuaPlayerNavigationCaptureActive = false;
-        cuaPlayerNavigationSnapshotKnown = false;
-        if (ReferenceEquals(cuaPlayerInputOwner, this))
-            cuaPlayerInputOwner = null;
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)

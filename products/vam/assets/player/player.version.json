@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.31",
-    "notes":  "0.6.31 keeps the 0.6.30 grab-navigation handoff shape, but stops setting VaM's global navigation-disabled bit during the handoff so accel/gyro grab-nav can fully move even while the user is still gazing at the screen.",
-    "branch":  "release/0.6.31-grab-nav-full-yield",
+    "version":  "0.6.32",
+    "notes":  "0.6.32 pulls complexity back out of the grab-navigation seam: if button 5 is held, the player fully disables its own gaze and focus behavior and simply gets out of the way instead of trying to maintain a special handoff state.",
+    "branch":  "release/0.6.32-button5-disables-focus",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.31.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.32.json"
 }

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.32",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.32 simplifies the button 5 behavior: while the override is held, the player disables its own gaze and focus behavior entirely instead of maintaining a special grab-navigation handoff state.",
+  "repoAnchors": {
+    "branch": "release/0.6.32-button5-disables-focus",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.32.json"
+  },
+  "operatorSignals": [
+    "0.6.30 and 0.6.31 still felt like they were partially capturing control while button 5 was held.",
+    "The requested rule became simpler and clearer: if button 5 is pressed, all player gaze and focus behavior should be completely disabled."
+  ],
+  "actionsTaken": [
+    "Removed the extra grab-navigation handoff state from the CUA input module.",
+    "Moved the button 5 override check ahead of gaze resolution.",
+    "Made the override path simply release player focus and capture and then get out of the way."
+  ],
+  "nonGoals": [
+    "No post-navigation scrub deadband yet.",
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}
