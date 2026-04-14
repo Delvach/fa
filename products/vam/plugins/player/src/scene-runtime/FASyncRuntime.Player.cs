@@ -8653,9 +8653,10 @@ public partial class FASyncRuntime : MVRScript
 
         record.videoPlayer.playOnAwake = false;
         record.videoPlayer.waitForFirstFrame = true;
-        // Match the Volodeck proof runtime so seek/skip behavior stays on the same
-        // playback contract while we chase appearance parity on the screen-core lane.
-        record.videoPlayer.skipOnDrop = false;
+        // Favor real-time recovery over frame-perfect backlog under load so playback
+        // can stay closer to the routed audio clock instead of accumulating catch-up
+        // stalls when decoding falls behind.
+        record.videoPlayer.skipOnDrop = true;
         record.videoPlayer.source = VideoSource.Url;
         record.videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
         record.videoPlayer.controlledAudioTrackCount = 1;

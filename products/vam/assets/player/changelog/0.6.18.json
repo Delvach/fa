@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.18",
+  "title": "Allow late video frames to drop under load",
+  "summary": "0.6.18 keeps the 0.6.17 retirement of active once-per-second hard AV correction, but changes the Unity VideoPlayer posture so it can drop late frames instead of clinging to backlog and turning stress into visible stutter, catch-up jumps, and audio drift.",
+  "changes": [
+    "Change the standalone hosted-player VideoPlayer setup to use skipOnDrop = true.",
+    "Keep the current seek, focus, resize, preset, and plugin UI behavior unchanged.",
+    "Stamp version 0.6.18 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.18 player runtime and release outputs cleanly.",
+    "Refresh the raw dev_deploy baseline player and modern_tv hosted proof artifacts."
+  ],
+  "reasoning": [
+    "The current playback issue pattern points more strongly at decode backlog pressure than at the retired periodic hard-correction seam.",
+    "When video falls behind, allowing the player to drop late frames is safer than trying to preserve every frame and then visibly catching up in bursts."
+  ],
+  "operatorVisibleOutcomes": [
+    "The next raw alpha should feel less prone to periodic catch-up stalls and fast-forward behavior on stressed video playback.",
+    "This slice does not add a new sync algorithm; it strictly changes the recovery posture when video falls behind."
+  ],
+  "knownIssues": [
+    "If stutter remains after 0.6.18, the next likely seam is the clocking model itself rather than the retired periodic correction or frame-drop posture.",
+    "Multiple active instances can still increase decode pressure and should remain part of manual testing."
+  ]
+}

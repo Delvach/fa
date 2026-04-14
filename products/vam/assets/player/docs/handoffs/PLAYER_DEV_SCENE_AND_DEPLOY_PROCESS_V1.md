@@ -206,6 +206,25 @@ Expected outputs:
 - distributed package under
   `F:\sim\vam\AddonPackages\FrameAngel.DevPlayer.<n>.var`
 
+Raw `dev_deploy` inventory-only pattern:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1 `
+  -RepoRoot C:\projects\fa `
+  -Version <semantic-version> `
+  -SkipLiveDeploy `
+  -BuildVarPackage `
+  -SkipVarDistribute `
+  -IncludeVarScene `
+  -VarCreatorName FrameAngel `
+  -VarPackageName DevPlayer `
+  -VarSceneIncludeManagedControls 1
+```
+
+Use that raw-only inventory pattern when a hosted proof wrapper needs the
+package report but the live authority must stay in `Custom/...`.
+
 Important:
 
 1. `player_var_package_report_latest.json` is a build artifact, not live

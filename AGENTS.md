@@ -42,7 +42,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that advanced the `0.6.17` `modern_tv` hosted interactive proof seam, preserved the `0.6.13` preset-default hardening, kept the `0.6.14` plugin panel readback improvements, rolled back the failed custom resize tween path in favor of the native hosted CUA `scale -> scale` authority proven in `demo3.json`, and retired the active once-per-second hard AV correction seek that was fighting playback under load
+3. the active feature work beyond that advanced the `0.6.18` `modern_tv` hosted interactive proof seam, preserved the `0.6.13` preset-default hardening, kept the `0.6.14` plugin panel readback improvements, rolled back the failed custom resize tween path in favor of the native hosted CUA `scale -> scale` authority proven in `demo3.json`, retired the active once-per-second hard AV correction seek that was fighting playback under load, and now lets the VideoPlayer drop late frames under load instead of building visible catch-up backlog
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -61,17 +61,17 @@ Primary current docs:
 The current real `modern_tv` hosted-player proof is:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.17.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.18.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.17.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.18.alpha.assetbundle`
 3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.17.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.18.alpha.dll`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.17.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.18.alpha.assetbundle`
 5. proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
 6. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.17\direct_cua\player_var_package_report_latest.json`
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.18\direct_cua\player_var_package_report_latest.json`
 
 Important:
 
@@ -86,7 +86,8 @@ Important:
 8. the current deterministic resize truth for future scene generation is the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`
 9. the exposed `Player Resize Up` and `Player Resize Down` action names remain registered for scene/control compatibility, but the failed custom resize tween path is gone
 10. the active once-per-second hard AV correction seek is retired for the current stability lane; periodic correction no longer intervenes during playback
-11. the `0.6.17` package report exists as build inventory only for this slice; the distributed `FrameAngel.DevPlayer.12.var` was removed immediately so live authority remained raw `dev_deploy`
+11. the current playback-recovery posture now uses `skipOnDrop = true` so late video frames can be dropped under load instead of visibly building catch-up backlog
+12. the `0.6.18` package report exists as build inventory only for this slice and is now generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
 
 ## Volodeck boundary
 
@@ -136,6 +137,8 @@ Use the right seam for the task:
 1. raw `Custom/...` lane:
    - fastest interactive dev seam
    - valid for hosted-player proofing and manual attach workflows
+   - if this lane needs package inventory for reports or wrappers, build it with
+     `-SkipVarDistribute`; do not use `-PackageOnlyDeploy` for a raw-only slice
 2. `.var` lane:
    - release/distribution seam
    - must stay healthy even when raw proofing is used

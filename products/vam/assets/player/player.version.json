@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.17",
-    "notes":  "0.6.17 retires the active once-per-second hard AV correction seek so playback no longer fights itself under load, while preserving the existing seek and focus recovery seams.",
+    "version":  "0.6.18",
+    "notes":  "0.6.18 keeps the retired active AV correction seam and now allows the VideoPlayer to drop late frames under load so playback can stay closer to real time instead of building visible catch-up stalls.",
     "branch":  "release/0.6.14-plugin-ui-readback",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.17.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.18.json"
 }

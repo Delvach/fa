@@ -62,6 +62,13 @@ For any one version boundary:
 If there is doubt about which copy VaM is loading, the test result is not
 trustworthy.
 
+For raw `dev_deploy` slices that still need package inventory:
+
+1. build package inventory with `-SkipVarDistribute`
+2. do not use `-PackageOnlyDeploy` for a raw-only slice
+3. package reports may exist as build inventory without creating live `.var`
+   authority in `AddonPackages`
+
 ## Canonical extension correction
 
 These are correction rules, not optional style:
