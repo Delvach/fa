@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.46",
+  "title": "Use VaM's real UIToggle bool value path and restore side-screen delta placement",
+  "summary": "0.6.46 corrects the demo3 toggle-state seam by using the official bool-backed UIToggle value field instead of the float-style slider path, and it restores the side control placement back to the working screen-delta transform so the side stacks stay on their own screens.",
+  "changes": [
+    "Demo3 toggles now serialize their default state as bool-style Trigger.value strings (`true` or `false`).",
+    "Runtime demo scene readback now resolves shuffle and A-B toggle state through JSONStorableBool and updates them without firing callbacks.",
+    "Side-screen control placement is back on the screen-delta transform path instead of the local-copy experiment that piled the side stacks back into the middle."
+  ],
+  "reasoning": [
+    "Official VaM UIToggleTrigger uses a JSONStorableBool named `value`, so the 0.6.45 float-style toggle readback was the wrong API and led to incorrect default checked state.",
+    "The 0.6.45 side transform pullback overcorrected into a local-copy path that put the side controls back on top of the middle screen, so this slice explicitly returns to the working delta-based placement."
+  ],
+  "operatorVisibleOutcomes": [
+    "Shuffle and A-B loop should no longer default to checked when they are inactive.",
+    "The left and right control stacks should again appear on their own screens instead of collapsing into the middle."
+  ],
+  "knownIssues": [
+    "This slice fixes toggle readback only; it does not yet add interactive A-B enable/disable behavior to the checkbox.",
+    "The generated scene JSON is still more verbose than a VaM-saved scene."
+  ]
+}

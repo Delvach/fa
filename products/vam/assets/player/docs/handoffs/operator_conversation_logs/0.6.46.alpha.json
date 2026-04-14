@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.46",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.46 corrects demo3 toggle-state handling to use the official bool-backed UIToggle value seam and restores side control placement back to the working screen-delta transform path.",
+  "repoAnchors": {
+    "branch": "release/0.6.46-demo3-bool-toggles-and-side-delta",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.46.json"
+  },
+  "operatorSignals": [
+    "Desktop test showed both shuffle and A-B loop appearing checked even when inactive.",
+    "Desktop test also showed the left and right control stacks piled back into the middle again."
+  ],
+  "actionsTaken": [
+    "Verified from official VaM code that UIToggleTrigger uses a JSONStorableBool named `value`.",
+    "Updated the builder to emit bool-style toggle defaults and the runtime to read/write toggle state through JSONStorableBool.",
+    "Reverted side control placement back to the working screen-delta transform path instead of the local-copy experiment."
+  ],
+  "nonGoals": [
+    "No interactive A-B checkbox behavior yet.",
+    "No slideshow, image-slider transport, or right-stick volume changes in this slice."
+  ]
+}

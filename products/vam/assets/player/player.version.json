@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.45",
-    "notes":  "0.6.45 restores the side control local transform data correctly after reparenting and makes the demo3 shuffle and A-B loop toggles reflect live checked state through Trigger.value.",
-    "branch":  "release/0.6.45-demo3-toggle-state-and-local-transforms",
+    "version":  "0.6.46",
+    "notes":  "0.6.46 restores the side control screen-delta placement that kept the side stacks on their own screens and fixes demo3 toggle state to use VaM's real bool-backed UIToggle value path.",
+    "branch":  "release/0.6.46-demo3-bool-toggles-and-side-delta",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.45.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.46.json"
 }

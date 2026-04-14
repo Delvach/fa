@@ -1083,7 +1083,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
         "toggle" {
             return [pscustomobject]@{
                 id = "Trigger"
-                value = "0"
+                value = "false"
                 trigger = [ordered]@{
                     displayName = "A_Player Random Toggle"
                     startActions = @(
@@ -1099,7 +1099,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
         "toggle_ab" {
             return [pscustomobject]@{
                 id = "Trigger"
-                value = "0"
+                value = "false"
                 trigger = [ordered]@{
                     displayName = "A_Player A-B Toggle"
                     startActions = @()
@@ -1271,7 +1271,11 @@ function Apply-PlayerDemoThreeScreenControls {
 
             Set-SceneAtomId -Atom $targetAtom -Id $desiredId
             if ($role -ne "middle") {
-                Copy-PlayerDemoSceneAtomLocalTransformDataFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
+                Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta `
+                    -SourceAtom $middleAtom `
+                    -TargetAtom $targetAtom `
+                    -SourceScreenAtom $screenAtomsByRole["middle"] `
+                    -TargetScreenAtom $screenAtomsByRole[$role]
             }
             Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
             Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId

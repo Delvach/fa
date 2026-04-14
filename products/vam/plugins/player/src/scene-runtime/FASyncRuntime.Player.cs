@@ -231,17 +231,15 @@ public partial class FASyncRuntime : MVRScript
         public JSONStorableString progressStringField;
         public JSONStorableFloat volumeFloatField;
         public JSONStorableString volumeStringField;
-        public JSONStorableFloat shuffleToggleFloatField;
-        public JSONStorableString shuffleToggleStringField;
-        public JSONStorableFloat abToggleFloatField;
-        public JSONStorableString abToggleStringField;
+        public JSONStorableBool shuffleToggleBoolField;
+        public JSONStorableBool abToggleBoolField;
         public JSONStorableString currentTextField;
         public JSONStorableString totalTextField;
         public JSONStorableString shuffleTextField;
         public float lastProgressValue = float.NaN;
         public float lastVolumeValue = float.NaN;
-        public float lastShuffleToggleValue = float.NaN;
-        public float lastAbToggleValue = float.NaN;
+        public bool? lastShuffleToggleValue = null;
+        public bool? lastAbToggleValue = null;
         public string lastCurrentText = "";
         public string lastTotalText = "";
         public string lastShuffleText = "";
@@ -10225,16 +10223,14 @@ public partial class FASyncRuntime : MVRScript
             binding.volumeStringField,
             Mathf.Clamp01(record.volume),
             ref binding.lastVolumeValue);
-        SetStandalonePlayerDemoSceneNumericField(
-            binding.shuffleToggleFloatField,
-            binding.shuffleToggleStringField,
-            record.randomEnabled ? 1f : 0f,
+        SetStandalonePlayerDemoSceneBoolField(
+            binding.shuffleToggleBoolField,
+            record.randomEnabled,
             ref binding.lastShuffleToggleValue);
         bool hasValidAbLoop = HasValidStandalonePlayerAbLoopRange(record, out _, out _);
-        SetStandalonePlayerDemoSceneNumericField(
-            binding.abToggleFloatField,
-            binding.abToggleStringField,
-            (record.abLoopEnabled && hasValidAbLoop) ? 1f : 0f,
+        SetStandalonePlayerDemoSceneBoolField(
+            binding.abToggleBoolField,
+            (record.abLoopEnabled && hasValidAbLoop),
             ref binding.lastAbToggleValue);
 
         string currentText = BuildStandalonePlayerDemoSceneCurrentText(record, currentTimeSeconds);
@@ -10275,10 +10271,8 @@ public partial class FASyncRuntime : MVRScript
         resolved.progressStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_slider_progress");
         resolved.volumeFloatField = ResolveStandalonePlayerDemoSceneTriggerFloatField(rolePrefix + "_slider_volume");
         resolved.volumeStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_slider_volume");
-        resolved.shuffleToggleFloatField = ResolveStandalonePlayerDemoSceneTriggerFloatField(rolePrefix + "_checkbox_shuffle");
-        resolved.shuffleToggleStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_checkbox_shuffle");
-        resolved.abToggleFloatField = ResolveStandalonePlayerDemoSceneTriggerFloatField(rolePrefix + "_checkbox_ab");
-        resolved.abToggleStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_checkbox_ab");
+        resolved.shuffleToggleBoolField = ResolveStandalonePlayerDemoSceneTriggerBoolField(rolePrefix + "_checkbox_shuffle");
+        resolved.abToggleBoolField = ResolveStandalonePlayerDemoSceneTriggerBoolField(rolePrefix + "_checkbox_ab");
         resolved.currentTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_display_curr");
         resolved.totalTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_display_total");
         resolved.shuffleTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_checkbox_shuffle");
@@ -10287,10 +10281,8 @@ public partial class FASyncRuntime : MVRScript
             && resolved.progressStringField == null
             && resolved.volumeFloatField == null
             && resolved.volumeStringField == null
-            && resolved.shuffleToggleFloatField == null
-            && resolved.shuffleToggleStringField == null
-            && resolved.abToggleFloatField == null
-            && resolved.abToggleStringField == null
+            && resolved.shuffleToggleBoolField == null
+            && resolved.abToggleBoolField == null
             && resolved.currentTextField == null
             && resolved.totalTextField == null
             && resolved.shuffleTextField == null)
@@ -10376,6 +10368,35 @@ public partial class FASyncRuntime : MVRScript
         }
     }
 
+    private JSONStorableBool ResolveStandalonePlayerDemoSceneTriggerBoolField(string atomUid)
+    {
+        Atom atom;
+        if (!TryFindSceneAtomByUid(atomUid, out atom) || atom == null)
+            return null;
+
+        JSONStorable trigger = null;
+        try
+        {
+            trigger = atom.GetStorableByID("Trigger");
+        }
+        catch
+        {
+            trigger = null;
+        }
+
+        if (trigger == null)
+            return null;
+
+        try
+        {
+            return trigger.GetBoolJSONParam("value");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private JSONStorableString ResolveStandalonePlayerDemoSceneTextField(string atomUid)
     {
         Atom atom;
@@ -10440,6 +10461,21 @@ public partial class FASyncRuntime : MVRScript
         // UIText storables need the live setter so the visible label actually repaints.
         field.val = normalized;
         lastValue = normalized;
+    }
+
+    private void SetStandalonePlayerDemoSceneBoolField(
+        JSONStorableBool field,
+        bool value,
+        ref bool? lastValue)
+    {
+        if (field == null)
+            return;
+
+        if (lastValue.HasValue && lastValue.Value == value)
+            return;
+
+        field.valNoCallback = value;
+        lastValue = value;
     }
 
     private string BuildStandalonePlayerDemoSceneCurrentText(StandalonePlayerRecord record, double currentTimeSeconds)
