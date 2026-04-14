@@ -60,9 +60,23 @@ Current verified official seam:
 As of this update:
 
 1. `main` is the latest merged tested player line
-2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that now uses the `0.6.26` raw core-player `dev_deploy` seam, keeping the exact `0.6.24` rollback baseline intact while preserving the one-second sync cadence, removing `AudioSource.time` from correction decisions, and seeding the player-owned timeline directly from `VideoPlayer` lifecycle events
+2. the current tested player baseline is the raw core-player `0.6.41` line
+3. the current recovery and pro-polish lane is the raw core-player `dev_deploy` seam plus the deterministic `demo3` scene:
+   - `0.6.37` reset visible progress on media navigation
+   - `0.6.38` reset generated demo3 scrub sliders to zero
+   - `0.6.39` made demo3 sliders and labels reflect live player state
+   - `0.6.40` rebased side controls into left and right screen space
+   - `0.6.41` fixed demo3 text repaint and rotated the side control groups around the owning screen yaw
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
+5. the current immediate queue is:
+   - `0.6.42` is the active raw operator test seam for scrub-step and `A-B` invalidation
+   - `0.6.43`: stateful `A-B` checkbox
+   - `0.6.44`: image slider navigation and state
+   - `0.6.45`: more aggressive scrub feedback while dragging
+   - `0.6.46`: slideshow
+   - `0.6.47`: right-stick up/down volume without trigger
+6. Favorites is a separate `0.7.0` capability lane and must not be folded into the current `0.6.x` transport fixes
+7. the `modern_tv` hosted proof is still useful as a witness seam, but it is not the default operator test seam for the current player lane
 
 Primary current docs:
 
@@ -74,27 +88,29 @@ Primary current docs:
 6. `C:\projects\fa\products\vam\docs\handoffs\REPO_AGENT_AND_PROCESS_HYGIENE_V1.md`
 7. `C:\projects\fa\products\vam\docs\handoffs\VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
 8. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
+9. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_MIXED_MEDIA_PLAYLIST_AND_SCRUB_SEAMS_V1.md`
+10. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_FAVORITES_ARCHITECTURE_PLAN_0_7_0_V1.md`
 
 ## Current live player authority
 
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.26.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.0.6.42.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.26.alpha.dll`
-3. raw deploy receipt:
-   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.26.alpha.json`
-4. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.26\direct_cua\player_var_package_report_latest.json`
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.42.dll`
+3. deterministic live scene:
+   `F:\sim\vam\Saves\scene\demo3.0.6.42.json`
+4. release validation receipt:
+   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.42\foundation_release_validation.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.22.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.20.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.22.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.20.alpha.assetbundle`
 3. hosted proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
 
@@ -107,14 +123,14 @@ Important:
    `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
-7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, and the rollback line still carries the visible resize buttons from the `0.6.14` core
-8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.25` recovery seam intentionally stays on the exact `0.6.24` rollback baseline and does not carry later resize or playlist policy experiments
-9. the `0.6.25` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
-10. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
-11. the current hosted and baseline 2018 asset names are intentionally short:
+7. the current plugin and demo3 readback seam exposes live build version, target, media, timeline, playlist state, sliders, and current or total labels without widening the transport model
+8. the deterministic resize truth for scene generation remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer or tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`
+9. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
+10. the current hosted and baseline 2018 asset names are intentionally short:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
-12. the current one-second sync seam remains active for this lane, but its correction authority is fully video-time-owned: `AudioSource.time` is no longer consulted, while `prepareCompleted`, `started`, `seekCompleted`, and `clockResyncOccurred` refresh the player-owned timeline
+11. the current one-second sync seam remains active for this lane, but its correction authority is fully video-time-owned: `AudioSource.time` is no longer consulted, while `prepareCompleted`, `started`, `seekCompleted`, and `clockResyncOccurred` refresh the player-owned timeline
+12. the current mixed-media policy is still explicit: mixed directories are valid playlists, but image scrub is a deliberate extension seam rather than already-frozen canon
 
 ## Volodeck boundary
 
@@ -232,6 +248,10 @@ Use minimal branch discipline.
    - `release/<version>-<seam>` for versioned player slices
 4. do not do versioned build/test work directly on `main`
 5. `main` must remain the latest merged tested player line
+6. if the working branch name drifts behind the actual tested version line:
+   - fast-forward `main` to the latest tested commit first
+   - then cut a fresh release branch for the next version
+   - do not keep shipping new versions from a stale branch label
 
 Do not make a copy of the repo unless the user explicitly allows it.
 

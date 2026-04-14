@@ -53,7 +53,7 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerLoopModeNone = "none";
     private const string PlayerLoopModeSingle = "single";
     private const string PlayerLoopModePlaylist = "playlist";
-    private const float StandalonePlayerDefaultSkipSeconds = 10f;
+    private const float StandalonePlayerDefaultSkipSeconds = 15f;
     private const float StandalonePlayerPlaybackRetryIntervalSeconds = 0.20f;
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
@@ -6692,18 +6692,7 @@ public partial class FASyncRuntime : MVRScript
             }
             else
             {
-                if (record.abLoopEnabled
-                    && HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
-                {
-                    targetTimeSeconds = Mathf.Lerp(
-                        (float)startSeconds,
-                        (float)endSeconds,
-                        normalizedTarget);
-                }
-                else
-                {
-                    targetTimeSeconds = normalizedTarget * durationSeconds;
-                }
+                targetTimeSeconds = normalizedTarget * durationSeconds;
             }
             eventName = "player_seek_normalized";
             okMessage = "player_seek_normalized ok";
@@ -6725,6 +6714,9 @@ public partial class FASyncRuntime : MVRScript
             eventName = "player_seek_seconds";
             okMessage = "player_seek_seconds ok";
         }
+
+        if (ShouldClearStandalonePlayerAbLoopForExplicitSeek(record, targetTimeSeconds))
+            ClearStandalonePlayerAbLoopState(record);
 
         targetTimeSeconds = ClampStandalonePlayerSeekTargetToActiveAbLoopRange(record, targetTimeSeconds);
         bool shouldResumePlayback = record.desiredPlaying && !record.mediaIsStillImage;
@@ -8225,6 +8217,25 @@ public partial class FASyncRuntime : MVRScript
         record.hasAbLoopEnd = false;
         record.abLoopEndSeconds = 0d;
         record.abLoopEnabled = false;
+    }
+
+    private bool ShouldClearStandalonePlayerAbLoopForExplicitSeek(StandalonePlayerRecord record, double targetTimeSeconds)
+    {
+        if (record == null
+            || record.mediaIsStillImage
+            || !record.abLoopEnabled
+            || !HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+        {
+            return false;
+        }
+
+        if (targetTimeSeconds + StandalonePlayerPlaybackMotionEpsilonSeconds < startSeconds)
+            return true;
+
+        if (targetTimeSeconds - StandalonePlayerPlaybackMotionEpsilonSeconds > endSeconds)
+            return true;
+
+        return false;
     }
 
     private bool ShouldReportStandalonePlayerZeroTimeline(StandalonePlayerRecord record)

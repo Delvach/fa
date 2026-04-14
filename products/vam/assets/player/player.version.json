@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.41",
-    "notes":  "0.6.41 makes demo3 text displays repaint from live state, defaults total to 00:00, and rotates side control groups around their owning screens instead of only shifting them.",
-    "branch":  "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "version":  "0.6.42",
+    "notes":  "0.6.42 makes the default scrub or skip step 15 seconds and clears active A-B when an explicit seek lands outside the active range instead of remapping the seek through the loop window.",
+    "branch":  "release/0.6.42-scrub-ab-canon",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.41.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.42.json"
 }

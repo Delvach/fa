@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.42",
+  "title": "Set scrub step to 15 seconds and cancel A-B on invalidating seeks",
+  "summary": "0.6.42 raises the default skip or scrub step to 15 seconds and makes explicit slider seeks outside the active A-B range clear A-B instead of silently remapping the seek through the loop window.",
+  "changes": [
+    "The default skip or scrub step now uses 15 seconds instead of 10 seconds.",
+    "Explicit normalized or seconds-based seeks now target the real media timeline first, and if that target lands outside the active A-B range the runtime clears and disables A-B before seeking there.",
+    "Active A-B still constrains seeks that stay inside the valid range."
+  ],
+  "reasoning": [
+    "The current lane wants a firmer transport rule: explicit manual slider movement should not silently reinterpret the operator's target through the A-B window.",
+    "A-B is still useful as an active loop, but any seek that invalidates that loop should cancel it cleanly instead of layering more remapping behavior on top."
+  ],
+  "operatorVisibleOutcomes": [
+    "Skip or scrub buttons now move in 15-second steps by default.",
+    "Clicking or dragging the slider outside the active A-B range should clear A-B and move to the requested point instead of staying trapped inside the loop."
+  ],
+  "knownIssues": [
+    "This slice does not add the stateful A-B checkbox yet.",
+    "This slice does not yet make image playlists use the slider as an index transport."
+  ]
+}
