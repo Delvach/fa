@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.26",
+  "title": "Keep the 1-second sync seam but make it fully video-time-owned",
+  "summary": "0.6.26 keeps the restored 0.6.24 core-player baseline and the once-per-second sync cadence, but removes AudioSource.time from correction decisions. The periodic sync seam now follows only the player-owned video timeline and seeds that timeline from prepareCompleted and started, closer to VaM's official ImageControl model.",
+  "changes": [
+    "Remove AudioSource.time from periodic correction math so the sync seam no longer treats audio as a hidden time authority.",
+    "Keep AudioSource as output plumbing only while periodic correction now compares VideoPlayer.time against the player-owned master timeline.",
+    "Hook prepareCompleted and started to seed or refresh the player-owned timeline directly from the VideoPlayer lifecycle, closer to VaM's official ImageControl runtime seam.",
+    "Stamp version 0.6.26 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and raw-deploy the 0.6.26 core-player alpha seam with package inventory generated via -SkipVarDistribute."
+  ],
+  "reasoning": [
+    "Official VaM inspection showed that the built-in media panel runtime seam is ImageControl, which owns a VideoPlayer directly, uses VideoPlayer.time for scrub and readback, and does not carry a separate AudioSource field in that runtime class.",
+    "The current FrameAngel player still carried two time stories at once: a player-owned master timeline and AudioSource.time. That extra authority is exactly the complexity we do not want.",
+    "This slice stays narrow on sync simplification only and does not reopen playlist, autoplay, surface, binding, or panel redesign work."
+  ],
+  "operatorVisibleOutcomes": [
+    "Movies should keep the once-per-second sync behavior, but correction should stop consulting AudioSource.time entirely.",
+    "This slice should behave like 0.6.25 with less hidden timing complexity and a cleaner event model."
+  ],
+  "knownIssues": [
+    "This slice keeps the separate AudioSource output path for compatibility and volume or mute control; it does not yet remove that plumbing.",
+    "If stressed playback still degrades after this slice, the next step should stay narrow and decide whether the remaining complexity is in the output path itself or in how often the master timeline correction intervenes."
+  ]
+}

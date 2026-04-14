@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.25",
-    "notes":  "0.6.25 keeps the restored 0.6.24 core-player rollback intact, preserves the once-per-second sync cadence, and moves correction authority onto a player-owned timeline so audio no longer acts like hidden time authority during stressed playback.",
-    "branch":  "release/0.6.25-master-timeline-periodic-sync",
+    "version":  "0.6.26",
+    "notes":  "0.6.26 keeps the once-per-second sync seam but removes AudioSource.time from correction decisions, seeds the player-owned timeline from prepareCompleted and started, and keeps audio as output plumbing instead of hidden time authority.",
+    "branch":  "release/0.6.26-video-time-authority-sync",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.25.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.26.json"
 }

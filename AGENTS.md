@@ -61,7 +61,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that now uses the `0.6.25` raw core-player `dev_deploy` seam, keeping the exact `0.6.24` rollback baseline intact while preserving the one-second sync cadence and moving its correction authority onto a player-owned master timeline instead of `AudioSource.time`
+3. the active feature work beyond that now uses the `0.6.26` raw core-player `dev_deploy` seam, keeping the exact `0.6.24` rollback baseline intact while preserving the one-second sync cadence, removing `AudioSource.time` from correction decisions, and seeding the player-owned timeline directly from `VideoPlayer` lifecycle events
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -80,13 +80,13 @@ Primary current docs:
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.25.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.26.alpha.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.25.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.26.alpha.dll`
 3. raw deploy receipt:
-   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.25.alpha.json`
+   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.26.alpha.json`
 4. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.25\direct_cua\player_var_package_report_latest.json`
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.26\direct_cua\player_var_package_report_latest.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
@@ -114,7 +114,7 @@ Important:
 11. the current hosted and baseline 2018 asset names are intentionally short:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
-12. the current one-second sync seam remains active for this lane, but its correction authority is the player-owned master timeline refreshed by `clockResyncOccurred`, not `AudioSource.time`
+12. the current one-second sync seam remains active for this lane, but its correction authority is fully video-time-owned: `AudioSource.time` is no longer consulted, while `prepareCompleted`, `started`, `seekCompleted`, and `clockResyncOccurred` refresh the player-owned timeline
 
 ## Volodeck boundary
 

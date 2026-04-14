@@ -200,6 +200,7 @@ public partial class FASyncRuntime : MVRScript
         public bool runtimeErrorHooked = false;
         public bool runtimeLoopPointHooked = false;
         public bool runtimePrepareCompletedHooked = false;
+        public bool runtimeStartedHooked = false;
         public bool runtimeSeekCompletedHooked = false;
         public bool runtimeClockResyncHooked = false;
         public GameObject runtimeObject;
@@ -6959,35 +6960,6 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryReadStandalonePlayerAudioTimeline(
-        StandalonePlayerRecord record,
-        out double audioTimeSeconds,
-        out string errorMessage)
-    {
-        audioTimeSeconds = 0d;
-        errorMessage = "";
-        if (record == null || record.audioSource == null)
-        {
-            errorMessage = "player audio runtime missing";
-            return false;
-        }
-
-        try
-        {
-            audioTimeSeconds = Math.Max(0d, record.audioSource.time);
-        }
-        catch (Exception ex)
-        {
-            errorMessage = "player audio timeline read failed: " + ex.Message;
-            return false;
-        }
-
-        if (double.IsNaN(audioTimeSeconds) || double.IsInfinity(audioTimeSeconds))
-            audioTimeSeconds = 0d;
-
-        return true;
-    }
-
     private void ResetStandalonePlayerMasterTimeline(StandalonePlayerRecord record)
     {
         if (record == null)
@@ -8269,7 +8241,6 @@ public partial class FASyncRuntime : MVRScript
         if (record == null
             || record.mediaIsStillImage
             || record.videoPlayer == null
-            || record.audioSource == null
             || !record.prepared
             || !record.desiredPlaying
             || record.seekResumePending
@@ -8283,46 +8254,12 @@ public partial class FASyncRuntime : MVRScript
 
         record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
 
-        bool isAudioPlayingNow = false;
-        try
-        {
-            isAudioPlayingNow = record.audioSource.isPlaying;
-        }
-        catch
-        {
-        }
-
-        if (!isAudioPlayingNow
-            || currentTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
-        {
-            return false;
-        }
-
         double expectedTimeSeconds = 0d;
         if (!TryReadStandalonePlayerMasterTimeline(record, durationSeconds, out expectedTimeSeconds)
             || expectedTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
         {
             return false;
         }
-
-        double audioTimeSeconds = 0d;
-        string audioTimelineError = "";
-        if (!TryReadStandalonePlayerAudioTimeline(record, out audioTimeSeconds, out audioTimelineError))
-        {
-            if (!string.IsNullOrEmpty(audioTimelineError))
-                errorMessage = audioTimelineError;
-            return false;
-        }
-
-        if (durationSeconds > 0.0001d)
-            audioTimeSeconds = Math.Min(durationSeconds, Math.Max(0d, audioTimeSeconds));
-
-        if (audioTimeSeconds <= StandalonePlayerPlaybackMotionEpsilonSeconds)
-            return false;
-
-        double audioDriftSeconds = Math.Abs(audioTimeSeconds - expectedTimeSeconds);
-        if (audioDriftSeconds > StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds)
-            return false;
 
         double videoDriftSeconds = Math.Abs(currentTimeSeconds - expectedTimeSeconds);
         if (videoDriftSeconds < StandalonePlayerPeriodicAvSyncThresholdSeconds
@@ -8673,7 +8610,58 @@ public partial class FASyncRuntime : MVRScript
         }
 
         if (!record.runtimePrepareCompletedHooked)
+        {
+            record.videoPlayer.prepareCompleted += delegate(VideoPlayer source)
+            {
+                if (record == null)
+                    return;
+
+                record.preparePending = false;
+                record.prepareStartedAt = 0f;
+                record.prepared = true;
+                record.needsScreenRefresh = true;
+
+                double preparedTimeSeconds = 0d;
+                try
+                {
+                    if (source != null)
+                        preparedTimeSeconds = Math.Max(0d, source.time);
+                }
+                catch
+                {
+                }
+
+                SetStandalonePlayerMasterTimeline(record, preparedTimeSeconds, false);
+                if (record.desiredPlaying && !record.mediaIsStillImage)
+                    record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+                else
+                    record.nextAudioVideoSyncCheckTime = 0f;
+            };
             record.runtimePrepareCompletedHooked = true;
+        }
+
+        if (!record.runtimeStartedHooked)
+        {
+            record.videoPlayer.started += delegate(VideoPlayer source)
+            {
+                if (record == null)
+                    return;
+
+                double startedTimeSeconds = 0d;
+                try
+                {
+                    if (source != null)
+                        startedTimeSeconds = Math.Max(0d, source.time);
+                }
+                catch
+                {
+                }
+
+                SetStandalonePlayerMasterTimeline(record, startedTimeSeconds, true);
+                record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+            };
+            record.runtimeStartedHooked = true;
+        }
 
         if (!record.runtimeSeekCompletedHooked)
         {

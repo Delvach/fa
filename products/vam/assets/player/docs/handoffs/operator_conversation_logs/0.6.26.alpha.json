@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.26",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-14T01:16:00-06:00",
+  "endedAt": "2026-04-14T01:24:43.3339672-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.26\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.26\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.26.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.26 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "entries": [
+    {
+      "entryId": "0.6.26-official-vam-inspection",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Inspected the official live VaM gameplay DLL and verified that the built-in media panel runtime seam is ImageControl, which owns a VideoPlayer directly, uses VideoPlayer.time for scrub and readback, and does not carry a separate AudioSource field in that runtime class.",
+      "reconstructedFrom": [
+        "F:\\sim\\vam\\VaM_Data\\Managed\\Assembly-CSharp.dll",
+        "C:\\Users\\ben\\AppData\\Local\\Temp\\vam_assembly_csharp.il"
+      ]
+    },
+    {
+      "entryId": "0.6.26-simplification-decision",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator asked to integrate the official VaM knowledge with less complexity than the current player and explicitly wanted the panel left alone while focusing only on audio and video sync.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.26-foundation-build",
+      "timestamp": "2026-04-14T07:24:05.6074345Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.26 cleanly after simplifying the sync seam so periodic correction no longer consults AudioSource.time and now seeds its player-owned timeline from VideoPlayer lifecycle events.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.26\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.26-package-inventory-built",
+      "timestamp": "2026-04-14T07:24:06.4387662Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.26 package inventory with -SkipVarDistribute and confirmed it remains build-only with distributed:false.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.26\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.26-core-player-alpha",
+      "timestamp": "2026-04-14T01:24:43.3339672-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Deployed the raw direct core-player asset and plugin as the live 0.6.26 alpha dev_deploy seam after removing AudioSource.time from periodic correction decisions and aligning the player-owned timeline with VideoPlayer prepareCompleted and started events.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.26.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.26 keeps the one-second sync cadence instead of retiring it.",
+    "Periodic correction no longer reads or trusts AudioSource.time.",
+    "The player-owned timeline is refreshed from VideoPlayer lifecycle events so the sync seam stays video-time-owned while audio remains output plumbing.",
+    "The live authority seam for this slice is the raw direct core-player dev_deploy asset plus plugin, not the hosted modern_tv witness seam and not the .var package."
+  ],
+  "openQuestions": [
+    "Does keeping the one-second sync cadence while removing AudioSource.time from correction decisions reduce fast-forward bursts and long-lived AV drift in the same stressed VR movie tests?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.26.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.26\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.26\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.26.alpha.json",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.26.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.26.alpha.dll"
+  ],
+  "notes": [
+    "This slice explicitly uses the official VaM ImageControl model as the simplification reference without redesigning the panel or drifting into historical recovery repos.",
+    "The 0.6.26 package report exists only as build inventory and does not compete with the raw direct core-player dev_deploy authority."
+  ]
+}
