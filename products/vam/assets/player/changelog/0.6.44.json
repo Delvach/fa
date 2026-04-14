@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.44",
+  "title": "Ingest the authored demo3 center controls and keep side clones in local screen space",
+  "summary": "0.6.44 updates the deterministic demo3 scene builder so it picks up the authored center-screen volume slider layout, keeps the A-B clear button on the new middle naming, preserves the new A-B loop toggle even when it was left unnamed, and clones side-screen controls using the center control local transforms instead of baking in absolute world positions.",
+  "changes": [
+    "The demo3 template now carries the authored center-screen volume slider layout and a canonical A-B loop toggle.",
+    "The deterministic scene builder now recognizes the new middle clear-button naming and the unnamed A-B loop toggle fallback by text.",
+    "Side-screen control clones now keep the center control local transform basis so their parent screen orientation drives the final placement correctly."
+  ],
+  "reasoning": [
+    "The saved 0.6.42 demo scene became the authored source for a few real layout improvements, but the builder was still generating from the older center controls and could not see the unnamed A-B loop toggle.",
+    "The remaining side-screen placement bug was caused by cloning absolute transformed positions into child controls instead of preserving the center control local transforms under the target parent screen."
+  ],
+  "operatorVisibleOutcomes": [
+    "Generated demo3 scenes should now keep the moved and resized volume slider, emit the A-B loop toggle, use the middle clear-button naming, and place the side-screen control stacks relative to each angled screen instead of flattening them into world space."
+  ],
+  "knownIssues": [
+    "This slice only preserves the A-B loop toggle layout; the later runtime slice still needs to make it stateful.",
+    "The generated scene JSON will still be larger than a VaM-saved scene because the generator writes a more verbose JSON format."
+  ]
+}

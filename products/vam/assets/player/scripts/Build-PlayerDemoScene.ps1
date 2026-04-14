@@ -594,23 +594,24 @@ function New-OffsetSceneSpec {
 function Get-PlayerDemoThreeScreenControlSpecs {
     $specs = New-Object System.Collections.Generic.List[object]
 
-    [void]$specs.Add([pscustomobject]@{ localId = "button_previous"; candidateIds = @("middle_button_previous", "button_previous"); kind = "button"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_toggle_play"; candidateIds = @("middle_button_toggle_play", "button_toggle_play"); kind = "button"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_next"; candidateIds = @("middle_button_next", "button_next"); kind = "button"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_load"; candidateIds = @("middle_button_load", "button_load"); kind = "button"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "checkbox_shuffle"; candidateIds = @("middle_checkbox_shuffle", "checkbox_shuffle"); kind = "toggle"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "slider_progress"; candidateIds = @("middle_slider_progress", "slider_progress"); kind = "slider"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "slider_volume"; candidateIds = @("middle_slider_volume", "slider_volume"); kind = "slider"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "display_curr"; candidateIds = @("middle_display_curr", "display_curr"); kind = "display"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "display_total"; candidateIds = @("middle_display_total", "display_total"); kind = "display"; required = $true })
-    [void]$specs.Add([pscustomobject]@{ localId = "scale_25"; candidateIds = @("middle_scale_25", "25%"); kind = "scale"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "scale_50"; candidateIds = @("middle_scale_50", "50%"); kind = "scale"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "scale_100"; candidateIds = @("middle_scale_100", "100%"); kind = "scale"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "scale_150"; candidateIds = @("middle_scale_150", "150%"); kind = "scale"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "scale_200"; candidateIds = @("middle_scale_200", "200%"); kind = "scale"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_start"; candidateIds = @("middle_button_ab_start", "button_a"); kind = "button"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_end"; candidateIds = @("middle_button_ab_end", "button_b"); kind = "button"; required = $false })
-    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_clear"; candidateIds = @("middle_button_ab_clear", "button_clear", "clear"); kind = "button"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_previous"; candidateIds = @("middle_button_previous", "button_previous"); kind = "button"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_toggle_play"; candidateIds = @("middle_button_toggle_play", "button_toggle_play"); kind = "button"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_next"; candidateIds = @("middle_button_next", "button_next"); kind = "button"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_load"; candidateIds = @("middle_button_load", "button_load"); kind = "button"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "checkbox_shuffle"; candidateIds = @("middle_checkbox_shuffle", "checkbox_shuffle"); kind = "toggle"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "checkbox_ab"; candidateIds = @("middle_checkbox_ab", "checkbox_ab"); kind = "toggle_ab"; required = $false; sourceParentAtomIds = @("screen_middle"); fallbackType = "UIToggle"; fallbackText = "A B Loop" })
+    [void]$specs.Add([pscustomobject]@{ localId = "slider_progress"; candidateIds = @("middle_slider_progress", "slider_progress"); kind = "slider"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "slider_volume"; candidateIds = @("middle_slider_volume", "slider_volume"); kind = "slider"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "display_curr"; candidateIds = @("middle_display_curr", "display_curr"); kind = "display"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "display_total"; candidateIds = @("middle_display_total", "display_total"); kind = "display"; required = $true; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_25"; candidateIds = @("middle_scale_25", "25%"); kind = "scale"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_50"; candidateIds = @("middle_scale_50", "50%"); kind = "scale"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_100"; candidateIds = @("middle_scale_100", "100%"); kind = "scale"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_150"; candidateIds = @("middle_scale_150", "150%"); kind = "scale"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_200"; candidateIds = @("middle_scale_200", "200%"); kind = "scale"; required = $false; sourceParentAtomIds = @("screen_middle", "spotlight_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_start"; candidateIds = @("middle_button_ab_start", "button_a"); kind = "button"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_end"; candidateIds = @("middle_button_ab_end", "button_b"); kind = "button"; required = $false; sourceParentAtomIds = @("screen_middle") })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_clear"; candidateIds = @("middle_button_clear", "middle_button_ab_clear", "button_clear", "clear"); kind = "button"; required = $false; sourceParentAtomIds = @("screen_middle", "spotlight_middle") })
 
     return $specs.ToArray()
 }
@@ -652,6 +653,65 @@ function Find-SceneAtomByIdsAndParent {
         if ($null -ne $match) {
             return $match
         }
+    }
+
+    return $null
+}
+
+function Find-SceneAtomByTextTypeAndParents {
+    param(
+        [System.Collections.ArrayList]$Atoms,
+        [string]$Type = "",
+        [string]$Text = "",
+        [string[]]$ParentAtomIds = @()
+    )
+
+    foreach ($atom in @($Atoms)) {
+        if ($null -eq $atom) {
+            continue
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($Type) -and [string]$atom.type -ne $Type) {
+            continue
+        }
+
+        if ($ParentAtomIds.Count -gt 0 -and -not ($ParentAtomIds -contains [string]$atom.parentAtom)) {
+            continue
+        }
+
+        if (-not [string]::IsNullOrWhiteSpace($Text)) {
+            $textStorable = Get-StorableById -Storables @($atom.storables) -Id "Text"
+            if ($null -eq $textStorable -or [string]$textStorable.text -ne $Text) {
+                continue
+            }
+        }
+
+        return $atom
+    }
+
+    return $null
+}
+
+function Resolve-PlayerDemoThreeScreenSourceAtom {
+    param(
+        [System.Collections.ArrayList]$Atoms,
+        [object]$Spec
+    )
+
+    $sourceParentAtomIds = @($Spec.sourceParentAtomIds)
+    if ($sourceParentAtomIds.Count -le 0) {
+        $sourceParentAtomIds = @("screen_middle")
+    }
+
+    foreach ($parentAtomId in $sourceParentAtomIds) {
+        $match = Find-SceneAtomByIdsAndParent -Atoms $Atoms -CandidateIds @($Spec.candidateIds) -ParentAtomId $parentAtomId
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace([string]$Spec.fallbackText) -or -not [string]::IsNullOrWhiteSpace([string]$Spec.fallbackType)) {
+        return Find-SceneAtomByTextTypeAndParents -Atoms $Atoms -Type ([string]$Spec.fallbackType) -Text ([string]$Spec.fallbackText) -ParentAtomIds $sourceParentAtomIds
     }
 
     return $null
@@ -913,6 +973,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
                         (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Enable")
                     )
                 }
+                "button_clear" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Clear") }
                 "button_ab_clear" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Clear") }
                 default { @() }
             })
@@ -978,6 +1039,17 @@ function New-PlayerDemoThreeScreenTriggerStorable {
                     endActions = @(
                         (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random Off")
                     )
+                }
+            }
+        }
+        "toggle_ab" {
+            return [pscustomobject]@{
+                id = "Trigger"
+                trigger = [ordered]@{
+                    displayName = "A_Player A-B Toggle"
+                    startActions = @()
+                    transitionActions = @()
+                    endActions = @()
                 }
             }
         }
@@ -1115,7 +1187,7 @@ function Apply-PlayerDemoThreeScreenControls {
     }
 
     foreach ($spec in $controlSpecs) {
-        $middleAtom = Find-SceneAtomByIdsAndParent -Atoms $Atoms -CandidateIds @($spec.candidateIds) -ParentAtomId "screen_middle"
+        $middleAtom = Resolve-PlayerDemoThreeScreenSourceAtom -Atoms $Atoms -Spec $spec
         if ($null -eq $middleAtom) {
             if ($spec.required) {
                 throw "Three-screen template is missing required middle control atom for '$($spec.localId)'."
@@ -1144,11 +1216,7 @@ function Apply-PlayerDemoThreeScreenControls {
 
             Set-SceneAtomId -Atom $targetAtom -Id $desiredId
             if ($role -ne "middle") {
-                Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta `
-                    -SourceAtom $middleAtom `
-                    -TargetAtom $targetAtom `
-                    -SourceScreenAtom $screenAtomsByRole["middle"] `
-                    -TargetScreenAtom $screenAtomsByRole[$role]
+                Copy-PlayerDemoSceneAtomRelativeTransformFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
             }
             Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
             Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId

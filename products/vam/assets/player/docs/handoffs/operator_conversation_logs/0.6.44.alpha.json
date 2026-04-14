@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.44",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.44 updates the demo3 deterministic scene builder so it ingests the authored center-screen control edits, preserves the unnamed A-B loop toggle, and keeps side-screen clones in local screen space instead of copying absolute transformed positions.",
+  "repoAnchors": {
+    "branch": "release/0.6.44-demo3-ingest-and-local-space",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.44.json"
+  },
+  "operatorSignals": [
+    "The saved demo3 scene had a moved and resized volume slider, a renamed middle clear button, and a new A-B loop toggle that had been left unnamed.",
+    "The side-screen controls were parented correctly but still behaved like they had world-space transforms baked in, so the collective orientation under the angled screens still looked wrong."
+  ],
+  "actionsTaken": [
+    "Updated the demo3 template to preserve the authored center-screen volume slider layout and a canonical A-B loop toggle.",
+    "Extended the builder source-atom resolution so it can find the new clear button naming and fall back to the unnamed A-B loop toggle by type plus text.",
+    "Switched side-screen control cloning to reuse the center control local transform basis under each target screen."
+  ],
+  "nonGoals": [
+    "No new A-B toggle runtime behavior yet.",
+    "No slideshow, image-slider transport, or right-stick volume work in this slice."
+  ]
+}
