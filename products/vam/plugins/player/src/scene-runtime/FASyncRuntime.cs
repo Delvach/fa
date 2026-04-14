@@ -141,6 +141,7 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableAction playerAbLoopStartAction;
     private JSONStorableAction playerAbLoopEndAction;
     private JSONStorableAction playerAbLoopEnableAction;
+    private JSONStorableAction playerAbLoopDisableAction;
     private JSONStorableAction playerAbLoopClearAction;
     private JSONStorableAction playerResizeDownAction;
     private JSONStorableAction playerResizeUpAction;
@@ -530,6 +531,12 @@ public partial class FASyncRuntime : MVRScript
             {
                 RunAttachedPlayerSetAbLoopEnabledAction(true, "Player A-B loop enabled");
             });
+        playerAbLoopDisableAction = new JSONStorableAction(
+            "Player A-B Disable",
+            delegate
+            {
+                RunAttachedPlayerSetAbLoopEnabledAction(false, "Player A-B loop disabled");
+            });
         playerAbLoopClearAction = new JSONStorableAction(
             "Player A-B Clear",
             delegate
@@ -667,6 +674,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterAction(playerAbLoopStartAction);
         RegisterAction(playerAbLoopEndAction);
         RegisterAction(playerAbLoopEnableAction);
+        RegisterAction(playerAbLoopDisableAction);
         RegisterAction(playerAbLoopClearAction);
         RegisterAction(playerResizeDownAction);
         RegisterAction(playerResizeUpAction);

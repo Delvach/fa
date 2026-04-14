@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.47",
+  "title": "Make demo3 A-B loop checkbox a real enable or disable control",
+  "summary": "0.6.47 gives the demo3 A-B loop checkbox a real action path so it can disable and re-enable an existing valid range, and it keeps the checkbox disabled until a valid A-B span exists for the current video.",
+  "changes": [
+    "Demo3 A-B loop toggles now fire `Player A-B Enable` when checked and `Player A-B Disable` when unchecked.",
+    "The runtime now disables the demo3 A-B loop toggle until the current player has a valid A-B range.",
+    "The runtime still clears and disables the A-B loop toggle when navigation or clear removes the current range."
+  ],
+  "reasoning": [
+    "The scene-builder and bool-backed toggle readback seam were already correct, so the next narrow step was to let the checkbox actually control A-B loop enable state.",
+    "A-B needs two independent truths: whether a valid loop range exists, and whether looping is currently enabled for that range."
+  ],
+  "operatorVisibleOutcomes": [
+    "After setting both A and B on a video, the A-B loop checkbox becomes enabled and checked.",
+    "Unchecking the A-B loop checkbox disables looping without deleting the stored A/B points.",
+    "Checking it again re-enables looping for the stored valid range."
+  ],
+  "knownIssues": [
+    "This slice does not yet change image slider behavior, slideshow, or right-stick volume.",
+    "The generated scene JSON remains more verbose than a VaM-saved scene file."
+  ]
+}

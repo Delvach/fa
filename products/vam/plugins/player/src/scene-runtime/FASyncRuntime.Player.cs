@@ -240,6 +240,7 @@ public partial class FASyncRuntime : MVRScript
         public float lastVolumeValue = float.NaN;
         public bool? lastShuffleToggleValue = null;
         public bool? lastAbToggleValue = null;
+        public bool? lastAbToggleInteractable = null;
         public string lastCurrentText = "";
         public string lastTotalText = "";
         public string lastShuffleText = "";
@@ -10232,6 +10233,10 @@ public partial class FASyncRuntime : MVRScript
             binding.abToggleBoolField,
             (record.abLoopEnabled && hasValidAbLoop),
             ref binding.lastAbToggleValue);
+        SetStandalonePlayerDemoSceneBoolFieldInteractable(
+            binding.abToggleBoolField,
+            hasValidAbLoop,
+            ref binding.lastAbToggleInteractable);
 
         string currentText = BuildStandalonePlayerDemoSceneCurrentText(record, currentTimeSeconds);
         string totalText = BuildStandalonePlayerDemoSceneTotalText(record, currentDurationSeconds);
@@ -10476,6 +10481,44 @@ public partial class FASyncRuntime : MVRScript
 
         field.valNoCallback = value;
         lastValue = value;
+    }
+
+    private void SetStandalonePlayerDemoSceneBoolFieldInteractable(
+        JSONStorableBool field,
+        bool interactable,
+        ref bool? lastValue)
+    {
+        if (field == null)
+            return;
+
+        if (lastValue.HasValue && lastValue.Value == interactable)
+            return;
+
+        bool applied = false;
+        try
+        {
+            Toggle primaryToggle = field.toggle;
+            if (primaryToggle != null)
+            {
+                primaryToggle.interactable = interactable;
+                applied = true;
+            }
+        }
+        catch { }
+
+        try
+        {
+            Toggle alternateToggle = field.toggleAlt;
+            if (alternateToggle != null)
+            {
+                alternateToggle.interactable = interactable;
+                applied = true;
+            }
+        }
+        catch { }
+
+        if (applied)
+            lastValue = interactable;
     }
 
     private string BuildStandalonePlayerDemoSceneCurrentText(StandalonePlayerRecord record, double currentTimeSeconds)

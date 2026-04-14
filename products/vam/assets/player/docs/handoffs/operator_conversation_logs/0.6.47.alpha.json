@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.47",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.47 makes the demo3 A-B loop checkbox a real enable or disable control and keeps it disabled until the current player has a valid A-B range.",
+  "repoAnchors": {
+    "branch": "release/0.6.47-ab-toggle-control",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.47.json"
+  },
+  "operatorSignals": [
+    "The scene-builder and side-screen layout were finally looking right.",
+    "The next requested step was to make the A-B loop checkbox truly interactive instead of readback-only."
+  ],
+  "actionsTaken": [
+    "Added a scene-facing `Player A-B Disable` action so the demo3 checkbox can turn looping back off without clearing the stored range.",
+    "Updated the demo3 builder so the A-B loop checkbox checks to enable and unchecks to disable.",
+    "Updated runtime readback so the A-B loop checkbox is only interactable while the current player has a valid A-B range."
+  ],
+  "nonGoals": [
+    "No image slider transport changes in this slice.",
+    "No slideshow, right-stick volume, or gaze behavior changes in this slice."
+  ]
+}

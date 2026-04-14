@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.46",
-    "notes":  "0.6.46 restores the side control screen-delta placement that kept the side stacks on their own screens and fixes demo3 toggle state to use VaM's real bool-backed UIToggle value path.",
-    "branch":  "release/0.6.46-demo3-bool-toggles-and-side-delta",
+    "version":  "0.6.47",
+    "notes":  "0.6.47 makes the demo3 A-B loop checkbox a real loop enable or disable control, keeps it disabled until a valid A-B range exists, and preserves the stored range when the checkbox is manually unchecked.",
+    "branch":  "release/0.6.47-ab-toggle-control",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.46.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.47.json"
 }

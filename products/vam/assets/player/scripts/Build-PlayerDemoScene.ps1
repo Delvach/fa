@@ -1102,9 +1102,13 @@ function New-PlayerDemoThreeScreenTriggerStorable {
                 value = "false"
                 trigger = [ordered]@{
                     displayName = "A_Player A-B Toggle"
-                    startActions = @()
+                    startActions = @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Enable")
+                    )
                     transitionActions = @()
-                    endActions = @()
+                    endActions = @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Disable")
+                    )
                 }
             }
         }
