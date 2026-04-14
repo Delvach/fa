@@ -119,7 +119,8 @@
     "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
     "Loop mode now defaults to none and shuffle now defaults to off for new player records instead of keeping older dev-convenience defaults.",
     "Explicit file loads should stay single-item by default; only an explicit playlist argument or a directory selection should widen the playlist.",
-    "Focus-loss recovery should snapshot current playback state before the focus generation changes rather than trying to infer resume state later."
+    "Focus-loss recovery should snapshot current playback state before the focus generation changes rather than trying to infer resume state later.",
+    "This single-file playlist policy later proved to be the wrong rule for the operator's core-player workflow and should have been rolled back with the rest of the drift-period compiled behavior."
   ],
   "openQuestions": [
     "Does 0.6.19 stop the app-switch reset-to-beginning seam for the problematic movie tests?",
@@ -139,6 +140,7 @@
   ],
   "notes": [
     "The 0.6.19 package report exists because the hosted proof script expects package inventory, and the final report records distributed:false so the live authority did not drift away from raw dev_deploy.",
-    "This slice intentionally captures the mixed image-and-video playlist issue as future truth without overcommitting to a final mixed-media policy in the same packet."
+    "This slice intentionally captures the mixed image-and-video playlist issue as future truth without overcommitting to a final mixed-media policy in the same packet.",
+    "The later recovery lane drifted by preserving this compiled single-file behavior as if it were harmless context. The correct rollback rule is that any operator-visible behavior policy changed during a high-drift period must be treated as rollback candidate code."
   ]
 }

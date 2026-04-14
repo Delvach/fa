@@ -848,3 +848,28 @@ playlist-truth recovery slice.
      reconstruct a directory-backed playlist from file-only data
    - mixed-media playlist policy across image and video entries is still a
      separate product decision
+
+## Core-player recovery checkpoint 2026-04-13T23:52:50.2469082-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.23 alpha`
+core-player playlist recovery slice.
+
+1. the active live authority for this slice is the raw direct core player, not
+   the hosted `modern_tv` proof.
+2. the current live raw `dev_deploy` core-player authority is:
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.23.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.23.alpha.dll`
+3. the `0.6.23` raw deploy receipt is:
+   - `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.23.alpha.json`
+4. the bounded code fix restores the pre-`0.6.19` sibling-playlist expansion
+   for direct file selections in the shared media resolver, so core-player file
+   loads stop collapsing `Next`, scrub, and movie transport into one-item
+   behavior.
+5. the wrong turn is now explicit repo truth:
+   - the `0.6.19` single-file playlist policy was compiled behavior, not just
+     a discussion artifact
+   - it was decided during a high-drift period
+   - it therefore should have been treated as rollback-candidate code when the
+     lane backed off, not preserved as assumed canon
+6. the `0.6.23` package report still exists only as build inventory with
+   `distributed:false`; it is not live authority.

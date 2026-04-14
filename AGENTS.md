@@ -42,7 +42,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that now uses the `0.6.22` raw `modern_tv` hosted interactive proof seam as a rollback recovery slice, restoring the last hosted-working `0.6.14` player core so load, next, scrub, and movie playback can be judged from a known-good baseline again instead of the drifted later line
+3. the active feature work beyond that now uses the `0.6.23` raw core-player `dev_deploy` seam as a boring playlist recovery slice, restoring sibling-playlist truth for direct file selection after the later hosted-policy drift collapsed core-player next, scrub, and movie transport into single-item behavior
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -56,35 +56,41 @@ Primary current docs:
 7. `C:\projects\fa\products\vam\docs\handoffs\VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`
 8. `C:\projects\fa\products\vam\assets\player\docs\handoffs\PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
 
-## Current interactive Meta proof authority
+## Current live player authority
 
-The current real `modern_tv` hosted-player proof is:
+The current live core-player raw `dev_deploy` seam is:
+
+1. direct-player raw asset:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.23.alpha.assetbundle`
+2. raw plugin:
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.23.alpha.dll`
+3. raw deploy receipt:
+   `C:\projects\fa\products\vam\assets\player\build\raw_dev_deploys\player\player_dev_deploy.0.6.23.alpha.json`
+4. build-only package report reference:
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.23\direct_cua\player_var_package_report_latest.json`
+
+The current `modern_tv` hosted proof remains a witness seam, not the default
+operator test seam for this recovery slice:
 
 1. preset:
    `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.22.alpha.vap`
 2. host bundle:
    `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.22.alpha.assetbundle`
-3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.22.alpha.dll`
-4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.22.alpha.assetbundle`
-5. proof receipt:
+3. hosted proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
-6. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.22\direct_cua\player_var_package_report_latest.json`
 
 Important:
 
-1. the current proof authority is the raw `2018.1.9f2` host export seam
+1. the current live authority for the player recovery lane is the raw core-player direct asset plus plugin, not the hosted `modern_tv` witness
 2. do not send the operator back to the stale `fa_cua_player_modern_tv_v1.assetbundle` 2022 seam
 3. search-bar and grid-menu Meta proofs are still snapshot carriers, not full interactive widgets
 4. keep the matching version or iteration conversation log updated under
    `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
-7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, and the rollback also restores the visible resize buttons carried by the `0.6.14` core
-8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.22` rollback seam intentionally carries the older `0.6.14` resize behavior while basics are being re-stabilized
-9. the `0.6.22` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
+7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, and the rollback line still carries the visible resize buttons from the `0.6.14` core
+8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.23` recovery seam intentionally stays focused on playlist truth instead of resize work
+9. the `0.6.23` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
 10. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
 11. the current hosted and baseline 2018 asset names are intentionally short:
     - `assets/fa/ps18/modern_tv/main.prefab`

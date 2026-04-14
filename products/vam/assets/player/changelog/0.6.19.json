@@ -24,6 +24,7 @@
     "Movie app switches should be less likely to jump back to the beginning, and still-image loads should bind more truthfully without a plugin reload."
   ],
   "knownIssues": [
+    "The single-file playlist policy in this slice was later identified as the wrong rule for the core-player manual-attach workflow and should have been treated as rollback candidate compiled behavior during the later rollback period instead of surviving as assumed canon.",
     "If hosted startup still occasionally needs a plugin reload after 0.6.19, the next seam is likely the authored host contract arrival timing rather than preset or playlist truth.",
     "Video performance under heavier multi-instance stress may still need additional work beyond this stability packet."
   ]

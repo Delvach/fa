@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.23",
+  "title": "Restore core-player sibling playlist loads",
+  "summary": "0.6.23 keeps the 0.6.22 rollback base, but restores the pre-0.6.19 core-player file-selection rule so a selected media file rebuilds the truthful sibling playlist again instead of collapsing next, scrub, and movie transport into one-item behavior.",
+  "changes": [
+    "Restore sibling-playlist expansion for supported direct file selections in the shared player media resolver.",
+    "Keep image default pause and video default play behavior unchanged on top of that restored playlist truth.",
+    "Stamp version 0.6.23 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build a new raw core-player dev_deploy alpha seam and keep any .var output build-only with distributed:false."
+  ],
+  "reasoning": [
+    "The later line drifted a hosted-proof policy into the core player by forcing explicit file loads to stay single-item.",
+    "The operator's actual core-player workflow expects a selected file to participate in a real sibling playlist so Next and scrub remain meaningful.",
+    "The repo already carried the older resolver helper, so the boring fix is to restore that earlier behavior instead of layering another playlist workaround."
+  ],
+  "operatorVisibleOutcomes": [
+    "Selecting an image or movie file in the core player should rebuild a real playlist again.",
+    "Next should stop behaving like a no-op after a normal file selection, and scrub should stop snapping back as if there were only one item.",
+    "This slice intentionally changes only the core-player load-policy seam; it is not another TV-proof or sync experiment."
+  ],
+  "knownIssues": [
+    "Hosted and preset playlist behavior beyond this core-player recovery should be reintroduced only if the operator asks for them explicitly.",
+    "Mixed-media playlist policy across images and videos remains a separate product decision beyond this boring recovery slice."
+  ]
+}

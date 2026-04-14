@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.23",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T23:40:00-06:00",
+  "endedAt": "2026-04-13T23:52:50.2469082-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.23\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.23\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.23.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.23 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T05:52:35.6282221Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.23\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T05:52:36.4913795Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.23\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-13T23:52:50.2469082-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.23.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.23-operator-core-player-correction",
+      "after": "2026-04-13T23:40:00-06:00",
+      "before": "2026-04-14T05:52:35.6282221Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator corrected the lane explicitly: current testing is on the core player, not the `modern_tv` hosted proof, so recovery work must stay on the direct-player playlist and load path instead of drifting back into hosted witness reasoning.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.23-drift-root-identified",
+      "after": "2026-04-13T23:40:00-06:00",
+      "before": "2026-04-14T05:52:35.6282221Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Repo review isolated the wrong policy seam: `0.6.19` changed direct file selection from sibling-playlist recovery to single-item behavior, which is the wrong rule for the operator's core-player workflow and should have been rolled back with the rest of the drift-period compiled behavior.",
+      "reconstructedFrom": [
+        "live code inspection",
+        "repo changelog trail",
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.23-foundation-build",
+      "timestamp": "2026-04-14T05:52:35.6282221Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.23 cleanly after restoring the pre-0.6.19 sibling-playlist expansion behavior in the shared player media resolver.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.23\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.23-package-inventory-built",
+      "timestamp": "2026-04-14T05:52:36.4913795Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.23 package inventory with -SkipVarDistribute and confirmed it remains build-only with distributed:false.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.23\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.23-core-player-alpha",
+      "timestamp": "2026-04-13T23:52:50.2469082-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Deployed the raw direct core-player asset and plugin as the live 0.6.23 alpha dev_deploy seam, keeping hosted proof out of live authority for this recovery slice.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.23.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.23 is its own semantic version because it reverts an operator-visible playlist behavior policy after 0.6.22 had already been built for testing.",
+    "The live authority seam for this slice is the raw direct core-player dev_deploy asset plus plugin, not the hosted modern_tv witness seam and not the .var package.",
+    "A compiled behavior-policy change made during a high-drift period must be treated as rollback-candidate code during backoff, not as harmless context."
+  ],
+  "openQuestions": [
+    "Does 0.6.23 restore truthful Next, scrub, and movie playback behavior for the operator's core-player manual-attach workflow?",
+    "After this restore, are there any remaining playlist seams that fail without bringing hosted proof or preset behavior back into the core-player lane?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.23.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.23\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.23\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.23.alpha.json",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.23.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.23.alpha.dll"
+  ],
+  "notes": [
+    "This slice intentionally stays off the hosted modern_tv proof path except as historical witness context.",
+    "The 0.6.23 package report exists only as build inventory and does not compete with the raw direct core-player dev_deploy authority."
+  ]
+}

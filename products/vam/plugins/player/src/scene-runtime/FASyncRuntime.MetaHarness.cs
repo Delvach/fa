@@ -2141,7 +2141,10 @@ public partial class FASyncRuntime
                 return false;
             }
 
-            mediaPaths.Add(candidatePath);
+            AppendPlayerRuntimeMediaDirectoryPlaylist(candidatePath, mediaPaths);
+            if (mediaPaths.Count <= 0)
+                mediaPaths.Add(candidatePath);
+            mediaPaths.Sort(StringComparer.OrdinalIgnoreCase);
             return true;
         }
 
