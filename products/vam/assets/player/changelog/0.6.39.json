@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.39",
+  "title": "Reflect live state into demo3 sliders and displays",
+  "summary": "0.6.39 makes the attached demo3 controls reflect live player state so progress and volume sliders move with playback and the current and total displays stop feeling blind.",
+  "changes": [
+    "The attached demo3 progress slider now reflects the live normalized playback position on the existing player refresh cadence.",
+    "The attached demo3 volume slider now reflects the live player volume.",
+    "The attached demo3 current and total text displays now show current time and total duration for video, or current index and count for image playlists.",
+    "The attached demo3 shuffle control label now shows Shuffle On or Shuffle Off."
+  ],
+  "reasoning": [
+    "The player had enough runtime truth already, but demo3 was not consuming it, which made the scene feel opaque during testing.",
+    "This stays in the attached runtime sync seam instead of inventing a new state channel or hot loop.",
+    "The state update is cached per attached screen so it stays cheap."
+  ],
+  "operatorVisibleOutcomes": [
+    "The demo3 scene should now show live progress and volume state instead of making scrubbing feel blind.",
+    "The current and total readouts should update with playback and playlist state.",
+    "The shuffle control should now expose state in its label."
+  ],
+  "knownIssues": [
+    "This slice does not yet fix the left and right control world-space placement overlap.",
+    "This slice does not yet add folder and filename displays or remaining-time formatting."
+  ]
+}

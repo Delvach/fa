@@ -220,6 +220,25 @@ public partial class FASyncRuntime : MVRScript
         public bool transitionFadeReleaseRequested = false;
         public PlayerScreenBindingRecord binding;
         public Coroutine resizeCoroutine;
+        public StandalonePlayerDemoSceneUiBindingRecord demoSceneUiBinding;
+    }
+
+    private sealed class StandalonePlayerDemoSceneUiBindingRecord
+    {
+        public string hostAtomUid = "";
+        public string rolePrefix = "";
+        public JSONStorableFloat progressFloatField;
+        public JSONStorableString progressStringField;
+        public JSONStorableFloat volumeFloatField;
+        public JSONStorableString volumeStringField;
+        public JSONStorableString currentTextField;
+        public JSONStorableString totalTextField;
+        public JSONStorableString shuffleTextField;
+        public float lastProgressValue = float.NaN;
+        public float lastVolumeValue = float.NaN;
+        public string lastCurrentText = "";
+        public string lastTotalText = "";
+        public string lastShuffleText = "";
     }
 
     private readonly Dictionary<string, PlayerScreenBindingRecord> playerScreenBindings =
@@ -10109,6 +10128,7 @@ public partial class FASyncRuntime : MVRScript
         if (playerRuntimePlaylistField != null)
             AssignVisiblePlayerStringField(playerRuntimePlaylistField, playlistSummary);
         UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
+        RefreshAttachedDemoSceneUiState(record, hostAtom, currentTimeSeconds, currentDurationSeconds, currentTimeNormalized);
     }
 
     private void AssignVisiblePlayerStringField(JSONStorableString field, string value)
@@ -10162,6 +10182,270 @@ public partial class FASyncRuntime : MVRScript
         standalonePlayerScrubFieldSyncHoldoffUntil = Mathf.Max(
             standalonePlayerScrubFieldSyncHoldoffUntil,
             Time.unscaledTime + StandalonePlayerScrubDisplayHoldoffSeconds);
+    }
+
+    private void RefreshAttachedDemoSceneUiState(
+        StandalonePlayerRecord record,
+        Atom hostAtom,
+        double currentTimeSeconds,
+        double currentDurationSeconds,
+        double currentTimeNormalized)
+    {
+        if (record == null || hostAtom == null)
+            return;
+
+        StandalonePlayerDemoSceneUiBindingRecord binding;
+        if (!TryResolveStandalonePlayerDemoSceneUiBinding(record, hostAtom, out binding) || binding == null)
+            return;
+
+        SetStandalonePlayerDemoSceneNumericField(
+            binding.progressFloatField,
+            binding.progressStringField,
+            (float)Math.Max(0d, Math.Min(1d, currentTimeNormalized)),
+            ref binding.lastProgressValue);
+        SetStandalonePlayerDemoSceneNumericField(
+            binding.volumeFloatField,
+            binding.volumeStringField,
+            Mathf.Clamp01(record.volume),
+            ref binding.lastVolumeValue);
+
+        string currentText = BuildStandalonePlayerDemoSceneCurrentText(record, currentTimeSeconds);
+        string totalText = BuildStandalonePlayerDemoSceneTotalText(record, currentDurationSeconds);
+        string shuffleText = record.randomEnabled ? "Shuffle On" : "Shuffle Off";
+
+        SetStandalonePlayerDemoSceneTextField(binding.currentTextField, currentText, ref binding.lastCurrentText);
+        SetStandalonePlayerDemoSceneTextField(binding.totalTextField, totalText, ref binding.lastTotalText);
+        SetStandalonePlayerDemoSceneTextField(binding.shuffleTextField, shuffleText, ref binding.lastShuffleText);
+    }
+
+    private bool TryResolveStandalonePlayerDemoSceneUiBinding(
+        StandalonePlayerRecord record,
+        Atom hostAtom,
+        out StandalonePlayerDemoSceneUiBindingRecord binding)
+    {
+        binding = null;
+        if (record == null || hostAtom == null || string.IsNullOrEmpty(hostAtom.uid))
+            return false;
+
+        string hostAtomUid = hostAtom.uid.Trim();
+        string rolePrefix = ResolveStandalonePlayerDemoSceneRolePrefix(hostAtomUid);
+        if (string.IsNullOrEmpty(rolePrefix))
+            return false;
+
+        if (record.demoSceneUiBinding != null
+            && string.Equals(record.demoSceneUiBinding.hostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(record.demoSceneUiBinding.rolePrefix, rolePrefix, StringComparison.Ordinal))
+        {
+            binding = record.demoSceneUiBinding;
+            return true;
+        }
+
+        StandalonePlayerDemoSceneUiBindingRecord resolved = new StandalonePlayerDemoSceneUiBindingRecord();
+        resolved.hostAtomUid = hostAtomUid;
+        resolved.rolePrefix = rolePrefix;
+        resolved.progressFloatField = ResolveStandalonePlayerDemoSceneTriggerFloatField(rolePrefix + "_slider_progress");
+        resolved.progressStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_slider_progress");
+        resolved.volumeFloatField = ResolveStandalonePlayerDemoSceneTriggerFloatField(rolePrefix + "_slider_volume");
+        resolved.volumeStringField = ResolveStandalonePlayerDemoSceneTriggerStringField(rolePrefix + "_slider_volume");
+        resolved.currentTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_display_curr");
+        resolved.totalTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_display_total");
+        resolved.shuffleTextField = ResolveStandalonePlayerDemoSceneTextField(rolePrefix + "_checkbox_shuffle");
+
+        if (resolved.progressFloatField == null
+            && resolved.progressStringField == null
+            && resolved.volumeFloatField == null
+            && resolved.volumeStringField == null
+            && resolved.currentTextField == null
+            && resolved.totalTextField == null
+            && resolved.shuffleTextField == null)
+        {
+            return false;
+        }
+
+        record.demoSceneUiBinding = resolved;
+        binding = resolved;
+        return true;
+    }
+
+    private string ResolveStandalonePlayerDemoSceneRolePrefix(string hostAtomUid)
+    {
+        if (string.IsNullOrEmpty(hostAtomUid))
+            return "";
+
+        if (string.Equals(hostAtomUid, "screen_middle", StringComparison.OrdinalIgnoreCase))
+            return "middle";
+        if (string.Equals(hostAtomUid, "screen_left", StringComparison.OrdinalIgnoreCase))
+            return "left";
+        if (string.Equals(hostAtomUid, "screen_right", StringComparison.OrdinalIgnoreCase))
+            return "right";
+
+        return "";
+    }
+
+    private JSONStorableFloat ResolveStandalonePlayerDemoSceneTriggerFloatField(string atomUid)
+    {
+        Atom atom;
+        if (!TryFindSceneAtomByUid(atomUid, out atom) || atom == null)
+            return null;
+
+        JSONStorable trigger = null;
+        try
+        {
+            trigger = atom.GetStorableByID("Trigger");
+        }
+        catch
+        {
+            trigger = null;
+        }
+
+        if (trigger == null)
+            return null;
+
+        try
+        {
+            return trigger.GetFloatJSONParam("value");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private JSONStorableString ResolveStandalonePlayerDemoSceneTriggerStringField(string atomUid)
+    {
+        Atom atom;
+        if (!TryFindSceneAtomByUid(atomUid, out atom) || atom == null)
+            return null;
+
+        JSONStorable trigger = null;
+        try
+        {
+            trigger = atom.GetStorableByID("Trigger");
+        }
+        catch
+        {
+            trigger = null;
+        }
+
+        if (trigger == null)
+            return null;
+
+        try
+        {
+            return trigger.GetStringJSONParam("value");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private JSONStorableString ResolveStandalonePlayerDemoSceneTextField(string atomUid)
+    {
+        Atom atom;
+        if (!TryFindSceneAtomByUid(atomUid, out atom) || atom == null)
+            return null;
+
+        JSONStorable text = null;
+        try
+        {
+            text = atom.GetStorableByID("Text");
+        }
+        catch
+        {
+            text = null;
+        }
+
+        if (text == null)
+            return null;
+
+        try
+        {
+            return text.GetStringJSONParam("text");
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private void SetStandalonePlayerDemoSceneNumericField(
+        JSONStorableFloat floatField,
+        JSONStorableString stringField,
+        float value,
+        ref float lastValue)
+    {
+        float clampedValue = Mathf.Clamp01(value);
+        if (!float.IsNaN(lastValue) && Mathf.Abs(lastValue - clampedValue) <= 0.0005f)
+            return;
+
+        if (floatField != null)
+            floatField.valNoCallback = clampedValue;
+        else if (stringField != null)
+            stringField.valNoCallback = FormatFloat(clampedValue);
+        else
+            return;
+
+        lastValue = clampedValue;
+    }
+
+    private void SetStandalonePlayerDemoSceneTextField(
+        JSONStorableString field,
+        string value,
+        ref string lastValue)
+    {
+        if (field == null)
+            return;
+
+        string normalized = value ?? "";
+        if (string.Equals(lastValue ?? "", normalized, StringComparison.Ordinal))
+            return;
+
+        field.valNoCallback = normalized;
+        lastValue = normalized;
+    }
+
+    private string BuildStandalonePlayerDemoSceneCurrentText(StandalonePlayerRecord record, double currentTimeSeconds)
+    {
+        if (record == null)
+            return "0";
+
+        if (record.mediaIsStillImage)
+        {
+            int currentIndex = record.currentIndex >= 0 ? (record.currentIndex + 1) : 0;
+            return currentIndex.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return FormatStandalonePlayerCompactClock(currentTimeSeconds);
+    }
+
+    private string BuildStandalonePlayerDemoSceneTotalText(StandalonePlayerRecord record, double currentDurationSeconds)
+    {
+        if (record == null)
+            return "0";
+
+        if (record.mediaIsStillImage)
+        {
+            int totalCount = record.playlistPaths != null ? record.playlistPaths.Count : 0;
+            return totalCount.ToString(CultureInfo.InvariantCulture);
+        }
+
+        return FormatStandalonePlayerCompactClock(currentDurationSeconds);
+    }
+
+    private string FormatStandalonePlayerCompactClock(double seconds)
+    {
+        if (double.IsNaN(seconds) || double.IsInfinity(seconds) || seconds < 0d)
+            seconds = 0d;
+
+        TimeSpan span = TimeSpan.FromSeconds(seconds);
+        int totalHours = (int)Math.Floor(span.TotalHours);
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            "{0:00}:{1:00}:{2:00}",
+            totalHours,
+            span.Minutes,
+            span.Seconds);
     }
 
     private bool TryResolveAttachedHostedStandalonePlayerRecord(out StandalonePlayerRecord record, out Atom hostAtom)
