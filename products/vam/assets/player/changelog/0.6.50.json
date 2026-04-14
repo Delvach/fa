@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.50",
+  "title": "Make scrub feedback more immediate while dragging",
+  "summary": "0.6.50 makes scrub readback feel more responsive by reusing the player-owned presentation timeline for state and by refreshing the demo and plugin scrub surfaces during active scrub interactions.",
+  "changes": [
+    "Added a shared presentation-state reader that prefers the player-owned master timeline during seek recovery instead of relying only on raw `VideoPlayer.time` for readback.",
+    "Scrub interactions now refresh the demo and plugin scrub surfaces immediately through the existing UI-readback seam instead of waiting for the slower rig refresh cadence.",
+    "Reduced the plugin scrub field display holdoff so attached scrub feedback catches up faster."
+  ],
+  "reasoning": [
+    "The transport model was already working, but scrub still felt dull because state surfaces lagged behind the active seek target.",
+    "Reusing the existing player-owned timeline and UI-readback seams keeps this as a feedback slice instead of layering a second scrub subsystem on top."
+  ],
+  "operatorVisibleOutcomes": [
+    "Dragging scrub should update demo3 and plugin scrub state more quickly.",
+    "Video scrub readback should feel more immediate after seeks because state follows the player-owned timeline earlier.",
+    "This slice does not change slideshow, image ordering, or right-stick volume behavior."
+  ],
+  "knownIssues": [
+    "This slice does not add slideshow behavior.",
+    "Deferred gaze polish and right-stick volume remain separate queued slices."
+  ]
+}

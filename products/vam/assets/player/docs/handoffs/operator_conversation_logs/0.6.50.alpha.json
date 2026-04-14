@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.50",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.50 improves scrub feedback by reusing the player-owned presentation timeline for readback and by refreshing demo or plugin scrub UI during active scrub interactions.",
+  "repoAnchors": {
+    "branch": "release/0.6.50-scrub-feedback-refresh",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.50.json"
+  },
+  "operatorSignals": [
+    "The next queued slice after natural media ordering was more aggressive scrub feedback while dragging.",
+    "The goal was to avoid layering a second scrub system and instead improve feedback through the existing readback seam."
+  ],
+  "actionsTaken": [
+    "Added one shared presentation-state reader that can reuse the player-owned master timeline during seek and resume windows.",
+    "Hooked active scrub interactions into an immediate demo and plugin UI refresh path with a lightweight refresh interval.",
+    "Reduced the old plugin scrub display holdoff so attached scrub feedback catches up faster."
+  ],
+  "nonGoals": [
+    "No slideshow behavior in this slice.",
+    "No right-stick volume, favorites, or builder layout changes in this slice."
+  ]
+}

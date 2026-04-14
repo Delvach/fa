@@ -463,6 +463,7 @@ public partial class FASyncRuntime : MVRScript
                 return false;
 
             playerOperation = "player_seek_normalized";
+            RefreshStandalonePlayerInteractiveScrubUi(record);
             playerStateJson = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
             return true;
         }

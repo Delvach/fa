@@ -176,6 +176,7 @@ public partial class FASyncRuntime : MVRScript
     private bool playerMediaBrowserOpen = false;
     private bool suppressStandalonePlayerSliderCallbacks = false;
     private float standalonePlayerScrubFieldSyncHoldoffUntil = 0f;
+    private float standalonePlayerInteractiveScrubUiRefreshAt = 0f;
     private bool queuedAttachedPlayerSeekNormalized = false;
     private float queuedAttachedPlayerSeekNormalizedValue = 0f;
     private float queuedAttachedPlayerSeekNormalizedApplyAt = 0f;

@@ -1919,34 +1919,12 @@ public partial class FASyncRuntime : MVRScript
         if (!TryResolveBoundStandalonePlayerRecord(binding, out record, out ignoredError) || record == null)
             return;
 
-        bool isPlaying = record.desiredPlaying;
-        double currentTimeSeconds = 0d;
-        double currentDurationSeconds = 0d;
-        try
-        {
-            if (record.videoPlayer != null)
-            {
-                isPlaying = record.videoPlayer.isPlaying;
-                currentTimeSeconds = Math.Max(0d, record.videoPlayer.time);
-                currentDurationSeconds = GetStandalonePlayerDurationSeconds(record);
-            }
-        }
-        catch
-        {
-            isPlaying = record.desiredPlaying;
-            currentTimeSeconds = 0d;
-            currentDurationSeconds = 0d;
-        }
-
-        double currentTimeNormalized = 0d;
-        if (!double.IsNaN(currentTimeSeconds)
-            && !double.IsInfinity(currentTimeSeconds)
-            && !double.IsNaN(currentDurationSeconds)
-            && !double.IsInfinity(currentDurationSeconds)
-            && currentDurationSeconds > 0.0001d)
-        {
-            currentTimeNormalized = Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
-        }
+        ReadStandalonePlayerPresentationState(
+            record,
+            out bool isPlaying,
+            out double currentTimeSeconds,
+            out double currentDurationSeconds,
+            out double currentTimeNormalized);
 
         float volumeNormalized = Mathf.Clamp01(record.muted ? record.storedVolume : record.volume);
         bool loopEnabled = !string.Equals(record.loopMode, PlayerLoopModeNone, StringComparison.OrdinalIgnoreCase);
