@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.45",
+  "title": "Restore demo3 side control transforms and reflect shuffle/A-B toggle state",
+  "summary": "0.6.45 fixes the demo3 side control regression by preserving the center control local transform data when cloning to the side screens, and it makes the shuffle and A-B loop toggles reflect live checked state through Trigger.value.",
+  "changes": [
+    "Side-screen control clones now preserve the full center control local transform data before being reparented.",
+    "The demo3 builder now emits Trigger.value for both shuffle and A-B loop toggles so runtime can drive their checked state.",
+    "Runtime now updates the shuffle and A-B loop toggle values alongside the existing slider and text readback."
+  ],
+  "reasoning": [
+    "0.6.44 ingested the authored center controls correctly but was still too aggressive about rewriting side control transforms, which reset the side stacks back toward the middle basis.",
+    "The existing demo readback only updated slider values and text fields, so the toggle surfaces were still cosmetic even though the underlying player state was already known."
+  ],
+  "operatorVisibleOutcomes": [
+    "Side control stacks should again preserve the intended layout under the angled screens.",
+    "When A and B define and enable a loop, the A-B toggle should show checked.",
+    "Shuffle should now show its checked state instead of only changing the label text."
+  ],
+  "knownIssues": [
+    "This slice does not yet add interactive A-B toggle enable/disable behavior; it only reflects current state.",
+    "The generated scene JSON remains larger than a VaM-saved scene because the generator still writes more verbose JSON."
+  ]
+}

@@ -843,6 +843,59 @@ function Copy-PlayerDemoSceneAtomRelativeTransformFromSource {
     Set-PlayerDemoSceneAtomRelativeTransform -Atom $TargetAtom -PositionSource $sourcePosition -RotationSource $sourceRotation
 }
 
+function Copy-PlayerDemoSceneAtomLocalTransformDataFromSource {
+    param(
+        [object]$SourceAtom,
+        [object]$TargetAtom
+    )
+
+    if ($null -eq $SourceAtom -or $null -eq $TargetAtom) {
+        return
+    }
+
+    if ($null -ne $SourceAtom.position -and $null -ne $TargetAtom.position) {
+        $TargetAtom.position.x = [string]$SourceAtom.position.x
+        $TargetAtom.position.y = [string]$SourceAtom.position.y
+        $TargetAtom.position.z = [string]$SourceAtom.position.z
+    }
+
+    if ($null -ne $SourceAtom.rotation -and $null -ne $TargetAtom.rotation) {
+        $TargetAtom.rotation.x = [string]$SourceAtom.rotation.x
+        $TargetAtom.rotation.y = [string]$SourceAtom.rotation.y
+        $TargetAtom.rotation.z = [string]$SourceAtom.rotation.z
+    }
+
+    if ($null -ne $SourceAtom.containerPosition -and $null -ne $TargetAtom.containerPosition) {
+        $TargetAtom.containerPosition.x = [string]$SourceAtom.containerPosition.x
+        $TargetAtom.containerPosition.y = [string]$SourceAtom.containerPosition.y
+        $TargetAtom.containerPosition.z = [string]$SourceAtom.containerPosition.z
+    }
+
+    if ($null -ne $SourceAtom.containerRotation -and $null -ne $TargetAtom.containerRotation) {
+        $TargetAtom.containerRotation.x = [string]$SourceAtom.containerRotation.x
+        $TargetAtom.containerRotation.y = [string]$SourceAtom.containerRotation.y
+        $TargetAtom.containerRotation.z = [string]$SourceAtom.containerRotation.z
+    }
+
+    $sourceControl = Get-StorableById -Storables @($SourceAtom.storables) -Id "control"
+    $targetControl = Get-StorableById -Storables @($TargetAtom.storables) -Id "control"
+    if ($null -eq $sourceControl -or $null -eq $targetControl) {
+        return
+    }
+
+    if ($null -ne $sourceControl.position -and $null -ne $targetControl.position) {
+        $targetControl.position.x = [string]$sourceControl.position.x
+        $targetControl.position.y = [string]$sourceControl.position.y
+        $targetControl.position.z = [string]$sourceControl.position.z
+    }
+
+    if ($null -ne $sourceControl.rotation -and $null -ne $targetControl.rotation) {
+        $targetControl.rotation.x = [string]$sourceControl.rotation.x
+        $targetControl.rotation.y = [string]$sourceControl.rotation.y
+        $targetControl.rotation.z = [string]$sourceControl.rotation.z
+    }
+}
+
 function Resolve-PlayerDemoSceneAtomTransformSources {
     param([object]$Atom)
 
@@ -1030,6 +1083,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
         "toggle" {
             return [pscustomobject]@{
                 id = "Trigger"
+                value = "0"
                 trigger = [ordered]@{
                     displayName = "A_Player Random Toggle"
                     startActions = @(
@@ -1045,6 +1099,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
         "toggle_ab" {
             return [pscustomobject]@{
                 id = "Trigger"
+                value = "0"
                 trigger = [ordered]@{
                     displayName = "A_Player A-B Toggle"
                     startActions = @()
@@ -1216,7 +1271,7 @@ function Apply-PlayerDemoThreeScreenControls {
 
             Set-SceneAtomId -Atom $targetAtom -Id $desiredId
             if ($role -ne "middle") {
-                Copy-PlayerDemoSceneAtomRelativeTransformFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
+                Copy-PlayerDemoSceneAtomLocalTransformDataFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
             }
             Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
             Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId

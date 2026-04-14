@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.45",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.45 restores the correct local transform basis for demo3 side controls and makes the shuffle and A-B loop toggles reflect live checked state through Trigger.value.",
+  "repoAnchors": {
+    "branch": "release/0.6.45-demo3-toggle-state-and-local-transforms",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.45.json"
+  },
+  "operatorSignals": [
+    "The 0.6.44 scene ingest preserved the new controls, but the side-screen control transforms had snapped back toward the middle basis.",
+    "When A and B were set and the loop started, the new A-B toggle did not show checked state, and shuffle state still only seemed visible through text."
+  ],
+  "actionsTaken": [
+    "Changed the builder to preserve the center atom local transform fields before reparenting side control clones.",
+    "Added Trigger.value for shuffle and A-B loop toggles in the deterministic scene builder.",
+    "Extended runtime demo scene readback to drive those toggle values from live player state."
+  ],
+  "nonGoals": [
+    "No new slideshow or image-slider behavior in this slice.",
+    "No interactive A-B toggle enable-disable behavior yet; that remains the next runtime seam."
+  ]
+}

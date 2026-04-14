@@ -69,12 +69,12 @@ As of this update:
    - `0.6.41` fixed demo3 text repaint and rotated the side control groups around the owning screen yaw
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 5. the current immediate queue is:
-   - `0.6.44` is the active raw operator test seam for demo3 builder ingest and local-space side control cloning
-   - `0.6.45`: stateful `A-B` checkbox
-   - `0.6.46`: image slider navigation and state
-   - `0.6.47`: more aggressive scrub feedback while dragging
-   - `0.6.48`: slideshow
-   - `0.6.49`: right-stick up/down volume without trigger
+   - `0.6.45` is the active raw operator test seam for demo3 toggle-state readback and restored side control transform data
+   - `0.6.46`: interactive stateful `A-B` checkbox enable/disable behavior
+   - `0.6.47`: image slider navigation and state
+   - `0.6.48`: more aggressive scrub feedback while dragging
+   - `0.6.49`: slideshow
+   - `0.6.50`: right-stick up/down volume without trigger
 6. Favorites is a separate `0.7.0` capability lane and must not be folded into the current `0.6.x` transport fixes
 7. the `modern_tv` hosted proof is still useful as a witness seam, but it is not the default operator test seam for the current player lane
 
@@ -96,13 +96,13 @@ Primary current docs:
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.0.6.44.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.0.6.45.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.44.dll`
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.45.dll`
 3. deterministic live scene:
-   `F:\sim\vam\Saves\scene\demo3.0.6.44.json`
+   `F:\sim\vam\Saves\scene\demo3.0.6.45.json`
 4. release validation receipt:
-   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.44\foundation_release_validation.json`
+   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.45\foundation_release_validation.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
