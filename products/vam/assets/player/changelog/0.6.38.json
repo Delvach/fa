@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.38",
+  "title": "Reset generated demo3 progress sliders to zero",
+  "summary": "0.6.38 keeps generated demo3 scrub sliders from inheriting stale authored trigger values, so the slider starts at zero until live readback is wired.",
+  "changes": [
+    "The demo3 builder now forces generated progress sliders to default to zero instead of preserving any saved Trigger.value from the template.",
+    "Generated volume sliders still preserve their intended default of one."
+  ],
+  "reasoning": [
+    "The generated demo3 scene was carrying a stale progress trigger value of 0.7334521 into all three scrub sliders.",
+    "Because live scene-slider readback is not wired yet, that stale default could fight scrubbing and make the experience feel janky.",
+    "This is a builder-only correction and does not need a new runtime policy."
+  ],
+  "operatorVisibleOutcomes": [
+    "Fresh demo3 scenes should now open with progress sliders at the beginning instead of starting mid-track.",
+    "Scrubbing should no longer be influenced by a stale saved slider default before live readback exists."
+  ],
+  "knownIssues": [
+    "This slice does not yet add live slider readback for demo3.",
+    "This slice does not change text displays, side-screen placement, or playback logic."
+  ]
+}

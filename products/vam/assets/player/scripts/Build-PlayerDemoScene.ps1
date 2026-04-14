@@ -898,7 +898,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
             }
 
             $existingValue = ""
-            if ($null -ne $ExistingTriggerStorable -and $ExistingTriggerStorable.PSObject.Properties.Name -contains "value") {
+            if ($receiverTargetName -eq "volume_normalized" -and $null -ne $ExistingTriggerStorable -and $ExistingTriggerStorable.PSObject.Properties.Name -contains "value") {
                 $existingValue = [string]$ExistingTriggerStorable.value
             }
             if ([string]::IsNullOrWhiteSpace($existingValue)) {

@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.37",
-    "notes":  "0.6.37 resets visible playback progress immediately on real media changes so Next and Previous start the new movie at the beginning instead of carrying stale timeline state through prepare.",
+    "version":  "0.6.38",
+    "notes":  "0.6.38 forces generated demo3 progress sliders to start at zero so stale authored trigger values do not fight scrubbing before live readback is wired.",
     "branch":  "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.37.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.38.json"
 }

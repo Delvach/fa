@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.38",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.38 fixes a generated-scene scrub regression by forcing demo3 progress sliders to start at zero instead of inheriting stale authored trigger values.",
+  "repoAnchors": {
+    "branch": "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.38.json"
+  },
+  "operatorSignals": [
+    "Scrubbing felt jankier after the prior slice.",
+    "The likely theory was that the scene progress slider default was stale and fighting the media timeline because live readback is not wired yet."
+  ],
+  "actionsTaken": [
+    "Confirmed all three generated progress sliders were carrying the same stale Trigger.value from the scene template.",
+    "Changed the demo3 builder so progress sliders always generate with value 0 while volume sliders keep value 1."
+  ],
+  "nonGoals": [
+    "No runtime playback changes.",
+    "No side-screen transform changes.",
+    "No text-display or stateful readback additions yet."
+  ]
+}
