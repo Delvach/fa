@@ -39,6 +39,25 @@ contradictory handoff state, and superseded witness artifacts.
 9. Do not let a build report or staged package path masquerade as live package
    authority.
 
+## Official VaM inspection hygiene
+
+1. If the question is about VaM's real built-in behavior, inspect the official
+   live managed DLLs first.
+2. Do not pivot into archived repos, recovery repos, or old prototypes unless
+   the operator explicitly asks for that historical lane.
+3. Preferred official gameplay target:
+   `F:\sim\vam\VaM_Data\Managed\Assembly-CSharp.dll`
+4. The verified local inspection tool is:
+   `C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\ildasm.exe`
+5. Preferred workflow:
+   - dump IL from the official DLL to a temp file
+   - search the IL output for the exact runtime class or member seam
+   - record the winning official class or method in repo docs if it matters to the lane
+6. Current verified example:
+   - the official built-in media panel runtime seam is `ImageControl`
+   - it owns a `VideoPlayer` directly
+   - it does not carry a separate `AudioSource` field in that runtime class
+
 ## Volodeck and VaM hygiene
 
 1. Volodeck is a fast witness seam, not a separate product truth.

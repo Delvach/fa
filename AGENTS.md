@@ -1,6 +1,6 @@
 # FrameAngel Repo Agent Canon
 
-Updated: `2026-04-13`
+Updated: `2026-04-14`
 
 ## Instruction hierarchy
 
@@ -35,6 +35,25 @@ If OpenMemory is used:
 
 Do not bulk hydrate across repos unless the lane truly requires it.
 Keep canon, working hypothesis, and historical substrate separate.
+
+## Official VaM DLL inspection rule
+
+When the lane needs the official VaM implementation:
+
+1. inspect the live managed VaM assemblies first
+2. do not drift into archived repos, recovery repos, or older prototypes
+3. prefer the live gameplay assembly:
+   `F:\sim\vam\VaM_Data\Managed\Assembly-CSharp.dll`
+4. use the locally available IL disassembler:
+   `C:\Program Files (x86)\Microsoft SDKs\Windows\v10.0A\bin\NETFX 4.6.1 Tools\ildasm.exe`
+5. dump IL to a temp file and search that output instead of guessing type names
+6. treat the official DLL result as authority over historical recollection
+
+Current verified official seam:
+
+1. the built-in VaM media panel runtime is `ImageControl`
+2. `ImageControl` owns a `VideoPlayer` directly in the official gameplay DLL
+3. `ImageControl` does not carry a separate `AudioSource` field in that runtime class
 
 ## Current product state
 
