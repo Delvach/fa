@@ -130,28 +130,28 @@ Working preference:
 Use `dev_deploy` names for raw `Custom/...` testing:
 
 1. `scene_dev_SUBJECT.<semver>.<iteration>.json`
-2. `preset_dev_SUBJECT.<semver>.<iteration>.vap`
+2. `Preset_dev_SUBJECT.<semver>.<iteration>.vap`
 3. `asset_dev_SUBJECT.<semver>.<iteration>.assetbundle`
 4. `plugin_player_dev.<semver>.<iteration>.dll`
 
 Example:
 
 1. `scene_dev_moderntv.0.6.11.alpha.json`
-2. `preset_dev_moderntv.0.6.11.alpha.vap`
+2. `Preset_dev_moderntv.0.6.11.alpha.vap`
 3. `asset_dev_moderntv.0.6.11.alpha.assetbundle`
 4. `plugin_player_dev.0.6.11.alpha.dll`
 
 Same code, redeploy:
 
 1. `scene_dev_moderntv.0.6.11.beta.json`
-2. `preset_dev_moderntv.0.6.11.beta.vap`
+2. `Preset_dev_moderntv.0.6.11.beta.vap`
 3. `asset_dev_moderntv.0.6.11.beta.assetbundle`
 4. `plugin_player_dev.0.6.11.beta.dll`
 
 Changed code:
 
 1. `scene_dev_moderntv.0.6.12.alpha.json`
-2. `preset_dev_moderntv.0.6.12.alpha.vap`
+2. `Preset_dev_moderntv.0.6.12.alpha.vap`
 3. `asset_dev_moderntv.0.6.12.alpha.assetbundle`
 4. `plugin_player_dev.0.6.12.alpha.dll`
 
@@ -160,7 +160,7 @@ Changed code:
 Use `prerelease_deploy` names for `.var` testing with the `Dev` channel:
 
 1. `scene_stage_SUBJECT.<semver>.<iteration>.json`
-2. `preset_stage_SUBJECT.<semver>.<iteration>.vap`
+2. `Preset_stage_SUBJECT.<semver>.<iteration>.vap`
 3. `asset_stage_SUBJECT.<semver>.<iteration>.assetbundle`
 4. `plugin_player_stage.<semver>.<iteration>.dll`
 5. `FrameAngel.PlayerDev.<n>.var`
@@ -168,7 +168,7 @@ Use `prerelease_deploy` names for `.var` testing with the `Dev` channel:
 Example:
 
 1. `scene_stage_moderntv.0.6.11.alpha.json`
-2. `preset_stage_moderntv.0.6.11.alpha.vap`
+2. `Preset_stage_moderntv.0.6.11.alpha.vap`
 3. `asset_stage_moderntv.0.6.11.alpha.assetbundle`
 4. `plugin_player_stage.0.6.11.alpha.dll`
 5. `FrameAngel.PlayerDev.11.var`
@@ -176,7 +176,7 @@ Example:
 Same code, redeploy:
 
 1. `scene_stage_moderntv.0.6.11.beta.json`
-2. `preset_stage_moderntv.0.6.11.beta.vap`
+2. `Preset_stage_moderntv.0.6.11.beta.vap`
 3. `asset_stage_moderntv.0.6.11.beta.assetbundle`
 4. `plugin_player_stage.0.6.11.beta.dll`
 5. `FrameAngel.PlayerDev.12.var`

@@ -201,10 +201,11 @@ public static class FrameAngelPlayerShell2018Exporter
         string displayName = ResolveDisplayName(options, hostProfile, packageManifest, resourceId);
         string shellKey = ResolveShellKey(options, hostProfile, resourceId);
 
-        string tempRoot = "Assets/FrameAngel/PlayerShell2018Temp/" + Sanitize(resourceId);
+        string assetKey = Sanitize(!IsBlank(shellKey) ? shellKey : resourceId);
+        string tempRoot = "Assets/FA/PS18/" + assetKey;
         string meshesRoot = tempRoot + "/Meshes";
         string materialsRoot = tempRoot + "/Materials";
-        string prefabPath = tempRoot + "/" + resourceId + ".prefab";
+        string prefabPath = tempRoot + "/main.prefab";
         string quadMeshPath = meshesRoot + "/frameangel_unit_quad.asset";
 
         if (AssetDatabase.IsValidFolder(tempRoot))

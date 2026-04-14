@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.20",
+  "title": "Fix preset discovery and image-directory default truth",
+  "summary": "0.6.20 keeps the 0.6.19 preset and playlist hardening, but fixes raw preset discovery, shortens the hosted-player asset names shown in VaM, defaults all-image loads back to paused even when the source is a directory, and makes focus-loss resume less likely to restart from zero.",
+  "changes": [
+    "Rename raw dev_deploy hosted-player presets to use an uppercase Preset_ prefix so VaM preset discovery sees them reliably.",
+    "Shorten the internal 2018 hosted-player and base-player prefab paths so the CUA asset dropdown is readable again.",
+    "Treat all-image selections, including directories that resolve entirely to images, as paused-by-default unless an explicit play flag is provided.",
+    "Use the same paused-by-default rule when saving presets so image-directory presets stop capturing stale play intent.",
+    "Preserve the best available playback-time snapshot on app focus loss instead of falling back to zero more easily."
+  ],
+  "reasoning": [
+    "The current operator witness points at two separate truths: raw preset discovery is sensitive to uppercase Preset naming, and the old internal asset names are too long to inspect confidently in VaM.",
+    "Image-directory behavior should follow the same pause-by-default rule as single images instead of inheriting leftover video play intent.",
+    "App-switch recovery is safer when it reuses the best known playback time instead of only trusting one timeline read during the focus-loss frame."
+  ],
+  "operatorVisibleOutcomes": [
+    "The new raw modern_tv preset should show up in VaM under its explicit 0.6.20 alpha name.",
+    "The CUA asset dropdown should show much shorter internal prefab names for the hosted and baseline player assets.",
+    "Loading an image directory should stop immediately autoplaying just because a previous video or preset wanted play.",
+    "Movie app switches should be less likely to jump back to the beginning when focus changes."
+  ],
+  "knownIssues": [
+    "If image next or previous still behaves inconsistently after 0.6.20, the remaining seam is probably playlist state reuse rather than asset selection.",
+    "The current branch name still reflects the older 0.6.14 stability train and should be corrected once this train is merged forward cleanly."
+  ]
+}

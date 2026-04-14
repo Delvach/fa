@@ -22,7 +22,7 @@ Meta/UI product strategy on its own.
 
 ## Current lane truth
 
-1. the current active player feature line beyond the stable baseline is `0.6.19`
+1. the current active player feature line beyond the stable baseline is `0.6.20`
 2. the active live proof seam for current hosted interaction work is raw
    `dev_deploy`, not packaged prerelease authority
 3. built `.var` outputs under `build/var_packages` are build artifacts unless

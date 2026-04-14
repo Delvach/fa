@@ -7533,10 +7533,28 @@ public partial class FASyncRuntime : MVRScript
             double observedTimeSeconds;
             double durationSeconds;
             string timelineError;
+            double resumeSnapshotSeconds = record.hasObservedPlaybackTime
+                ? Math.Max(0d, record.lastObservedPlaybackTimeSeconds)
+                : 0d;
             if (TryReadStandalonePlayerTimeline(record, out observedTimeSeconds, out durationSeconds, out timelineError))
             {
+                resumeSnapshotSeconds = Math.Max(resumeSnapshotSeconds, Math.Max(0d, observedTimeSeconds));
+            }
+            else if (record.videoPlayer != null)
+            {
+                try
+                {
+                    resumeSnapshotSeconds = Math.Max(resumeSnapshotSeconds, Math.Max(0d, record.videoPlayer.time));
+                }
+                catch
+                {
+                }
+            }
+
+            if (resumeSnapshotSeconds > 0d || record.hasObservedPlaybackTime)
+            {
                 record.hasObservedPlaybackTime = true;
-                record.lastObservedPlaybackTimeSeconds = Math.Max(0d, observedTimeSeconds);
+                record.lastObservedPlaybackTimeSeconds = resumeSnapshotSeconds;
                 record.lastPlaybackMotionObservedAt = Time.unscaledTime;
             }
 
@@ -7964,10 +7982,46 @@ public partial class FASyncRuntime : MVRScript
         if (TryReadBoolArg(argsJson, out explicitValue, "autoPlay", "play", "desiredPlaying"))
             return explicitValue;
 
+        if (ShouldPauseStandalonePlayerLoadByDefault(mediaPath))
+            return false;
         if (!string.IsNullOrEmpty(mediaPath))
-            return !FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
+            return true;
 
         return fallbackValue;
+    }
+
+    private bool ShouldPauseStandalonePlayerLoadByDefault(string mediaPath)
+    {
+        if (string.IsNullOrEmpty(mediaPath))
+            return false;
+
+        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath))
+            return true;
+
+        List<string> mediaPaths;
+        string ignoredError;
+        if (!TryResolvePlayerRuntimeMediaPaths(mediaPath, out mediaPaths, out ignoredError))
+            return false;
+
+        return AreStandalonePlayerPlaylistPathsAllImages(mediaPaths);
+    }
+
+    private static bool AreStandalonePlayerPlaylistPathsAllImages(List<string> mediaPaths)
+    {
+        if (mediaPaths == null || mediaPaths.Count <= 0)
+            return false;
+
+        for (int i = 0; i < mediaPaths.Count; i++)
+        {
+            string candidate = mediaPaths[i];
+            if (string.IsNullOrEmpty(candidate))
+                continue;
+
+            if (!FrameAngelPlayerMediaParity.IsSupportedImagePath(candidate))
+                return false;
+        }
+
+        return true;
     }
 
     private bool ShouldReplaceStandalonePlayerPlaylist(string argsJson)

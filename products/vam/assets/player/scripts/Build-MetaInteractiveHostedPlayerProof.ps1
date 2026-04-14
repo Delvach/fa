@@ -230,11 +230,14 @@ function Resolve-DeployNaming {
             iterationToken = $iterationToken
             pluginFileName = ("plugin_player_dev.{0}.{1}.dll" -f $ResolvedVersionValue, $iterationToken)
             assetBundleFileName = ("asset_dev_{0}.{1}.{2}.assetbundle" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
-            presetFileName = ("preset_dev_{0}.{1}.{2}.vap" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
+            presetFileName = ("Preset_dev_{0}.{1}.{2}.vap" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
             stalePluginPattern = ("plugin_player_dev.{0}.*.dll" -f $ResolvedVersionValue)
             staleAssetPattern = ("asset_dev_{0}.{1}.*.assetbundle" -f $subjectToken, $ResolvedVersionValue)
-            stalePresetPattern = ("preset_dev_{0}.{1}.*.vap" -f $subjectToken, $ResolvedVersionValue)
-            removeLegacyPresetNames = @($LegacyPresetFileName)
+            stalePresetPattern = ("Preset_dev_{0}.{1}.*.vap" -f $subjectToken, $ResolvedVersionValue)
+            removeLegacyPresetNames = @(
+                $LegacyPresetFileName,
+                ("preset_dev_{0}.{1}.{2}.vap" -f $subjectToken, $ResolvedVersionValue, $iterationToken)
+            )
             removeLegacyBundleNames = @($LegacyHostBundleFileName)
         }
     }

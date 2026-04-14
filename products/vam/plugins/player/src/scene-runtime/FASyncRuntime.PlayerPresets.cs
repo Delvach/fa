@@ -1218,6 +1218,10 @@ public partial class FASyncRuntime : MVRScript
 
     private bool ResolveCurrentStandalonePlayerDesiredPlaying(StandalonePlayerRecord record)
     {
+        string currentPath = ResolveCurrentStandalonePlayerMediaPath(record);
+        if (ShouldPauseStandalonePlayerLoadByDefault(currentPath))
+            return false;
+
         if (record == null)
             return true;
         if (record.mediaIsStillImage)

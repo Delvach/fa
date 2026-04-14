@@ -749,3 +749,37 @@ preset and playlist hardening slice.
     package inventory, but it records `distributed:false`, `FrameAngel.DevPlayer.12.var`
     is absent from `F:\sim\vam\AddonPackages`, and live authority remains raw
     `dev_deploy` only.
+
+## Stability checkpoint 2026-04-13T23:04:15.4060473-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.20 alpha`
+preset-discovery and image-directory default slice.
+
+1. `0.6.20 alpha` keeps the `0.6.19` preset and playlist hardening intact while
+   also fixing raw preset discovery and shortening the hosted-player asset
+   names shown in VaM.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.20.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.20.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.20.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.20.alpha.dll`
+3. the hosted proof preset now resolves the shorter internal host asset name
+   `assets/fa/ps18/modern_tv/main.prefab`.
+4. the baseline direct-player raw asset now resolves the shorter internal asset
+   name `assets/fa/player/main.prefab`.
+5. raw hosted-player presets now use an uppercase `Preset_` prefix because that
+   is the current working discovery convention in VaM for this seam.
+6. all-image loads now default to paused even when the selected source path is
+   a directory instead of a single image file.
+7. preset capture now uses the same all-image paused-by-default rule so
+   image-directory presets stop preserving stale play intent more easily.
+8. focus-loss capture now keeps the best known playback-time snapshot instead
+   of relying on one timeline read during the focus-loss frame.
+9. the current strongest remaining playback risks are:
+   - image next/previous behavior if a playlist still collapses unexpectedly
+   - any remaining app-switch reset edge cases under real VR load
+   - mixed-media playlist policy across image and video entries
+10. the `0.6.20` package report exists because the hosted proof wrapper expects
+    package inventory, but it records `distributed:false`, `FrameAngel.DevPlayer.12.var`
+    is absent from `F:\sim\vam\AddonPackages`, and live authority remains raw
+    `dev_deploy` only.
