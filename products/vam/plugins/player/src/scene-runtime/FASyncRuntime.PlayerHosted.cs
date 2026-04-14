@@ -904,6 +904,13 @@ public partial class FASyncRuntime : MVRScript
         if (!TryResolveHostedPlayerSurfaceContract(hostAtomUid, out hostedContract, out errorMessage) || hostedContract == null)
             return false;
 
+#if FRAMEANGEL_CUA_PLAYER
+        // The packaged CUA player should not automatically expose the authored screen-core slab
+        // as a Meta proof control family. Keep the authored surface contract for the screen, but
+        // leave the back-mounted control slab inert and invisible on the stable product path.
+        ApplyHostedPlayerPlaceholderVisualState(hostedContract);
+        return true;
+#else
         string playbackKey = BuildHostedPlayerPlaybackKey(hostAtomUid);
         if (string.IsNullOrEmpty(playbackKey)
             || !standalonePlayerRecords.TryGetValue(playbackKey, out StandalonePlayerRecord record)
@@ -939,6 +946,7 @@ public partial class FASyncRuntime : MVRScript
 
         ApplyHostedPlayerPlaceholderVisualState(hostedContract);
         return true;
+#endif
     }
 
     private bool TryEnsureHostedPlayerAuthoredControlSurfaceInstance(
@@ -1946,14 +1954,13 @@ public partial class FASyncRuntime : MVRScript
             return;
 
 #if FRAMEANGEL_CUA_PLAYER
-        bool showControlSurface = HasHostedPlayerActiveControlSurfaceBinding(contract.hostAtom.uid ?? "");
-        // Keep the authored screen basis visible. The control surface should only become visible
-        // once the hosted player actually bound the authored/runtime control contract.
+        // Keep the authored screen basis visible, but do not surface the older back-mounted
+        // control slab on the packaged CUA path.
         SetHostedPlayerNodeRendererEnabled(contract.screenSurfaceObject, true);
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenBodyObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
-        SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, showControlSurface);
+        SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
 #else
         SetHostedPlayerNodeRendererEnabled(contract.screenSurfaceObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.disconnectSurfaceObject, false);
@@ -1961,24 +1968,6 @@ public partial class FASyncRuntime : MVRScript
         SetHostedPlayerNodeRendererEnabled(contract.screenGlassObject, false);
         SetHostedPlayerNodeRendererEnabled(contract.controlSurfaceObject, false);
 #endif
-    }
-
-    private bool HasHostedPlayerActiveControlSurfaceBinding(string hostAtomUid)
-    {
-        if (string.IsNullOrEmpty(hostAtomUid))
-            return false;
-
-        foreach (KeyValuePair<string, PlayerControlSurfaceBindingRecord> kvp in playerControlSurfaceBindings)
-        {
-            PlayerControlSurfaceBindingRecord binding = kvp.Value;
-            if (binding == null)
-                continue;
-
-            if (string.Equals(binding.atomUid ?? "", hostAtomUid, StringComparison.OrdinalIgnoreCase))
-                return true;
-        }
-
-        return false;
     }
 
     private void ApplyHostedScreenCoreBackdropPresentation(

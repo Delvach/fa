@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.24",
+  "title": "Restore the exact 0.6.10 core-player runtime",
+  "summary": "0.6.24 stops the forward recovery loop and restores the exact 0.6.10 core-player runtime files under a fresh raw dev_deploy version boundary.",
+  "changes": [
+    "Restore FASyncRuntime.cs, FASyncRuntime.MetaHarness.cs, FASyncRuntime.Player.cs, FASyncRuntime.Player.StandalonePlayback.cs, FASyncRuntime.PlayerHosted.cs, and FASyncRuntime.PlayerPresets.cs to the 0.6.10 core-player baseline from commit 9154ad5.",
+    "Stamp version 0.6.24 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.24 raw core-player alpha seam from the restored 0.6.10 runtime."
+  ],
+  "reasoning": [
+    "The user-confirmed working core-player baseline in this repo is 0.6.10, not the later 0.6.14 through 0.6.23 line.",
+    "The recovery lane drifted by trying to preserve later policy and playlist changes instead of simply going back to the last clearly working core-player runtime.",
+    "This slice intentionally uses exact repo history rather than another forward fix."
+  ],
+  "operatorVisibleOutcomes": [
+    "The raw core player should behave like the last clearly working 0.6.10 baseline again.",
+    "This is a rollback slice, not a new feature slice."
+  ],
+  "knownIssues": [
+    "Later runtime experiments after 0.6.10 are intentionally not carried in this rollback slice.",
+    "The live authority for this slice remains the raw core-player dev_deploy seam, not build-only .var inventory and not the hosted modern_tv witness seam."
+  ]
+}

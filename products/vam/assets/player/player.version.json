@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.23",
-    "notes":  "0.6.23 restores the core-player sibling-playlist load behavior for direct file selections so next, scrub, and image/video transport stop collapsing to single-item truth after the 0.6.19 hosted-policy drift.",
-    "branch":  "release/0.6.23-core-player-playlist-restore",
+    "version":  "0.6.24",
+    "notes":  "0.6.24 restores the exact 0.6.10 core-player runtime baseline under a fresh raw dev_deploy version boundary so the operator can test the last clearly working direct-player behavior again without the later drifted runtime line.",
+    "branch":  "release/0.6.24-restore-0.6.10-core-player",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.23.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.24.json"
 }

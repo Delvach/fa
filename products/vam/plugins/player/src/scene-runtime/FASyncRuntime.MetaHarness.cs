@@ -1961,13 +1961,11 @@ public partial class FASyncRuntime
             if (AreEquivalentMetaProofMediaPaths(GetMetaProofCurrentStandalonePlayerMediaPath(record), mediaPath))
                 return true;
 
-            bool playSelectedMedia = ResolveStandalonePlayerLoadDesiredPlaying("{}", mediaPath, true);
-
             string selectedArgsJson = "{"
                 + "\"instanceId\":\"" + EscapeJsonString(targetInstanceId) + "\""
                 + ",\"displayId\":\"" + EscapeJsonString(InnerPiecePrimaryPlayerDisplayId) + "\""
                 + ",\"mediaPath\":\"" + EscapeJsonString(mediaPath) + "\""
-                + ",\"play\":" + (playSelectedMedia ? "true" : "false")
+                + ",\"play\":true"
                 + "}";
             if (!TryExecuteMetaProofAction(PlayerActionLoadPathId, selectedArgsJson, out _))
                 return false;
@@ -2000,14 +1998,12 @@ public partial class FASyncRuntime
         if (hasMedia && hasDesiredPlaylist && !ShouldReplaceMetaProofStandalonePlayerMedia(record, mediaPath))
             return true;
 
-        bool playSampleMedia = ResolveStandalonePlayerLoadDesiredPlaying("{}", mediaPath, true);
-
         string loadArgsJson = "{"
             + "\"instanceId\":\"" + EscapeJsonString(targetInstanceId) + "\""
             + ",\"displayId\":\"" + EscapeJsonString(InnerPiecePrimaryPlayerDisplayId) + "\""
             + ",\"mediaPath\":\"" + EscapeJsonString(mediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
-            + ",\"play\":" + (playSampleMedia ? "true" : "false")
+            + ",\"play\":true"
             + "}";
 
         if (!TryExecuteMetaProofAction(PlayerActionLoadPathId, loadArgsJson, out _))

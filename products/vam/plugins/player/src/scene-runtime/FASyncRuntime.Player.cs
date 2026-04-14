@@ -170,9 +170,6 @@ public partial class FASyncRuntime : MVRScript
         public bool seekResumePending = false;
         public double seekResumeTargetSeconds = 0d;
         public float seekResumeRequestedAt = 0f;
-        public int applicationFocusGeneration = 0;
-        public bool applicationFocusResumePending = false;
-        public double applicationFocusResumeTimeSeconds = 0d;
         public bool muted = false;
         public float volume = 1f;
         public float storedVolume = 1f;
@@ -6194,14 +6191,7 @@ public partial class FASyncRuntime : MVRScript
         if (enabled)
             EnsureStandalonePlayerRandomOrder(record, record.currentIndex, true);
         else
-        {
-            int currentIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, GetStandalonePlayerCurrentPlaylistPath(record));
-            if (currentIndex < 0)
-                currentIndex = FindStandalonePlayerPlaylistIndex(record.playlistPaths, record.mediaPath);
-            if (currentIndex >= 0)
-                record.currentIndex = currentIndex;
             ClearStandalonePlayerRandomHistory(record);
-        }
 
         string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
         resultJson = BuildBrokerResult(true, "player_random ok", payload);
@@ -7022,7 +7012,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        bool transitionBetweenVideos = ShouldStartStandalonePlayerTransitionFade(record, resolvedMediaPath);
+        bool transitionBetweenVideos = ShouldStartStandalonePlayerTransitionFade(record, mediaPath);
 
         record.instanceId = instance.instanceId;
         record.slotId = slot.slotId;
@@ -7037,9 +7027,6 @@ public partial class FASyncRuntime : MVRScript
         record.seekResumePending = false;
         record.seekResumeTargetSeconds = 0d;
         record.seekResumeRequestedAt = 0f;
-        record.applicationFocusResumePending = false;
-        record.applicationFocusResumeTimeSeconds = 0d;
-        record.applicationFocusGeneration = runtimeApplicationFocusGeneration;
         record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
         record.textureWidth = 0;
         record.textureHeight = 0;
@@ -7080,7 +7067,7 @@ public partial class FASyncRuntime : MVRScript
 
         ApplyStandalonePlayerLoopMode(record);
         ApplyStandalonePlayerAudioState(record);
-        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(resolvedMediaPath))
+        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath))
         {
             DestroyStandalonePlayerTransitionFade(record);
             bool imageLoaded = TryLoadStandalonePlayerImageTexture(record, resolvedMediaPath, out errorMessage);
@@ -7443,71 +7430,6 @@ public partial class FASyncRuntime : MVRScript
         record.naturalEndHandled = false;
     }
 
-    private bool TryHandleStandalonePlayerApplicationFocus(
-        StandalonePlayerRecord record,
-        bool hasTimeline,
-        double currentTimeSeconds,
-        out bool handled,
-        out string errorMessage)
-    {
-        handled = false;
-        errorMessage = "";
-        if (record == null || record.mediaIsStillImage)
-            return true;
-
-        if (record.applicationFocusGeneration != runtimeApplicationFocusGeneration)
-        {
-            record.applicationFocusGeneration = runtimeApplicationFocusGeneration;
-            if (!runtimeApplicationFocusActive)
-            {
-                double resumeTimeSeconds = record.hasObservedPlaybackTime
-                    ? Math.Max(0d, record.lastObservedPlaybackTimeSeconds)
-                    : Math.Max(0d, currentTimeSeconds);
-                if (hasTimeline)
-                    resumeTimeSeconds = Math.Max(resumeTimeSeconds, Math.Max(0d, currentTimeSeconds));
-
-                bool shouldResumePlayback = record.desiredPlaying
-                    && resumeTimeSeconds > StandalonePlayerPlaybackMotionEpsilonSeconds;
-                record.applicationFocusResumePending = shouldResumePlayback;
-                record.applicationFocusResumeTimeSeconds = shouldResumePlayback ? resumeTimeSeconds : 0d;
-                record.nextPlaybackStateApplyTime = Math.Max(
-                    record.nextPlaybackStateApplyTime,
-                    Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds);
-                record.nextAudioVideoSyncCheckTime = Math.Max(
-                    record.nextAudioVideoSyncCheckTime,
-                    Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds);
-            }
-            else if (record.applicationFocusResumePending)
-            {
-                double resumeTimeSeconds = Math.Max(0d, record.applicationFocusResumeTimeSeconds);
-                record.applicationFocusResumePending = false;
-                record.applicationFocusResumeTimeSeconds = 0d;
-                handled = true;
-                if (resumeTimeSeconds > StandalonePlayerPlaybackMotionEpsilonSeconds
-                    && !TrySeekStandalonePlayerRecordToSeconds(record, resumeTimeSeconds, true, out errorMessage))
-                {
-                    return false;
-                }
-
-                record.nextPlaybackStateApplyTime = Math.Max(
-                    record.nextPlaybackStateApplyTime,
-                    Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds);
-                record.nextAudioVideoSyncCheckTime = Math.Max(
-                    record.nextAudioVideoSyncCheckTime,
-                    Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds);
-                return true;
-            }
-        }
-
-        if (!runtimeApplicationFocusActive)
-        {
-            handled = true;
-            return true;
-        }
-
-        return true;
-    }
-
     private void TickStandalonePlayerRuntime()
     {
         if (standalonePlayerRecords.Count <= 0)
@@ -7668,22 +7590,6 @@ public partial class FASyncRuntime : MVRScript
                     catch (Exception ex)
                     {
                         record.lastError = "player play state failed: " + ex.Message;
-                    }
-
-                    bool focusHandled;
-                    string focusError;
-                    if (!TryHandleStandalonePlayerApplicationFocus(record, hasTimeline, currentTimeSeconds, out focusHandled, out focusError))
-                    {
-                        if (!string.IsNullOrEmpty(focusError))
-                            record.lastError = focusError;
-                        continue;
-                    }
-
-                    if (focusHandled)
-                    {
-                        if (!string.IsNullOrEmpty(focusError))
-                            record.lastError = focusError;
-                        continue;
                     }
 
                     if (hasTimeline)
@@ -8904,9 +8810,6 @@ public partial class FASyncRuntime : MVRScript
             record.seekResumePending = false;
             record.seekResumeTargetSeconds = 0d;
             record.seekResumeRequestedAt = 0f;
-            record.applicationFocusResumePending = false;
-            record.applicationFocusResumeTimeSeconds = 0d;
-            record.applicationFocusGeneration = runtimeApplicationFocusGeneration;
             record.desiredPlaying = false;
             record.nextPlaybackStateApplyTime = 0f;
             record.nextAudioVideoSyncCheckTime = 0f;

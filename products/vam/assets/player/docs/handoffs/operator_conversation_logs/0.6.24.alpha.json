@@ -1,0 +1,94 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.24",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-14T00:05:00-06:00",
+  "endedAt": "2026-04-14T00:09:06.0000000-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.24\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.24\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.24.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.24 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "entries": [
+    {
+      "entryId": "0.6.24-operator-stop-debugging",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator explicitly stopped further debugging and required an exact rollback to the last clearly working core-player version instead of more forward fixes.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.24-baseline-selected",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Selected 0.6.10 at commit 9154ad5 as the last clearly user-confirmed working core-player baseline and restored the exact core runtime files from that commit.",
+      "reconstructedFrom": [
+        "repo changelog trail",
+        "recovered operator conversation logs",
+        "live git history"
+      ]
+    },
+    {
+      "entryId": "0.6.24-foundation-build",
+      "timestamp": "2026-04-14T06:06:27.2259744Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.24 cleanly from the restored 0.6.10 core-player runtime.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.24\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.24-package-inventory-built",
+      "timestamp": "2026-04-14T06:06:28.0151259Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.24 package inventory with -SkipVarDistribute and confirmed it remains build-only with distributed:false.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.24\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.24-core-player-alpha",
+      "timestamp": "2026-04-14T00:09:06.0000000-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Deployed the raw direct core-player asset and plugin as the live 0.6.24 alpha dev_deploy seam from the restored 0.6.10 runtime.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.24.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.24 is a pure rollback slice that restores the exact 0.6.10 core-player runtime under a fresh semantic version.",
+    "The live authority seam for this slice is the raw direct core-player dev_deploy asset plus plugin, not the hosted modern_tv witness seam and not the .var package."
+  ],
+  "openQuestions": [
+    "Does the exact 0.6.10 core-player runtime still behave as the last clearly working baseline in the current operator test lane?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.24.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.24\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.24\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.24.alpha.json",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.24.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.24.alpha.dll"
+  ],
+  "notes": [
+    "This slice intentionally does not carry later playlist, hosted proof, resize, or sync experiments forward.",
+    "The 0.6.24 package report exists only as build inventory and does not compete with the raw direct core-player dev_deploy authority."
+  ]
+}
