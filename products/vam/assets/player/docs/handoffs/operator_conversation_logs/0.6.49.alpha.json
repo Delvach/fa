@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.49",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.49 fixes discovered media playlist ordering so shuffle-off numbered images stay in natural sequence while preserving the new image-slider transport seam.",
+  "repoAnchors": {
+    "branch": "release/0.6.49-natural-media-ordering",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.49.json"
+  },
+  "operatorSignals": [
+    "The new image scrubbing was working correctly, but sequential images were still showing out of order with shuffle off.",
+    "The requested follow-up was to check ordering independently instead of disturbing the scrub logic."
+  ],
+  "actionsTaken": [
+    "Traced shuffle-off ordering back to playlist discovery using plain lexicographic sort.",
+    "Introduced one shared natural media ordering helper in the shared runtime parity seam.",
+    "Applied that helper to both player and witness discovery paths."
+  ],
+  "nonGoals": [
+    "No slideshow behavior in this slice.",
+    "No new scrub-preview cadence, input changes, or builder layout changes in this slice."
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.49",
+  "title": "Use natural ordering for discovered media playlists when shuffle is off",
+  "summary": "0.6.49 fixes discovered file and image playlists so numbered media stays in human sequence when shuffle is off, instead of being forced through plain lexicographic ordering.",
+  "changes": [
+    "Added one shared natural-order media sort helper in `FrameAngelPlayerMediaParity` for sibling and directory playlist discovery.",
+    "Direct player media discovery now uses that shared natural sort instead of plain ordinal filename ordering.",
+    "Meta harness media discovery uses the same ordering helper so witness and player seams stay aligned."
+  ],
+  "reasoning": [
+    "The new image slider behavior was working, but shuffle-off playback was still following a playlist built in plain lexicographic order.",
+    "Fixing the discovery sort keeps the transport model unchanged while making numbered media behave like users expect."
+  ],
+  "operatorVisibleOutcomes": [
+    "Sequentially numbered images now advance in human order when shuffle is off.",
+    "The new image slider navigation continues to work on top of the corrected playlist order.",
+    "Shuffle behavior remains separate from plain sequential ordering."
+  ],
+  "knownIssues": [
+    "This slice does not yet add more aggressive scrub preview updates while dragging.",
+    "Slideshow, right-stick volume, and deferred gaze polish remain separate queued slices."
+  ]
+}

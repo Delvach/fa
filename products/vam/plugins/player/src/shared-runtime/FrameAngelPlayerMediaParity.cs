@@ -309,9 +309,30 @@ namespace FrameAngel.Runtime.Shared
                 }
             }
 
-            discoveredEntries.Sort(StringComparer.OrdinalIgnoreCase);
+            SortMediaPathsInNaturalOrder(discoveredEntries);
             results.AddRange(discoveredEntries);
+            SortMediaPathsInNaturalOrder(results);
             return results;
+        }
+
+        public static void SortMediaPathsInNaturalOrder(List<string> mediaPaths)
+        {
+            if (mediaPaths == null || mediaPaths.Count <= 1)
+                return;
+
+            mediaPaths.Sort(CompareMediaPathsNatural);
+        }
+
+        public static int CompareMediaPathsNatural(string left, string right)
+        {
+            string leftLeaf = TryGetLeafName(left);
+            string rightLeaf = TryGetLeafName(right);
+
+            int leafCompare = CompareNaturalText(leftLeaf, rightLeaf);
+            if (leafCompare != 0)
+                return leafCompare;
+
+            return CompareNaturalText(left ?? string.Empty, right ?? string.Empty);
         }
 
         private static string TryGetExtension(string path)
@@ -336,6 +357,90 @@ namespace FrameAngel.Runtime.Shared
             {
                 return string.Empty;
             }
+        }
+
+        private static string TryGetLeafName(string path)
+        {
+            if (string.IsNullOrEmpty(path) || path.Trim().Length == 0)
+                return string.Empty;
+
+            string normalized = path.Trim();
+            int lastSlash = normalized.LastIndexOfAny(new[] { '\\', '/' });
+            if (lastSlash < 0 || lastSlash >= normalized.Length - 1)
+                return normalized;
+
+            return normalized.Substring(lastSlash + 1);
+        }
+
+        private static int CompareNaturalText(string left, string right)
+        {
+            string safeLeft = left ?? string.Empty;
+            string safeRight = right ?? string.Empty;
+
+            int leftIndex = 0;
+            int rightIndex = 0;
+            while (leftIndex < safeLeft.Length && rightIndex < safeRight.Length)
+            {
+                char leftChar = safeLeft[leftIndex];
+                char rightChar = safeRight[rightIndex];
+
+                if (char.IsDigit(leftChar) && char.IsDigit(rightChar))
+                {
+                    int digitCompare = CompareDigitRuns(safeLeft, ref leftIndex, safeRight, ref rightIndex);
+                    if (digitCompare != 0)
+                        return digitCompare;
+
+                    continue;
+                }
+
+                char leftFolded = char.ToUpperInvariant(leftChar);
+                char rightFolded = char.ToUpperInvariant(rightChar);
+                if (leftFolded != rightFolded)
+                    return leftFolded.CompareTo(rightFolded);
+
+                leftIndex++;
+                rightIndex++;
+            }
+
+            return safeLeft.Length.CompareTo(safeRight.Length);
+        }
+
+        private static int CompareDigitRuns(string left, ref int leftIndex, string right, ref int rightIndex)
+        {
+            int leftRunStart = leftIndex;
+            int rightRunStart = rightIndex;
+
+            while (leftIndex < left.Length && char.IsDigit(left[leftIndex]))
+                leftIndex++;
+            while (rightIndex < right.Length && char.IsDigit(right[rightIndex]))
+                rightIndex++;
+
+            int leftSignificantStart = leftRunStart;
+            int rightSignificantStart = rightRunStart;
+            while (leftSignificantStart < leftIndex && left[leftSignificantStart] == '0')
+                leftSignificantStart++;
+            while (rightSignificantStart < rightIndex && right[rightSignificantStart] == '0')
+                rightSignificantStart++;
+
+            int leftSignificantLength = leftIndex - leftSignificantStart;
+            int rightSignificantLength = rightIndex - rightSignificantStart;
+            if (leftSignificantLength != rightSignificantLength)
+                return leftSignificantLength.CompareTo(rightSignificantLength);
+
+            for (int offset = 0; offset < leftSignificantLength; offset++)
+            {
+                char leftDigit = left[leftSignificantStart + offset];
+                char rightDigit = right[rightSignificantStart + offset];
+                if (leftDigit != rightDigit)
+                    return leftDigit.CompareTo(rightDigit);
+            }
+
+            int leftRunLength = leftIndex - leftRunStart;
+            int rightRunLength = rightIndex - rightRunStart;
+            if (leftRunLength != rightRunLength)
+                return leftRunLength.CompareTo(rightRunLength);
+
+            return 0;
         }
 
         private static bool EqualsIgnoreCase(string left, string right)
