@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.43",
+  "title": "Align joystick video scrub speed to the 15-second transport step",
+  "summary": "0.6.43 fixes the CUA joystick video scrub seam so it moves at the same 15-second base rate as the shared skip transport instead of using the older duration-scaled normalized scrub speed.",
+  "changes": [
+    "The CUA joystick video scrub path now derives its normalized movement from the shared 15-second transport step.",
+    "Long videos should no longer feel like they are scrubbing by roughly 90 seconds per second just because the input seam was using a normalized rate."
+  ],
+  "reasoning": [
+    "0.6.42 changed the shared skip seam to 15 seconds, but the CUA joystick scrub path still had its own older normalized-rate constant, so the operator was feeling two different transport policies at once.",
+    "The safest fix is to align the CUA scrub seam to the shared transport step instead of widening the transport model again."
+  ],
+  "operatorVisibleOutcomes": [
+    "Joystick video scrub should now feel like the intended 15-second movement instead of the older much-faster rate on long videos."
+  ],
+  "knownIssues": [
+    "This slice does not add the stateful A-B checkbox yet.",
+    "This slice does not yet make image playlists use the slider as an index transport."
+  ]
+}

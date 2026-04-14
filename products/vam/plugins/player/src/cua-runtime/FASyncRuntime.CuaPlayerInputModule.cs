@@ -64,7 +64,7 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerNavigationSourceActiveThreshold = 0.02f;
     private const float CuaPlayerNavigationStickContinuitySeconds = 0.30f;
     private const float CuaPlayerTriggerModifierThreshold = 0.50f;
-    private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
+    private const float CuaPlayerVideoScrubSecondsPerSecond = StandalonePlayerDefaultSkipSeconds;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
@@ -1012,9 +1012,10 @@ public partial class FASyncRuntime : MVRScript
 
         BeginCuaPlayerVideoScrubSession(record);
 
+        float normalizedDeltaPerSecond = CuaPlayerVideoScrubSecondsPerSecond / (float)durationSeconds;
         cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
             cuaPlayerVideoScrubTargetNormalized
-            + (horizontal * CuaPlayerVideoScrubNormalizedPerSecond * Time.unscaledDeltaTime));
+            + (horizontal * normalizedDeltaPerSecond * Time.unscaledDeltaTime));
     }
 
     private void BeginCuaPlayerVideoScrubSession(StandalonePlayerRecord record)

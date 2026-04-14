@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.42",
-    "notes":  "0.6.42 makes the default scrub or skip step 15 seconds and clears active A-B when an explicit seek lands outside the active range instead of remapping the seek through the loop window.",
-    "branch":  "release/0.6.42-scrub-ab-canon",
+    "version":  "0.6.43",
+    "notes":  "0.6.43 aligns CUA joystick video scrub speed to the same 15-second base step as the shared skip seam instead of leaving it on the older duration-scaled normalized scrub rate.",
+    "branch":  "release/0.6.43-cua-scrub-15s",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.42.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.43.json"
 }

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.43",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.43 fixes the CUA joystick video scrub seam so it uses the same 15-second transport base as the shared skip path instead of keeping the older normalized scrub rate.",
+  "repoAnchors": {
+    "branch": "release/0.6.43-cua-scrub-15s",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.43.json"
+  },
+  "operatorSignals": [
+    "The shared skip seam had moved to 15 seconds, but the joystick scrub still felt like roughly 90 seconds on long videos.",
+    "That mismatch made it clear the CUA input path still had its own older scrub-rate policy."
+  ],
+  "actionsTaken": [
+    "Changed the CUA joystick video scrub calculation to derive normalized movement from the shared 15-second transport step."
+  ],
+  "nonGoals": [
+    "No A-B checkbox work yet.",
+    "No image-slider transport yet.",
+    "No slideshow or right-stick volume changes."
+  ]
+}
