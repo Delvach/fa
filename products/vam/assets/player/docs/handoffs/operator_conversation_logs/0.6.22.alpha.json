@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.22",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T23:20:00-06:00",
+  "endedAt": "2026-04-13T23:36:28.2940996-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.22\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.22\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.22.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.22 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T05:35:58.6074381Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.22\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T05:35:59.7061902Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.22\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T05:36:15.3096284Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T23:36:28.2940996-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.22.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.22-operator-backoff-rule",
+      "after": "2026-04-13T23:20:00-06:00",
+      "before": "2026-04-14T05:35:58.6074381Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator explicitly stopped the forward drift: if the last versions did not work, the lane should back off to the last known working hosted seam instead of continuing in the same direction.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.22-rollback-selected",
+      "after": "2026-04-13T23:20:00-06:00",
+      "before": "2026-04-14T05:35:58.6074381Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Selected the last hosted-working seam as the rollback source and restored the 0.6.14 player core instead of layering more fixes onto the broken later line.",
+      "reconstructedFrom": [
+        "repo changelog trail",
+        "live code inspection",
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.22-foundation-build",
+      "timestamp": "2026-04-14T05:35:58.6074381Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.22 cleanly from the restored 0.6.14 hosted-working player core.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.22\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.22-package-inventory-built",
+      "timestamp": "2026-04-14T05:35:59.7061902Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.22 package inventory with -SkipVarDistribute and confirmed it remains build-only with distributed:false.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.22\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.22-modern-tv-alpha",
+      "timestamp": "2026-04-14T05:36:15.3096284Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.22 alpha dev_deploy seam on top of the restored 0.6.14 player core.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    },
+    {
+      "entryId": "0.6.22-baseline-player-alpha",
+      "timestamp": "2026-04-13T23:36:28.2940996-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset from the validated 0.6.22 release output so the generic player and the modern_tv proof share the same rollback core.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.22.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.22 is a rollback recovery slice that restores the 0.6.14 hosted-working player core under a fresh semantic version.",
+    "The live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "If a playlist fix is still needed after the rollback, it must be reintroduced narrowly and intentionally rather than inherited from the later drifted line."
+  ],
+  "openQuestions": [
+    "Does 0.6.22 restore the boring hosted behavior for load, next, scrub, and movie playback?",
+    "If playlists still need help after the rollback, which single playlist-truth seam should be reintroduced without carrying later drift forward?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.22.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.22\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.22\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.22.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\Preset_dev_modern_tv.0.6.22.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.22.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.22.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.22.alpha.dll"
+  ],
+  "notes": [
+    "This slice intentionally backs off the player core to the last hosted-working state instead of trying to preserve the later experimental runtime changes.",
+    "The 0.6.22 package report exists because the hosted proof wrapper expects package inventory, and it remains build-only with distributed:false."
+  ]
+}

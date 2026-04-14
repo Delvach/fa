@@ -18,6 +18,7 @@ Packet `1.5` is governed by:
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
 7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.21.alpha.json`
+8. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.22.alpha.json`
 
 ## Working rule
 
@@ -189,19 +190,29 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.21 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.22 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.21.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.22.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.21.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.22.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.21.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.22.alpha.vap`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.21.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.22.alpha.assetbundle`
+
+## Current rollback note
+
+The live `0.6.22 alpha` seam is an intentional rollback recovery slice.
+
+Working interpretation:
+
+1. the later `0.6.15` through `0.6.21` player-core line drifted away from basics
+2. the current live raw authority therefore restores the last hosted-working `0.6.14` player core under a fresh `0.6.22` semantic boundary
+3. playlist follow-up work, if still needed after this rollback, must be reintroduced narrowly and intentionally rather than inherited from the broken later line
 5. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 6. markdown receipt:

@@ -42,7 +42,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that advanced the `0.6.21` `modern_tv` hosted interactive proof seam, preserved the `0.6.13` preset-default hardening, kept the `0.6.14` plugin panel readback improvements, rolled back the failed custom resize tween path in favor of the native hosted CUA `scale -> scale` authority proven in `demo3.json`, retired the active once-per-second hard AV correction seek that was fighting playback under load, now lets the VideoPlayer drop late frames under load instead of building visible catch-up backlog, hardens preset and playlist truth so explicit file loads stop silently inflating into sibling playlists while loop and shuffle default back off, uses uppercase `Preset_` raw preset naming for VaM discovery, shortens hosted-player asset names, pauses all-image directory loads by default, stores playlist truth in new presets, and stops hosted loads from reviving a broader stale playlist from a narrower request
+3. the active feature work beyond that now uses the `0.6.22` raw `modern_tv` hosted interactive proof seam as a rollback recovery slice, restoring the last hosted-working `0.6.14` player core so load, next, scrub, and movie playback can be judged from a known-good baseline again instead of the drifted later line
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -61,17 +61,17 @@ Primary current docs:
 The current real `modern_tv` hosted-player proof is:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.21.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.22.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.21.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.22.alpha.assetbundle`
 3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.21.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.22.alpha.dll`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.21.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.22.alpha.assetbundle`
 5. proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
 6. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.21\direct_cua\player_var_package_report_latest.json`
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.22\direct_cua\player_var_package_report_latest.json`
 
 Important:
 
@@ -82,14 +82,11 @@ Important:
    `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
-7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, but no longer shows resize buttons in the plugin panel
-8. the current deterministic resize truth for future scene generation is the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`
-9. the exposed `Player Resize Up` and `Player Resize Down` action names remain registered for scene/control compatibility, but the failed custom resize tween path is gone
-10. the active once-per-second hard AV correction seek is retired for the current stability lane; periodic correction no longer intervenes during playback
-11. the current playback-recovery posture now uses `skipOnDrop = true` so late video frames can be dropped under load instead of visibly building catch-up backlog
-12. the `0.6.21` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
-13. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
-14. the current hosted and baseline 2018 asset names are intentionally short:
+7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, and the rollback also restores the visible resize buttons carried by the `0.6.14` core
+8. the future deterministic resize truth for scene generation still remains the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`, but the live `0.6.22` rollback seam intentionally carries the older `0.6.14` resize behavior while basics are being re-stabilized
+9. the `0.6.22` package report exists as build inventory only for this slice, records `distributed:false`, and is generated with `-SkipVarDistribute`, so live authority remains raw `dev_deploy` without creating a competing prerelease `.var`
+10. the current hosted proof preset discovery rule is literal: raw preset filenames must begin with uppercase `Preset_`
+11. the current hosted and baseline 2018 asset names are intentionally short:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
 

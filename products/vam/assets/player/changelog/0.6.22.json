@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.22",
+  "title": "Restore the 0.6.14 hosted-working player core",
+  "summary": "0.6.22 stops pushing forward on the broken later player-core line and restores the last hosted-working 0.6.14 core under the current raw modern_tv dev_deploy seam.",
+  "changes": [
+    "Restore FASyncRuntime.cs, FASyncRuntime.Player.cs, FASyncRuntime.PlayerHosted.cs, and FASyncRuntime.PlayerPresets.cs to the 0.6.14 hosted-working state.",
+    "Keep the current raw modern_tv hosted proof lane and baseline direct-player raw asset deployment pattern.",
+    "Stamp version 0.6.22 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and redeploy the 0.6.22 raw modern_tv dev_deploy proof seam and the matching baseline direct-player raw asset."
+  ],
+  "reasoning": [
+    "The later player-core slices did not improve the basics in live testing; load, next, scrub, and movie playback all regressed again.",
+    "The last known hosted-working seam in this repo is 0.6.14, which already had the modern_tv proof, the autoplay and preset-default fixes, and the safe plugin UI readback slice.",
+    "The boring fix is to restore that known-good core instead of adding another forward-layered repair."
+  ],
+  "operatorVisibleOutcomes": [
+    "Hosted image and movie loads should return to the 0.6.14 control and playback behavior.",
+    "Next, Play/Pause, scrub, and movie playback should stop following the broken later line.",
+    "This is a rollback recovery slice, not a new feature slice."
+  ],
+  "knownIssues": [
+    "Any later player-core experiments from 0.6.15 through 0.6.21 are intentionally not carried in this rollback slice.",
+    "The raw modern_tv proof seam remains the only live authority for this version; package inventory stays build-only unless distributed:true and the exact .var exists in AddonPackages."
+  ]
+}

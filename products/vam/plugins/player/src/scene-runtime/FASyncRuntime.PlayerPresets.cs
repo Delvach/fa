@@ -26,7 +26,6 @@ public partial class FASyncRuntime : MVRScript
         public bool favorite = false;
         public bool hasMediaPath = false;
         public string mediaPath = "";
-        public readonly List<string> playlistPaths = new List<string>();
         public bool hasTimeSeconds = false;
         public float timeSeconds = 0f;
         public bool hasHostScale = false;
@@ -34,7 +33,7 @@ public partial class FASyncRuntime : MVRScript
         public bool hasLoopMode = false;
         public string loopMode = "";
         public bool hasRandomEnabled = false;
-        public bool randomEnabled = false;
+        public bool randomEnabled = true;
         public bool hasAbLoopEnabled = false;
         public bool abLoopEnabled = false;
         public bool hasAbLoopStart = false;
@@ -65,9 +64,7 @@ public partial class FASyncRuntime : MVRScript
     private string playerSelectedPresetId = "";
     private string playerSelectedFavoritePresetId = "";
     private bool playerPresetUiSyncGuard = false;
-    private bool playerPresetStartupSelectionLock = false;
     private Coroutine playerPresetDeferredSeekCoroutine;
-    private Coroutine playerPresetStartupUnlockCoroutine;
     private readonly Dictionary<string, PlayerPresetRecord> playerPresetsById =
         new Dictionary<string, PlayerPresetRecord>(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> playerPresetChoiceIds = new List<string>();
@@ -80,8 +77,7 @@ public partial class FASyncRuntime : MVRScript
         playerPresetStatusField = new JSONStorableString("FrameAngel Player Preset Status", "No presets saved yet");
         ConfigureTransientField(playerPresetStatusField, false);
 
-        playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", false);
-        BeginPlayerPresetStartupSelectionLock();
+        playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", true);
 
         playerPresetChooser = new JSONStorableStringChooser(
             "Select Existing...",
@@ -203,32 +199,6 @@ public partial class FASyncRuntime : MVRScript
             StopCoroutine(playerPresetDeferredSeekCoroutine);
             playerPresetDeferredSeekCoroutine = null;
         }
-
-        if (playerPresetStartupUnlockCoroutine != null)
-        {
-            StopCoroutine(playerPresetStartupUnlockCoroutine);
-            playerPresetStartupUnlockCoroutine = null;
-        }
-    }
-
-    private void BeginPlayerPresetStartupSelectionLock()
-    {
-        playerPresetStartupSelectionLock = true;
-        if (playerPresetStartupUnlockCoroutine != null)
-            StopCoroutine(playerPresetStartupUnlockCoroutine);
-
-        playerPresetStartupUnlockCoroutine = StartCoroutine(RunPlayerPresetStartupSelectionUnlockCoroutine());
-    }
-
-    private IEnumerator RunPlayerPresetStartupSelectionUnlockCoroutine()
-    {
-        yield return null;
-        yield return new WaitForEndOfFrame();
-        yield return new WaitForSecondsRealtime(0.10f);
-
-        playerPresetStartupSelectionLock = false;
-        SelectPlayerPresetId("", true);
-        playerPresetStartupUnlockCoroutine = null;
     }
 
     private void HandlePlayerPresetSelectionChanged(string value, bool fromFavoriteChooser)
@@ -241,7 +211,6 @@ public partial class FASyncRuntime : MVRScript
 
         if (playerPresetLoadOnSelectToggle != null
             && playerPresetLoadOnSelectToggle.val
-            && !playerPresetStartupSelectionLock
             && !string.IsNullOrEmpty(presetId))
         {
             ApplyPlayerPresetById(presetId);
@@ -283,8 +252,7 @@ public partial class FASyncRuntime : MVRScript
         SelectPlayerPresetId(presetId, true);
 
         if (playerPresetLoadOnSelectToggle != null
-            && playerPresetLoadOnSelectToggle.val
-            && !playerPresetStartupSelectionLock)
+            && playerPresetLoadOnSelectToggle.val)
         {
             ApplyPlayerPresetById(presetId);
         }
@@ -512,13 +480,6 @@ public partial class FASyncRuntime : MVRScript
             preset.hasMediaPath = hasMediaPath && !string.IsNullOrEmpty(preset.mediaPath);
         else
             preset.hasMediaPath = !string.IsNullOrEmpty(preset.mediaPath);
-        List<string> presetPlaylistPaths = ExtractJsonStringList(presetJson, "playlist", "playlistPaths", "paths");
-        for (int playlistIndex = 0; playlistIndex < presetPlaylistPaths.Count; playlistIndex++)
-        {
-            string playlistPath = presetPlaylistPaths[playlistIndex];
-            if (!string.IsNullOrEmpty(playlistPath))
-                preset.playlistPaths.Add(playlistPath);
-        }
 
         if (TryReadBoolArg(presetJson, out bool hasTimeSeconds, "hasTimeSeconds")
             && hasTimeSeconds
@@ -588,9 +549,6 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"favorite\":").Append(preset.favorite ? "true" : "false").Append(',');
         sb.Append("\"hasMediaPath\":").Append(preset.hasMediaPath ? "true" : "false").Append(',');
         sb.Append("\"mediaPath\":\"").Append(EscapeJsonString(preset.mediaPath ?? "")).Append("\",");
-        sb.Append("\"playlistPaths\":");
-        AppendStandalonePlayerStringArrayJson(sb, preset.playlistPaths);
-        sb.Append(',');
         sb.Append("\"hasTimeSeconds\":").Append(preset.hasTimeSeconds ? "true" : "false").Append(',');
         sb.Append("\"timeSeconds\":").Append(FormatFloat(Mathf.Max(0f, preset.timeSeconds))).Append(',');
         sb.Append("\"hasHostScale\":").Append(preset.hasHostScale ? "true" : "false").Append(',');
@@ -753,15 +711,6 @@ public partial class FASyncRuntime : MVRScript
                 preset.hasMediaPath = true;
                 preset.mediaPath = currentPath;
                 preset.playWhenLoaded = ResolveCurrentStandalonePlayerDesiredPlaying(record);
-                if (record != null && record.playlistPaths != null)
-                {
-                    for (int playlistIndex = 0; playlistIndex < record.playlistPaths.Count; playlistIndex++)
-                    {
-                        string playlistPath = record.playlistPaths[playlistIndex];
-                        if (!string.IsNullOrEmpty(playlistPath))
-                            preset.playlistPaths.Add(playlistPath);
-                    }
-                }
             }
         }
 
@@ -814,7 +763,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (storeScale)
         {
-            if (TryReadPlayerHostScale(hostAtom, out float hostScale, out string scaleError))
+            if (TryReadPlayerPresetHostScale(hostAtom, out float hostScale, out string scaleError))
             {
                 preset.hasHostScale = true;
                 preset.hostScale = hostScale;
@@ -952,7 +901,7 @@ public partial class FASyncRuntime : MVRScript
         if (preset.hasHostScale)
         {
             Atom hostAtom;
-            if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null || !TryApplyPlayerHostScale(hostAtom, preset.hostScale, out lastError))
+            if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null || !TryApplyPlayerPresetHostScale(hostAtom, preset.hostScale, out lastError))
             {
                 lastError = string.IsNullOrEmpty(lastError) ? "player preset host scale failed" : lastError;
                 SetLastError(lastError);
@@ -988,27 +937,11 @@ public partial class FASyncRuntime : MVRScript
         resultJson = "{}";
         errorMessage = "";
 
-        List<string> mediaPaths = new List<string>();
-        if (preset.playlistPaths != null && preset.playlistPaths.Count > 0)
+        List<string> mediaPaths;
+        if (!TryResolvePlayerRuntimeMediaPaths(preset.mediaPath, out mediaPaths, out errorMessage))
         {
-            for (int playlistIndex = 0; playlistIndex < preset.playlistPaths.Count; playlistIndex++)
-            {
-                string playlistPath = preset.playlistPaths[playlistIndex];
-                if (!string.IsNullOrEmpty(playlistPath)
-                    && FrameAngelPlayerMediaParity.IsSupportedMediaPath(playlistPath))
-                {
-                    mediaPaths.Add(playlistPath);
-                }
-            }
-        }
-
-        if (mediaPaths.Count <= 0)
-        {
-            if (!TryResolvePlayerRuntimeMediaPaths(preset.mediaPath, out mediaPaths, out errorMessage))
-            {
-                resultJson = BuildBrokerResult(false, errorMessage, "{}");
-                return false;
-            }
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
         }
 
         string selectedMediaPath = ResolvePrimaryPlayerRuntimeMediaPath(preset.mediaPath, mediaPaths);
@@ -1020,7 +953,6 @@ public partial class FASyncRuntime : MVRScript
             playImmediately = false;
         string extraArgsBody = "\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
-            + ",\"replacePlaylist\":true"
             + ",\"play\":" + (playImmediately ? "true" : "false");
         if (preset.hasLoopMode)
             extraArgsBody += ",\"loopMode\":\"" + EscapeJsonString(preset.loopMode) + "\"";
@@ -1177,13 +1109,13 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryReadPlayerHostScale(Atom hostAtom, out float hostScale, out string errorMessage)
+    private bool TryReadPlayerPresetHostScale(Atom hostAtom, out float hostScale, out string errorMessage)
     {
         hostScale = 1f;
         errorMessage = "";
 
         JSONStorableFloat scaleParam;
-        if (!TryResolvePlayerHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
+        if (!TryResolvePlayerPresetHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
         {
             errorMessage = "player preset host scale parameter not resolved";
             return false;
@@ -1193,12 +1125,12 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryApplyPlayerHostScale(Atom hostAtom, float hostScale, out string errorMessage)
+    private bool TryApplyPlayerPresetHostScale(Atom hostAtom, float hostScale, out string errorMessage)
     {
         errorMessage = "";
 
         JSONStorableFloat scaleParam;
-        if (!TryResolvePlayerHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
+        if (!TryResolvePlayerPresetHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
         {
             errorMessage = "player preset host scale parameter not resolved";
             return false;
@@ -1208,23 +1140,11 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryResolvePlayerHostScaleParam(Atom hostAtom, out JSONStorableFloat scaleParam)
+    private bool TryResolvePlayerPresetHostScaleParam(Atom hostAtom, out JSONStorableFloat scaleParam)
     {
         scaleParam = null;
         if (hostAtom == null)
             return false;
-
-        JSONStorable nativeScale = hostAtom.GetStorableByID("scale");
-        if (nativeScale == null)
-            nativeScale = hostAtom.GetStorableByID("Scale");
-        if (nativeScale != null)
-        {
-            scaleParam = nativeScale.GetFloatJSONParam("scale");
-            if (scaleParam == null)
-                scaleParam = nativeScale.GetFloatJSONParam("Scale");
-            if (scaleParam != null)
-                return true;
-        }
 
         JSONStorable control = hostAtom.GetStorableByID("Control");
         if (control == null)
@@ -1254,10 +1174,6 @@ public partial class FASyncRuntime : MVRScript
 
     private bool ResolveCurrentStandalonePlayerDesiredPlaying(StandalonePlayerRecord record)
     {
-        string currentPath = ResolveCurrentStandalonePlayerMediaPath(record);
-        if (ShouldPauseStandalonePlayerLoadByDefault(currentPath))
-            return false;
-
         if (record == null)
             return true;
         if (record.mediaIsStillImage)

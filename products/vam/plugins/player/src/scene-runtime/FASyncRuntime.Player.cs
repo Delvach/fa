@@ -58,7 +58,6 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
     private const float StandalonePlayerPeriodicAvSyncIntervalSeconds = 1.0f;
-    private static readonly bool StandalonePlayerPeriodicAvSyncEnabled = false;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
@@ -159,8 +158,8 @@ public partial class FASyncRuntime : MVRScript
         public readonly List<int> randomOrderIndices = new List<int>();
         public int randomOrderCursor = -1;
         public int currentIndex = -1;
-        public string loopMode = PlayerLoopModeNone;
-        public bool randomEnabled = false;
+        public string loopMode = PlayerLoopModePlaylist;
+        public bool randomEnabled = true;
         public bool looping = false;
         public bool prepared = false;
         public bool preparePending = false;
@@ -6526,7 +6525,7 @@ public partial class FASyncRuntime : MVRScript
                     return false;
                 }
 
-                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, false, out errorMessage))
+                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage))
                 {
                     resultJson = BuildBrokerResult(false, errorMessage, "{}");
                     return false;
@@ -7194,19 +7193,6 @@ public partial class FASyncRuntime : MVRScript
             EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
     }
 
-    private void ReplaceStandalonePlayerPlaylistWithSinglePath(StandalonePlayerRecord record, string mediaPath)
-    {
-        if (record == null || string.IsNullOrEmpty(mediaPath))
-            return;
-
-        ClearStandalonePlayerRandomHistory(record);
-        record.playlistPaths.Clear();
-        record.playlistPaths.Add(mediaPath);
-        record.currentIndex = 0;
-        if (record.randomEnabled)
-            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
-    }
-
     private void ClearStandalonePlayerRandomHistory(StandalonePlayerRecord record)
     {
         if (record == null)
@@ -7520,55 +7506,6 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return true;
-    }
-
-    private void CaptureStandalonePlayerFocusLossState()
-    {
-        foreach (KeyValuePair<string, StandalonePlayerRecord> kvp in standalonePlayerRecords)
-        {
-            StandalonePlayerRecord record = kvp.Value;
-            if (record == null || record.mediaIsStillImage)
-                continue;
-
-            double observedTimeSeconds;
-            double durationSeconds;
-            string timelineError;
-            double resumeSnapshotSeconds = record.hasObservedPlaybackTime
-                ? Math.Max(0d, record.lastObservedPlaybackTimeSeconds)
-                : 0d;
-            if (TryReadStandalonePlayerTimeline(record, out observedTimeSeconds, out durationSeconds, out timelineError))
-            {
-                resumeSnapshotSeconds = Math.Max(resumeSnapshotSeconds, Math.Max(0d, observedTimeSeconds));
-            }
-            else if (record.videoPlayer != null)
-            {
-                try
-                {
-                    resumeSnapshotSeconds = Math.Max(resumeSnapshotSeconds, Math.Max(0d, record.videoPlayer.time));
-                }
-                catch
-                {
-                }
-            }
-
-            if (resumeSnapshotSeconds > 0d || record.hasObservedPlaybackTime)
-            {
-                record.hasObservedPlaybackTime = true;
-                record.lastObservedPlaybackTimeSeconds = resumeSnapshotSeconds;
-                record.lastPlaybackMotionObservedAt = Time.unscaledTime;
-            }
-
-            if (record.videoPlayer == null)
-                continue;
-
-            try
-            {
-                record.videoPlayer.Pause();
-            }
-            catch
-            {
-            }
-        }
     }
 
     private void TickStandalonePlayerRuntime()
@@ -7982,53 +7919,10 @@ public partial class FASyncRuntime : MVRScript
         if (TryReadBoolArg(argsJson, out explicitValue, "autoPlay", "play", "desiredPlaying"))
             return explicitValue;
 
-        if (ShouldPauseStandalonePlayerLoadByDefault(mediaPath))
-            return false;
         if (!string.IsNullOrEmpty(mediaPath))
-            return true;
+            return !FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
 
         return fallbackValue;
-    }
-
-    private bool ShouldPauseStandalonePlayerLoadByDefault(string mediaPath)
-    {
-        if (string.IsNullOrEmpty(mediaPath))
-            return false;
-
-        if (FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath))
-            return true;
-
-        List<string> mediaPaths;
-        string ignoredError;
-        if (!TryResolvePlayerRuntimeMediaPaths(mediaPath, out mediaPaths, out ignoredError))
-            return false;
-
-        return AreStandalonePlayerPlaylistPathsAllImages(mediaPaths);
-    }
-
-    private static bool AreStandalonePlayerPlaylistPathsAllImages(List<string> mediaPaths)
-    {
-        if (mediaPaths == null || mediaPaths.Count <= 0)
-            return false;
-
-        for (int i = 0; i < mediaPaths.Count; i++)
-        {
-            string candidate = mediaPaths[i];
-            if (string.IsNullOrEmpty(candidate))
-                continue;
-
-            if (!FrameAngelPlayerMediaParity.IsSupportedImagePath(candidate))
-                return false;
-        }
-
-        return true;
-    }
-
-    private bool ShouldReplaceStandalonePlayerPlaylist(string argsJson)
-    {
-        bool replacePlaylist;
-        return TryReadBoolArg(argsJson, out replacePlaylist, "replacePlaylist", "resetPlaylist", "replacePaths")
-            && replacePlaylist;
     }
 
     private bool TryReadStandalonePlayerLooping(string argsJson, bool defaultValue)
@@ -8412,14 +8306,6 @@ public partial class FASyncRuntime : MVRScript
         out string errorMessage)
     {
         errorMessage = "";
-        // Retired for the current stability lane: the once-per-second correction was
-        // performing hard seeks against AudioSource.time, which can turn decoder stress
-        // into visible stutter/catch-up jumps under real load. Keep the surrounding
-        // timing state intact for future passive observation or a safer correction seam,
-        // but do not actively intervene here.
-        if (!StandalonePlayerPeriodicAvSyncEnabled)
-            return false;
-
         if (record == null
             || record.mediaIsStillImage
             || record.videoPlayer == null
@@ -8663,7 +8549,7 @@ public partial class FASyncRuntime : MVRScript
                 return false;
             }
 
-            return TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, false, out errorMessage);
+            return TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage);
         }
 
         InnerPieceInstanceRecord instance;
@@ -8758,10 +8644,9 @@ public partial class FASyncRuntime : MVRScript
 
         record.videoPlayer.playOnAwake = false;
         record.videoPlayer.waitForFirstFrame = true;
-        // Favor real-time recovery over frame-perfect backlog under load so playback
-        // can stay closer to the routed audio clock instead of accumulating catch-up
-        // stalls when decoding falls behind.
-        record.videoPlayer.skipOnDrop = true;
+        // Match the Volodeck proof runtime so seek/skip behavior stays on the same
+        // playback contract while we chase appearance parity on the screen-core lane.
+        record.videoPlayer.skipOnDrop = false;
         record.videoPlayer.source = VideoSource.Url;
         record.videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
         record.videoPlayer.controlledAudioTrackCount = 1;
@@ -9012,7 +8897,6 @@ public partial class FASyncRuntime : MVRScript
 
             DestroyStandalonePlayerPendingImageTexture(record);
             record.pendingImageTexture = loadedTexture;
-            CommitStandalonePlayerPendingImageTexture(record);
             record.mediaIsStillImage = true;
             record.prepared = true;
             record.preparePending = false;

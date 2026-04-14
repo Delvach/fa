@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.21",
-    "notes":  "0.6.21 preserves playlist truth for new presets, stops hosted loads from reviving stale multi-item playlists from a narrower request, and keeps the 0.6.20 image-directory pause and focus-loss snapshot fixes intact.",
-    "branch":  "release/0.6.14-plugin-ui-readback",
+    "version":  "0.6.22",
+    "notes":  "0.6.22 restores the last hosted-working 0.6.14 player core under the current raw modern_tv dev_deploy seam so load, next, scrub, and movie playback return to the boring known-good baseline instead of layering more fixes onto the broken later line.",
+    "branch":  "release/0.6.22-restore-0.6.14-hosted-baseline",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.21.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.22.json"
 }

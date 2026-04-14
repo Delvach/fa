@@ -168,9 +168,9 @@ public partial class FASyncRuntime
             return;
         }
 
+        FAInnerPiecePlaneData plane;
         string errorMessage;
-        float currentScale;
-        if (!TryReadPlayerHostScale(hostAtom, out currentScale, out errorMessage))
+        if (!TryResolveInnerPieceScreenPlane(record.instanceId, record.slotId, out plane, out errorMessage))
         {
             SetLastError(errorMessage);
             SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
@@ -178,22 +178,14 @@ public partial class FASyncRuntime
             return;
         }
 
-        float targetScale = Mathf.Clamp(currentScale * multiplier, 0.01f, 100f);
-        if (!TryApplyPlayerHostScale(hostAtom, targetScale, out errorMessage))
-        {
-            SetLastError(errorMessage);
-            SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
-            RefreshVisiblePlayerDebugFields();
-            return;
-        }
-
-        record.needsScreenRefresh = true;
-        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
-        string resultJson = BuildBrokerResult(true, "player_host_scale ok", payload);
-        SetLastError("");
-        SetLastReceipt(resultJson);
-        if (playerRuntimeStateField != null)
-            playerRuntimeStateField.valNoCallback = string.IsNullOrEmpty(successStatus) ? "Player resized" : successStatus;
-        RefreshVisiblePlayerDebugFields();
+        float targetWidthMeters = Mathf.Max(0.05f, plane.widthMeters * multiplier);
+        float targetHeightMeters = Mathf.Max(0.05f, plane.heightMeters * multiplier);
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetDisplaySizeId,
+            "\"displayWidthMeters\":" + FormatFloat(targetWidthMeters)
+                + ",\"displayHeightMeters\":" + FormatFloat(targetHeightMeters)
+                + ",\"resizeBehavior\":\"smooth\""
+                + ",\"resizeAnchor\":\"bottom_anchor\"",
+            successStatus);
     }
 }
