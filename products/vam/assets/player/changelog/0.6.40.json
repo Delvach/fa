@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.40",
+  "title": "Rebase demo3 side controls into left and right screen space",
+  "summary": "0.6.40 fixes the deterministic demo3 left and right control placement by applying the owning screen transform delta instead of copying the middle control pose directly.",
+  "changes": [
+    "Left and right demo3 control clones now apply the world-space position and yaw delta from screen_middle to the owning target screen before parent linking.",
+    "This rebase affects the cloned button, slider, display, toggle, and scale families that already live in the three-screen control contract."
+  ],
+  "reasoning": [
+    "The controls were parented correctly, but they were still carrying the middle control transform, which left the side stacks overlapping the center stack in world space.",
+    "The deterministic fix belongs in the builder, not in runtime state sync."
+  ],
+  "operatorVisibleOutcomes": [
+    "Left and right control groups should now sit near their own screens instead of piling on top of the center controls.",
+    "The middle screen can be tested without moving the side screens out of the way first."
+  ],
+  "knownIssues": [
+    "This slice does not widen the A-B Clear family beyond the current authored template structure.",
+    "This slice does not add folder and filename displays or remaining-time formatting."
+  ]
+}

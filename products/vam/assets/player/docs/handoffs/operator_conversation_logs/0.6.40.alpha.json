@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.40",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.40 fixes the demo3 side-control overlap by rebasing left and right control clones into the owning screen transform frame instead of copying the middle control pose directly.",
+  "repoAnchors": {
+    "branch": "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.40.json"
+  },
+  "operatorSignals": [
+    "The side controls were still layered over the middle controls, which made the main screen hard to test.",
+    "The controls were parented to the correct screens, but their transform data was still wrong."
+  ],
+  "actionsTaken": [
+    "Changed the demo3 builder so left and right control clones apply the owning screen's position and yaw delta relative to the middle screen before parent linking."
+  ],
+  "nonGoals": [
+    "No further runtime state changes beyond 0.6.39.",
+    "No audio changes.",
+    "No nav changes."
+  ]
+}

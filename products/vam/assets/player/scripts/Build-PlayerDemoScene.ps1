@@ -783,6 +783,75 @@ function Copy-PlayerDemoSceneAtomRelativeTransformFromSource {
     Set-PlayerDemoSceneAtomRelativeTransform -Atom $TargetAtom -PositionSource $sourcePosition -RotationSource $sourceRotation
 }
 
+function Resolve-PlayerDemoSceneAtomTransformSources {
+    param([object]$Atom)
+
+    if ($null -eq $Atom) {
+        return $null
+    }
+
+    $controlStorable = Get-StorableById -Storables @($Atom.storables) -Id "control"
+    $positionSource = if ($null -ne $controlStorable -and $null -ne $controlStorable.position) {
+        $controlStorable.position
+    }
+    elseif ($null -ne $Atom.containerPosition) {
+        $Atom.containerPosition
+    }
+    else {
+        $Atom.position
+    }
+
+    $rotationSource = if ($null -ne $controlStorable -and $null -ne $controlStorable.rotation) {
+        $controlStorable.rotation
+    }
+    elseif ($null -ne $Atom.containerRotation) {
+        $Atom.containerRotation
+    }
+    else {
+        $Atom.rotation
+    }
+
+    return [pscustomobject]@{
+        position = $positionSource
+        rotation = $rotationSource
+    }
+}
+
+function Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta {
+    param(
+        [object]$SourceAtom,
+        [object]$TargetAtom,
+        [object]$SourceScreenAtom,
+        [object]$TargetScreenAtom
+    )
+
+    if ($null -eq $SourceAtom -or $null -eq $TargetAtom -or $null -eq $SourceScreenAtom -or $null -eq $TargetScreenAtom) {
+        return
+    }
+
+    $sourceTransform = Resolve-PlayerDemoSceneAtomTransformSources -Atom $SourceAtom
+    $sourceScreenTransform = Resolve-PlayerDemoSceneAtomTransformSources -Atom $SourceScreenAtom
+    $targetScreenTransform = Resolve-PlayerDemoSceneAtomTransformSources -Atom $TargetScreenAtom
+    if ($null -eq $sourceTransform -or $null -eq $sourceScreenTransform -or $null -eq $targetScreenTransform) {
+        Copy-PlayerDemoSceneAtomRelativeTransformFromSource -SourceAtom $SourceAtom -TargetAtom $TargetAtom
+        return
+    }
+
+    $position = [pscustomobject]@{
+        x = ([double]$sourceTransform.position.x + (([double]$targetScreenTransform.position.x) - ([double]$sourceScreenTransform.position.x)))
+        y = ([double]$sourceTransform.position.y + (([double]$targetScreenTransform.position.y) - ([double]$sourceScreenTransform.position.y)))
+        z = ([double]$sourceTransform.position.z + (([double]$targetScreenTransform.position.z) - ([double]$sourceScreenTransform.position.z)))
+    }
+
+    $rotation = [pscustomobject]@{
+        x = ([double]$sourceTransform.rotation.x + (([double]$targetScreenTransform.rotation.x) - ([double]$sourceScreenTransform.rotation.x)))
+        y = ([double]$sourceTransform.rotation.y + (([double]$targetScreenTransform.rotation.y) - ([double]$sourceScreenTransform.rotation.y)))
+        z = ([double]$sourceTransform.rotation.z + (([double]$targetScreenTransform.rotation.z) - ([double]$sourceScreenTransform.rotation.z)))
+    }
+
+    Set-PlayerDemoSceneAtomRelativeTransform -Atom $TargetAtom -PositionSource $position -RotationSource $rotation
+}
+
 function New-PlayerDemoPluginActionEntry {
     param(
         [string]$ScreenAtomId,
@@ -972,6 +1041,10 @@ function Apply-PlayerDemoThreeScreenControls {
         left = "screen_left"
         right = "screen_right"
     }
+    $screenAtomsByRole = @{}
+    foreach ($roleKey in @($screenIdsByRole.Keys)) {
+        $screenAtomsByRole[$roleKey] = Find-SceneAtomByIdsAndParent -Atoms $Atoms -CandidateIds @([string]$screenIdsByRole[$roleKey])
+    }
 
     $controlSpecs = @(Get-PlayerDemoThreeScreenControlSpecs)
     if (-not $IncludeManagedControlsEnabled) {
@@ -1032,7 +1105,11 @@ function Apply-PlayerDemoThreeScreenControls {
 
             Set-SceneAtomId -Atom $targetAtom -Id $desiredId
             if ($role -ne "middle") {
-                Copy-PlayerDemoSceneAtomRelativeTransformFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
+                Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta `
+                    -SourceAtom $middleAtom `
+                    -TargetAtom $targetAtom `
+                    -SourceScreenAtom $screenAtomsByRole["middle"] `
+                    -TargetScreenAtom $screenAtomsByRole[$role]
             }
             Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
             Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId

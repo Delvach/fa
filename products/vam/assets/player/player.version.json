@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.39",
-    "notes":  "0.6.39 makes demo3 scene controls reflect attached player state by updating progress, volume, current text, total text, and shuffle label from the live runtime on the existing refresh cadence.",
+    "version":  "0.6.40",
+    "notes":  "0.6.40 rebases demo3 left and right control clones with the owning screen transform delta so the side controls stop overlapping the middle stack in world space.",
     "branch":  "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.39.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.40.json"
 }
