@@ -69,6 +69,10 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
     private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
+    private static readonly KeyCode[] CuaPlayerGrabNavigateOverrideKeyCandidates = new[]
+    {
+        KeyCode.JoystickButton5,
+    };
 
     private struct CuaPlayerNavigationSnapshot
     {
@@ -863,7 +867,8 @@ public partial class FASyncRuntime : MVRScript
                    OVRInput.RawButton.LThumbstick)
             || ReadCuaPlayerThumbstickButtonActive(
                    OVRInput.Button.SecondaryThumbstick,
-                   OVRInput.RawButton.RThumbstick);
+                   OVRInput.RawButton.RThumbstick)
+            || ReadCuaPlayerGrabNavigateOverrideFallbackKeyActive();
     }
 
     private static bool ReadCuaPlayerThumbstickButtonActive(OVRInput.Button button, OVRInput.RawButton rawButton)
@@ -875,6 +880,23 @@ public partial class FASyncRuntime : MVRScript
         }
         catch
         {
+        }
+
+        return false;
+    }
+
+    private static bool ReadCuaPlayerGrabNavigateOverrideFallbackKeyActive()
+    {
+        for (int i = 0; i < CuaPlayerGrabNavigateOverrideKeyCandidates.Length; i++)
+        {
+            try
+            {
+                if (Input.GetKey(CuaPlayerGrabNavigateOverrideKeyCandidates[i]))
+                    return true;
+            }
+            catch
+            {
+            }
         }
 
         return false;

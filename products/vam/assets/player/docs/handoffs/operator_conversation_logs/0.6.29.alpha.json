@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.29",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.29 is a narrow follow-up to 0.6.28 that keeps the current CUA focus and trigger-tap behavior but broadens the temporary grab-navigation override to match the operator's joystick top or 5 input path.",
+  "repoAnchors": {
+    "branch": "release/0.6.28-cua-nav-focus-trigger",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.29.json"
+  },
+  "operatorSignals": [
+    "0.6.28 was almost perfect, but the joystick top or 5 grab-navigation press still did not re-enable navigation.",
+    "The requested action is still strictly the temporary navigation override seam, not a broader panel or playback change."
+  ],
+  "actionsTaken": [
+    "Kept the slice strictly inside the CUA input and focus seam.",
+    "Left the existing thumbstick-click override in place.",
+    "Added a Unity joystick button 5 fallback so the official button-number path can also release capture while held."
+  ],
+  "nonGoals": [
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}
