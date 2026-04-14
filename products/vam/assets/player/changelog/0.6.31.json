@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.31",
+  "title": "Let the grab-navigation handoff fully yield controller-motion movement",
+  "summary": "0.6.31 keeps the current button 5 grab-navigation handoff seam, but stops setting VaM's global navigation-disabled bit during that handoff. The goal is to let accel and gyro grab-drag motion fully engage even while the user is still gazing at the screen.",
+  "changes": [
+    "Keep the dedicated grab-navigation handoff state introduced in 0.6.30.",
+    "During the handoff, leave VaM's global disableNavigation bit off so controller-motion grab-nav can still move the user.",
+    "Still keep ordinary internal navigation bindings disabled during the handoff and keep local CUA navigation handling out of the way.",
+    "Restore the original VaM navigation snapshot cleanly when the handoff ends."
+  ],
+  "reasoning": [
+    "0.6.30 stopped broad stick locomotion from leaking through, but the operator reported that grab-nav only almost engaged and still felt partially captured.",
+    "Official VaM grab-navigation is a distinct path from ordinary locomotion, so the handoff should avoid disabling more of VaM navigation than necessary.",
+    "This slice stays in the same CUA input seam and does not reopen playback, scene, playlist, or surface work."
+  ],
+  "operatorVisibleOutcomes": [
+    "While holding button 5 and still gazing at the screen, controller-motion grab-nav should fully move and reposition the user instead of feeling partially blocked.",
+    "The player should still stay out of the way during the handoff and only re-engage focus through the existing gaze and stop rules after release."
+  ],
+  "knownIssues": [
+    "This slice does not add the queued post-navigation deadband yet.",
+    "This slice does not change slideshow, A-B policy, volume gestures, or spatial audio."
+  ]
+}

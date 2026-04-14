@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.31",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.31 is a narrow follow-up to 0.6.30 that keeps the grab-navigation handoff but removes the extra global navigation-disabled bit that was still starving full controller-motion grab-nav while the user gazed at the screen.",
+  "repoAnchors": {
+    "branch": "release/0.6.31-grab-nav-full-yield",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.31.json"
+  },
+  "operatorSignals": [
+    "0.6.30 visibly released the nav lock, but grab-nav still only almost engaged and still felt partially captured while gazing at the screen.",
+    "The requested action is still the same narrow handoff seam, not a new navigation feature or a playback change."
+  ],
+  "actionsTaken": [
+    "Kept the dedicated grab-navigation handoff state from 0.6.30.",
+    "Stopped setting VaM's global disableNavigation bit during the handoff.",
+    "Left ordinary internal navigation bindings disabled during the handoff and left the rest of the player untouched."
+  ],
+  "nonGoals": [
+    "No post-navigation scrub deadband yet.",
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}

@@ -349,7 +349,7 @@ public partial class FASyncRuntime : MVRScript
             }
 
             CuaPlayerNavigationSnapshot desired = cuaPlayerNavigationSnapshot;
-            desired.disableNavigation = true;
+            desired.disableNavigation = false;
             desired.disableInternalKeyBindings = true;
             desired.disableInternalNavigationKeyBindings = true;
             desired.disableAllNavigationToggle = desired.hasDisableAllNavigationToggle;
