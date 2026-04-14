@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.49",
-    "notes":  "0.6.49 fixes discovered media ordering so numbered images stay in natural sequence when shuffle is off.",
-    "branch":  "release/0.6.49-natural-media-ordering",
+    "version":  "0.6.51",
+    "notes":  "0.6.51 is a sanity-check rebuild of the 0.6.49 baseline after backing out the 0.6.50 scrub-feedback experiment.",
+    "branch":  "release/0.6.51-sanity-check-baseline",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.49.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.51.json"
 }

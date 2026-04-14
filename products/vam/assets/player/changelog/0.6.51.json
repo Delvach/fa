@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.51",
+  "title": "Sanity-check rebuild of the reverted 0.6.49 baseline",
+  "summary": "0.6.51 is a fresh raw-core-player test rung that intentionally rebuilds the reverted 0.6.49 baseline so VR and desktop can be rechecked on a clean version boundary after backing out 0.6.50.",
+  "changes": [
+    "Reasserted the 0.6.49 runtime baseline without the 0.6.50 scrub-feedback experiment.",
+    "Stamped a new version boundary so the operator can test the rollback as a clean raw seam instead of reusing older live files.",
+    "Updated repo canon so the active live authority clearly points at the 0.6.51 sanity-check rung."
+  ],
+  "reasoning": [
+    "The immediate scrub-feedback experiment in 0.6.50 caused a performance decrease and was not worth keeping.",
+    "A fresh sanity-check version is safer than reusing 0.6.49 live artifacts when comparing VR and desktop behavior."
+  ],
+  "operatorVisibleOutcomes": [
+    "The live raw core-player seam is now a clean 0.6.51 build of the rolled-back baseline.",
+    "No new transport, scrub, slideshow, or input behavior is introduced in this slice."
+  ],
+  "knownIssues": [
+    "This slice is a verification rung only and does not advance the queued slideshow, volume, or gaze work.",
+    "The parked Unity shell dirt remains intentionally outside this version."
+  ]
+}

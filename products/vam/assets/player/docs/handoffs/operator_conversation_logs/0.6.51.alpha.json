@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.51",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.51 is a sanity-check rebuild of the reverted 0.6.49 baseline so the operator can compare desktop and VR behavior on a fresh version boundary after backing out 0.6.50.",
+  "repoAnchors": {
+    "branch": "release/0.6.51-sanity-check-baseline",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.51.json"
+  },
+  "operatorSignals": [
+    "0.6.50 showed an immediate performance decrease in VR and was not worth keeping.",
+    "The requested next step was a fresh sanity-check build of the rolled-back baseline so the operator could verify that the regression really belonged to 0.6.50."
+  ],
+  "actionsTaken": [
+    "Reverted the 0.6.50 scrub-feedback commit back to the 0.6.49 runtime truth.",
+    "Removed the live 0.6.50 raw asset, plugin, and scene files from the active test seam.",
+    "Stamped and rebuilt the same baseline as 0.6.51 for clean VR and desktop retesting."
+  ],
+  "nonGoals": [
+    "No new runtime behavior in this slice.",
+    "No slideshow, right-stick volume, gaze gating, or scene-builder changes in this slice."
+  ]
+}
