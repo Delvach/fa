@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.33",
+  "title": "Temporarily suppress player-owned interaction colliders while button 5 is held",
+  "summary": "0.6.33 keeps the simple button 5 rule from 0.6.32 and adds one more safe polish pass: while the override is held, the player temporarily disables its own interactive screen and control colliders so the screen stops behaving like a live target.",
+  "changes": [
+    "Keep the current rule that button 5 disables player gaze and focus behavior while held.",
+    "Resolve the player-owned hosted interaction colliders for the screen and control surface.",
+    "Temporarily disable those colliders while the override is active, then restore their previous enabled states on release.",
+    "Leave playback, playlist, scene wiring, and the rest of navigation behavior unchanged."
+  ],
+  "reasoning": [
+    "Official VaM grab-nav checks still involve UI-hit surfaces, so disabling only player focus was not enough to guarantee the screen stopped acting interactive.",
+    "The player already owns a distinct hosted control-collider seam, so temporarily suppressing that interaction layer is a cleaner route than adding more navigation-state logic.",
+    "This is the last safe grab-nav polish route before the seam would start getting too clever again."
+  ],
+  "operatorVisibleOutcomes": [
+    "While button 5 is held, the player should stop presenting its own screen and control surface as interactive targets.",
+    "If that was the remaining blocker, grab-nav should feel freer while looking at the screen without adding more navigation complexity."
+  ],
+  "knownIssues": [
+    "This slice does not add the queued post-navigation deadband yet.",
+    "This slice does not change slideshow, A-B policy, volume gestures, or spatial audio."
+  ]
+}

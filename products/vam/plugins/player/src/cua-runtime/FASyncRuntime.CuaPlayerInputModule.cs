@@ -136,6 +136,10 @@ public partial class FASyncRuntime : MVRScript
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
     private string cuaPlayerLastVisibleScreenHostAtomUid = "";
+    private bool cuaPlayerInteractionSurfaceSuppressed = false;
+    private string cuaPlayerInteractionSurfaceHostAtomUid = "";
+    private Collider[] cuaPlayerInteractionSurfaceColliders = new Collider[0];
+    private bool[] cuaPlayerInteractionSurfaceColliderStates = new bool[0];
 
     private void BuildCuaPlayerInputStorables()
     {
@@ -172,6 +176,7 @@ public partial class FASyncRuntime : MVRScript
         SuperController sc = SuperController.singleton;
         if (sc == null)
         {
+            SetCuaPlayerInteractionSurfaceSuppressed(false);
             ResetCuaPlayerTriggerTapState();
             UpdateCuaPlayerVisibleScreenState("");
             ReleaseCuaPlayerInputFocus("no_supercontroller");
@@ -181,6 +186,7 @@ public partial class FASyncRuntime : MVRScript
         bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
         if (grabNavigateOverrideActive)
         {
+            SetCuaPlayerInteractionSurfaceSuppressed(true);
             ResetCuaPlayerTriggerTapState();
             cuaPlayerFocusActive = false;
             cuaPlayerLastGrabNavigateOverrideActive = true;
@@ -190,6 +196,8 @@ public partial class FASyncRuntime : MVRScript
                 UpdateCuaPlayerInputState(false, false, "grab_nav", Vector2.zero, "grab_nav_override");
             return;
         }
+
+        SetCuaPlayerInteractionSurfaceSuppressed(false);
 
         bool gazeActive = TryResolveCuaPlayerGazeHit(out string gazeReason);
         float now = Time.unscaledTime;
@@ -301,6 +309,7 @@ public partial class FASyncRuntime : MVRScript
 
     private void OnCuaPlayerInputDestroy()
     {
+        SetCuaPlayerInteractionSurfaceSuppressed(false);
         ResetCuaPlayerTriggerTapState();
         UpdateCuaPlayerVisibleScreenState("");
         ReleaseCuaPlayerInputFocus("destroy");
@@ -901,6 +910,69 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return false;
+    }
+
+    private void SetCuaPlayerInteractionSurfaceSuppressed(bool suppressed)
+    {
+        if (suppressed)
+        {
+            string hostAtomUid = ResolveCuaPlayerCurrentHostAtomUid();
+            if (string.IsNullOrEmpty(hostAtomUid))
+                return;
+
+            if (cuaPlayerInteractionSurfaceSuppressed
+                && string.Equals(cuaPlayerInteractionSurfaceHostAtomUid, hostAtomUid, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            SetCuaPlayerInteractionSurfaceSuppressed(false);
+
+            Collider[] colliders;
+            if (!TryResolveHostedPlayerInteractionColliders(hostAtomUid, out colliders)
+                || colliders == null
+                || colliders.Length <= 0)
+            {
+                return;
+            }
+
+            bool[] states = new bool[colliders.Length];
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Collider collider = colliders[i];
+                if (collider == null)
+                    continue;
+
+                states[i] = collider.enabled;
+                collider.enabled = false;
+            }
+
+            cuaPlayerInteractionSurfaceSuppressed = true;
+            cuaPlayerInteractionSurfaceHostAtomUid = hostAtomUid;
+            cuaPlayerInteractionSurfaceColliders = colliders;
+            cuaPlayerInteractionSurfaceColliderStates = states;
+            return;
+        }
+
+        if (!cuaPlayerInteractionSurfaceSuppressed)
+            return;
+
+        Collider[] collidersToRestore = cuaPlayerInteractionSurfaceColliders ?? new Collider[0];
+        bool[] statesToRestore = cuaPlayerInteractionSurfaceColliderStates ?? new bool[0];
+        int restoreCount = Mathf.Min(collidersToRestore.Length, statesToRestore.Length);
+        for (int i = 0; i < restoreCount; i++)
+        {
+            Collider collider = collidersToRestore[i];
+            if (collider == null)
+                continue;
+
+            collider.enabled = statesToRestore[i];
+        }
+
+        cuaPlayerInteractionSurfaceSuppressed = false;
+        cuaPlayerInteractionSurfaceHostAtomUid = "";
+        cuaPlayerInteractionSurfaceColliders = new Collider[0];
+        cuaPlayerInteractionSurfaceColliderStates = new bool[0];
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)

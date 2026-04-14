@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.32",
-    "notes":  "0.6.32 pulls complexity back out of the grab-navigation seam: if button 5 is held, the player fully disables its own gaze and focus behavior and simply gets out of the way instead of trying to maintain a special handoff state.",
-    "branch":  "release/0.6.32-button5-disables-focus",
+    "version":  "0.6.33",
+    "notes":  "0.6.33 keeps the simple button 5 rule from 0.6.32 and adds one more safe polish: while the override is held, the player temporarily disables its own interactive screen and control colliders so the screen stops behaving like a live target.",
+    "branch":  "release/0.6.33-button5-suppresses-interaction",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.32.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.33.json"
 }

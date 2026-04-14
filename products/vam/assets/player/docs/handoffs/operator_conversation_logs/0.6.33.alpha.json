@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.33",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.33 keeps the simple button 5 behavior from 0.6.32 and adds a safe interaction-layer polish: while the override is held, the player temporarily suppresses its own hosted screen and control colliders.",
+  "repoAnchors": {
+    "branch": "release/0.6.33-button5-suppresses-interaction",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.33.json"
+  },
+  "operatorSignals": [
+    "0.6.32 simplified the behavior appropriately, but grab-nav still felt locked while looking at the screen.",
+    "The next safe route was to stop the player from acting like an interactive target while button 5 is held, instead of adding more navigation-state logic."
+  ],
+  "actionsTaken": [
+    "Kept the simple button 5 focus-disable rule from 0.6.32.",
+    "Added a hosted-surface helper to resolve the player-owned interaction colliders for the screen and control surface.",
+    "Temporarily disabled those colliders while the override is held and restored their prior enabled states on release."
+  ],
+  "nonGoals": [
+    "No post-navigation scrub deadband yet.",
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}
