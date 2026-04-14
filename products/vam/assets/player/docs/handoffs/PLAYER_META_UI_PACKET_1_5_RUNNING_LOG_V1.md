@@ -17,7 +17,7 @@ Packet `1.5` is governed by:
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
-7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.16.alpha.json`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.17.alpha.json`
 
 ## Working rule
 
@@ -189,19 +189,19 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.16 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.17 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.16.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.17.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.16.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.17.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.16.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.17.alpha.vap`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.16.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.17.alpha.assetbundle`
 5. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 6. markdown receipt:
@@ -637,5 +637,40 @@ native-scale rollback.
 11. an optional runtime-owned control rig is still a scheduled `v2` or `v3`
     modular feature, not a `v1` dependency.
 12. a `0.6.16` package report exists because the hosted proof wrapper expects
+    package inventory, but `FrameAngel.DevPlayer.12.var` was removed
+    immediately so live authority stayed raw `dev_deploy`.
+
+## Stability checkpoint 2026-04-13T21:17:58.7806882-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.17 alpha`
+periodic-sync retirement.
+
+1. `0.6.17 alpha` keeps the `0.6.13` preset-default correction intact and does
+   not change resize, autoplay, or focus-resume behavior.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.17.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.17.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.17.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.17.alpha.dll`
+3. the plugin panel still exposes live version, target, media, timeline, and
+   state readback, and still does not show resize buttons.
+4. the native hosted CUA `scale -> scale` authority from `demo3.json` remains
+   the deterministic resize truth for the next scene-generator revision.
+5. the once-per-second hard AV correction seam is retired for the current
+   stability lane; playback no longer performs active correction seeks during
+   periodic sync checks.
+6. the current strongest remaining playback-performance hypothesis, if stutter
+   persists, is decode pressure or the current `skipOnDrop = false` posture
+   under load, especially with multiple active instances.
+7. the current Volodeck witness packet was refreshed in the same slice and
+   remains the authoritative visual preflight seam.
+8. shells remain ready for operator-led Unity shell work.
+9. true interactive Meta runtime surfaces remain the active assistant-owned
+   product lane.
+10. the operator still needs to provide an updated base scene layout before the
+    deterministic scene generator is revised around the new control placement.
+11. an optional runtime-owned control rig is still a scheduled `v2` or `v3`
+    modular feature, not a `v1` dependency.
+12. a `0.6.17` package report exists because the hosted proof wrapper expects
     package inventory, but `FrameAngel.DevPlayer.12.var` was removed
     immediately so live authority stayed raw `dev_deploy`.

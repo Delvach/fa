@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.17",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T21:10:00-06:00",
+  "endedAt": "2026-04-13T21:17:58.7806882-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.17\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.17\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.17.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The package report for 0.6.17 records a build/distribution event, but the distributed .var was removed immediately so the live authority remained raw dev_deploy only."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T03:17:33.6413742Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.17\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T03:17:34.4890018Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.17\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T03:17:58.7806882Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T21:17:42.5127799-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.17.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.17-stutter-report",
+      "after": "2026-04-13T21:10:00-06:00",
+      "before": "2026-04-14T03:17:33.6413742Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator reported periodic video stuttering that could become severe enough to trigger fast-forward behavior and audio desync, with no reliable visible pattern and some testing involving multiple active instances.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.17-diagnosis",
+      "after": "2026-04-13T21:10:00-06:00",
+      "before": "2026-04-14T03:17:33.6413742Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Code review identified the strongest likely seam as the once-per-second AV correction path introduced in 0.6.9 and tightened in 0.6.10: it still reads AudioSource.time and resolves drift by hard-seeking the video, which can make playback fight itself under load.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection",
+        "historical changelog inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.17-narrow-fix-choice",
+      "after": "2026-04-13T21:10:00-06:00",
+      "before": "2026-04-14T03:17:33.6413742Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Chose the narrowest safe fix: retire the active once-per-second hard correction seek, keep the current seek/focus recovery seams intact, and rebuild the same raw dev_deploy authority so the next operator test isolates playback stability rather than adding another new sync strategy.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.17-foundation-build",
+      "timestamp": "2026-04-14T03:17:33.6413742Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.17 cleanly and stamped the release boundary before redeploying the raw alpha artifacts.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.17\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.17-package-inventory-built",
+      "timestamp": "2026-04-14T03:17:34.4890018Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built the 0.6.17 package inventory rung because the hosted proof script expects the package report, then removed the distributed FrameAngel.DevPlayer.12.var immediately so the live authority stayed raw dev_deploy only.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.17\\direct_cua\\player_var_package_report_latest.json",
+        "live disk inspection of F:\\sim\\vam\\AddonPackages"
+      ]
+    },
+    {
+      "entryId": "0.6.17-baseline-player-alpha",
+      "timestamp": "2026-04-13T21:17:42.5127799-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset to the same 0.6.17 alpha core so the operator can compare the generic player baseline and hosted proofs on one coherent dev_deploy slice.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.17.alpha.json"
+      ]
+    },
+    {
+      "entryId": "0.6.17-modern-tv-alpha",
+      "timestamp": "2026-04-14T03:17:58.7806882Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.17 alpha dev_deploy seam after retiring the active periodic correction path.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.17 is its own semantic version because the runtime playback behavior changed after 0.6.16 had already been built and tested.",
+    "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "The once-per-second active AV correction seek is retired for the current stability lane.",
+    "Existing seek resume, focus resume, resize rollback, and current control contracts remain intact in this slice.",
+    "If playback still degrades after 0.6.17, the next most likely seam is decode pressure or the current skipOnDrop=false posture under load rather than the retired periodic correction path."
+  ],
+  "openQuestions": [
+    "Does 0.6.17 materially reduce or remove the periodic stutter/catch-up seam on the same problematic movie tests?",
+    "If stutter remains, is the next safer experiment to change skipOnDrop posture or to gate behavior based on multiple active players?",
+    "How much of the next plugin UI redesign should surface playback state aimed specifically at performance diagnosis without reopening the old diagnostics lane?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.17.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.17\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.17\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.17.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.17.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.17.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.17.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.17.alpha.dll"
+  ],
+  "notes": [
+    "The 0.6.17 package report exists because the hosted proof script expects package inventory, but the distributed FrameAngel.DevPlayer.12.var file was removed immediately so the live authority did not drift away from raw dev_deploy.",
+    "This slice intentionally retires active periodic correction rather than replacing it with a new sync algorithm."
+  ]
+}

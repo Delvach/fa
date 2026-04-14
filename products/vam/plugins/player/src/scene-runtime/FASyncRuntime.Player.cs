@@ -58,6 +58,7 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerPlaybackStoppedGraceSeconds = 0.35f;
     private const float StandalonePlayerSeekResumeTimeoutSeconds = 0.35f;
     private const float StandalonePlayerPeriodicAvSyncIntervalSeconds = 1.0f;
+    private static readonly bool StandalonePlayerPeriodicAvSyncEnabled = false;
     private const float StandalonePlayerPrepareTimeoutSeconds = 8f;
     private const float StandalonePlayerScrubDisplayHoldoffSeconds = 0.40f;
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
@@ -8306,6 +8307,14 @@ public partial class FASyncRuntime : MVRScript
         out string errorMessage)
     {
         errorMessage = "";
+        // Retired for the current stability lane: the once-per-second correction was
+        // performing hard seeks against AudioSource.time, which can turn decoder stress
+        // into visible stutter/catch-up jumps under real load. Keep the surrounding
+        // timing state intact for future passive observation or a safer correction seam,
+        // but do not actively intervene here.
+        if (!StandalonePlayerPeriodicAvSyncEnabled)
+            return false;
+
         if (record == null
             || record.mediaIsStillImage
             || record.videoPlayer == null

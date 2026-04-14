@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.17",
+  "title": "Retire active periodic AV correction to stop playback self-interference",
+  "summary": "0.6.17 keeps the current resize rollback and preset/focus stability intact, but removes the active once-per-second hard AV correction behavior that could turn playback stress into visible stutter, catch-up jumps, and audio drift.",
+  "reasoning": "Live operator testing showed a worse class of failure than ordinary drift: movies could periodically stutter, briefly fast-forward, and leave audio out of sync, sometimes badly enough to make playback unusable. Code review narrowed the strongest seam to the once-per-second AV correction added in 0.6.9 and tightened in 0.6.10. That correction still uses AudioSource.time as a correction authority and, when triggered, resolves drift by hard-seeking the video. Under real load or multiple active instances, that can make playback fight itself. This slice keeps the broader seek, focus, and transport fixes intact and simply retires the active correction behavior for now instead of layering more heuristics on top.",
+  "changes": [
+    {
+      "area": "periodic-av-sync-retirement",
+      "summary": "The once-per-second AV correction seam no longer performs active hard-seek correction during playback.",
+      "reasoning": "A bounded retirement is safer than continuing to fight decoder/runtime stress with more hard correction seeks."
+    },
+    {
+      "area": "transport-stability",
+      "summary": "Existing seek resume, focus resume, and current playback contracts remain unchanged.",
+      "reasoning": "This slice targets the strongest current stutter seam only and avoids widening into broader transport changes."
+    }
+  ],
+  "verification": [
+    "Stamp version 0.6.17 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.17 player runtime and release outputs cleanly.",
+    "Deploy raw dev_deploy alpha artifacts for the baseline direct player and the modern_tv hosted proof.",
+    "Retest movie playback and confirm the periodic stutter/catch-up seam is reduced or gone without reintroducing the earlier autoplay or focus regressions."
+  ],
+  "knownIssues": [
+    "This slice retires active periodic correction instead of replacing it with a new smoothing strategy.",
+    "If playback still degrades after this change, the next likely seam is decode pressure or the current skipOnDrop=false posture under load, especially with multiple active instances.",
+    "This slice does not change joystick mapping, deterministic scene generation, or Meta interaction work."
+  ]
+}
