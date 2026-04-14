@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.48",
+  "title": "Make the progress slider navigate image playlists too",
+  "summary": "0.6.48 extends the shared progress slider so image playlists can be navigated by slider position, and the same slider now reflects current image index state instead of acting like images are always at zero progress.",
+  "changes": [
+    "Normalized seek now resolves image playlists by target index instead of failing through the video-only timeline path.",
+    "Visible runtime and demo3 slider readback now use a presentation-normalized value that maps still images across the current playlist.",
+    "Video timeline behavior stays unchanged; this slice only extends the existing progress surface to images."
+  ],
+  "reasoning": [
+    "The A-B and scene-builder groundwork is already in place, so the next narrow transport seam was image slider navigation and state.",
+    "Mixed-media playlists are already valid, but image scrub is a deliberate product extension; keeping it in one slice avoids layering slideshow or input changes on top."
+  ],
+  "operatorVisibleOutcomes": [
+    "Dragging the progress slider while viewing images moves through the current image playlist by index.",
+    "The progress slider position now reflects where the current image sits within the playlist.",
+    "Video progress and video slider behavior continue to work the same way as before."
+  ],
+  "knownIssues": [
+    "This slice does not yet add more aggressive scrub preview updates while dragging.",
+    "Slideshow, right-stick volume, and deferred gaze polish remain separate queued slices."
+  ]
+}

@@ -6660,6 +6660,38 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
+        if (useNormalizedTarget && record.mediaIsStillImage)
+        {
+            float normalizedTarget;
+            if (!TryReadStandalonePlayerSeekNormalized(argsJson, out normalizedTarget))
+            {
+                errorMessage = "normalized is required";
+                resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                return false;
+            }
+
+            if (!TrySeekStandalonePlayerImageNormalized(record, Mathf.Clamp01(normalizedTarget), out errorMessage))
+            {
+                resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                return false;
+            }
+
+            string imagePayload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+            resultJson = BuildBrokerResult(true, "player_seek_normalized ok", imagePayload);
+            EmitRuntimeEvent(
+                "player_seek_normalized",
+                actionId,
+                "ok",
+                "",
+                record.playbackKey,
+                record.instanceId,
+                ExtractJsonArgString(argsJson, "correlationId"),
+                ExtractJsonArgString(argsJson, "messageId"),
+                record.displayId,
+                imagePayload);
+            return true;
+        }
+
         double currentTimeSeconds;
         double durationSeconds;
         if (!TryReadStandalonePlayerTimeline(record, out currentTimeSeconds, out durationSeconds, out errorMessage))
@@ -6912,6 +6944,60 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
         return true;
+    }
+
+    private bool TrySeekStandalonePlayerImageNormalized(
+        StandalonePlayerRecord record,
+        float normalizedTarget,
+        out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null)
+        {
+            errorMessage = "player runtime missing";
+            return false;
+        }
+
+        if (record.playlistPaths == null || record.playlistPaths.Count <= 0)
+        {
+            errorMessage = "player playlist is empty";
+            return false;
+        }
+
+        int targetIndex = ResolveStandalonePlayerPlaylistIndexFromNormalized(record, normalizedTarget);
+        if (targetIndex < 0 || targetIndex >= record.playlistPaths.Count)
+        {
+            errorMessage = "player playlist seek target invalid";
+            return false;
+        }
+
+        string targetPath = record.playlistPaths[targetIndex];
+        string currentPath = GetStandalonePlayerCurrentPlaylistPath(record);
+        bool changed = !string.Equals(currentPath ?? "", targetPath ?? "", StringComparison.OrdinalIgnoreCase)
+            || record.currentIndex != targetIndex;
+
+        record.currentIndex = targetIndex;
+        if (!changed)
+            return true;
+
+        if (IsHostedPlayerInstanceId(record.instanceId))
+        {
+            string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
+            if (string.IsNullOrEmpty(hostAtomUid))
+            {
+                errorMessage = "hosted player host atom uid not resolved";
+                return false;
+            }
+
+            return TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage);
+        }
+
+        InnerPieceInstanceRecord instance;
+        InnerPieceScreenSlotRuntimeRecord slot;
+        if (!TryResolveInnerPieceScreenSlot(record.instanceId, record.slotId, out instance, out slot, out errorMessage))
+            return false;
+
+        return TryLoadStandalonePlayerRecordPath(record, instance, slot, targetPath, out errorMessage);
     }
 
     private void TryRefreshStandalonePlayerPausedFrame(StandalonePlayerRecord record)
@@ -7433,6 +7519,46 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return -1;
+    }
+
+    private int ResolveStandalonePlayerPlaylistIndexFromNormalized(StandalonePlayerRecord record, float normalizedTarget)
+    {
+        if (record == null || record.playlistPaths == null || record.playlistPaths.Count <= 0)
+            return -1;
+
+        if (record.playlistPaths.Count == 1)
+            return 0;
+
+        float clampedNormalized = Mathf.Clamp01(normalizedTarget);
+        int maxIndex = record.playlistPaths.Count - 1;
+        return Mathf.Clamp(Mathf.RoundToInt(clampedNormalized * maxIndex), 0, maxIndex);
+    }
+
+    private double GetStandalonePlayerPresentationNormalized(
+        StandalonePlayerRecord record,
+        double currentTimeSeconds,
+        double currentDurationSeconds)
+    {
+        if (record == null)
+            return 0d;
+
+        if (record.mediaIsStillImage)
+        {
+            int playlistCount = record.playlistPaths != null ? record.playlistPaths.Count : 0;
+            if (playlistCount <= 1)
+                return 0d;
+
+            int currentIndex = record.currentIndex;
+            if (currentIndex < 0 || currentIndex >= playlistCount)
+                currentIndex = Mathf.Clamp(FindStandalonePlayerPlaylistIndex(record.playlistPaths, record.mediaPath), 0, playlistCount - 1);
+
+            return Math.Max(0d, Math.Min(1d, currentIndex / (double)(playlistCount - 1)));
+        }
+
+        if (currentDurationSeconds > 0.0001d)
+            return Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
+
+        return 0d;
     }
 
     private string GetStandalonePlayerCurrentPlaylistPath(StandalonePlayerRecord record)
@@ -10030,8 +10156,7 @@ public partial class FASyncRuntime : MVRScript
             currentTimeSeconds = 0d;
         if (double.IsNaN(currentDurationSeconds) || double.IsInfinity(currentDurationSeconds))
             currentDurationSeconds = 0d;
-        if (currentDurationSeconds > 0.0001d)
-            currentTimeNormalized = Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
+        currentTimeNormalized = GetStandalonePlayerPresentationNormalized(record, currentTimeSeconds, currentDurationSeconds);
         if (double.IsNaN(currentTimeNormalized) || double.IsInfinity(currentTimeNormalized))
             currentTimeNormalized = 0d;
 
@@ -10836,8 +10961,7 @@ public partial class FASyncRuntime : MVRScript
             currentTimeSeconds = 0d;
         if (double.IsNaN(currentDurationSeconds) || double.IsInfinity(currentDurationSeconds))
             currentDurationSeconds = 0d;
-        if (currentDurationSeconds > 0.0001d)
-            currentTimeNormalized = Math.Max(0d, Math.Min(1d, currentTimeSeconds / currentDurationSeconds));
+        currentTimeNormalized = GetStandalonePlayerPresentationNormalized(record, currentTimeSeconds, currentDurationSeconds);
         if (double.IsNaN(currentTimeNormalized) || double.IsInfinity(currentTimeNormalized))
             currentTimeNormalized = 0d;
 
