@@ -33,7 +33,7 @@ public partial class FASyncRuntime : MVRScript
         public bool hasLoopMode = false;
         public string loopMode = "";
         public bool hasRandomEnabled = false;
-        public bool randomEnabled = true;
+        public bool randomEnabled = false;
         public bool hasAbLoopEnabled = false;
         public bool abLoopEnabled = false;
         public bool hasAbLoopStart = false;
@@ -64,7 +64,9 @@ public partial class FASyncRuntime : MVRScript
     private string playerSelectedPresetId = "";
     private string playerSelectedFavoritePresetId = "";
     private bool playerPresetUiSyncGuard = false;
+    private bool playerPresetStartupSelectionLock = false;
     private Coroutine playerPresetDeferredSeekCoroutine;
+    private Coroutine playerPresetStartupUnlockCoroutine;
     private readonly Dictionary<string, PlayerPresetRecord> playerPresetsById =
         new Dictionary<string, PlayerPresetRecord>(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> playerPresetChoiceIds = new List<string>();
@@ -77,7 +79,8 @@ public partial class FASyncRuntime : MVRScript
         playerPresetStatusField = new JSONStorableString("FrameAngel Player Preset Status", "No presets saved yet");
         ConfigureTransientField(playerPresetStatusField, false);
 
-        playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", true);
+        playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", false);
+        BeginPlayerPresetStartupSelectionLock();
 
         playerPresetChooser = new JSONStorableStringChooser(
             "Select Existing...",
@@ -199,6 +202,32 @@ public partial class FASyncRuntime : MVRScript
             StopCoroutine(playerPresetDeferredSeekCoroutine);
             playerPresetDeferredSeekCoroutine = null;
         }
+
+        if (playerPresetStartupUnlockCoroutine != null)
+        {
+            StopCoroutine(playerPresetStartupUnlockCoroutine);
+            playerPresetStartupUnlockCoroutine = null;
+        }
+    }
+
+    private void BeginPlayerPresetStartupSelectionLock()
+    {
+        playerPresetStartupSelectionLock = true;
+        if (playerPresetStartupUnlockCoroutine != null)
+            StopCoroutine(playerPresetStartupUnlockCoroutine);
+
+        playerPresetStartupUnlockCoroutine = StartCoroutine(RunPlayerPresetStartupSelectionUnlockCoroutine());
+    }
+
+    private IEnumerator RunPlayerPresetStartupSelectionUnlockCoroutine()
+    {
+        yield return null;
+        yield return new WaitForEndOfFrame();
+        yield return new WaitForSecondsRealtime(0.10f);
+
+        playerPresetStartupSelectionLock = false;
+        SelectPlayerPresetId("", true);
+        playerPresetStartupUnlockCoroutine = null;
     }
 
     private void HandlePlayerPresetSelectionChanged(string value, bool fromFavoriteChooser)
@@ -211,6 +240,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (playerPresetLoadOnSelectToggle != null
             && playerPresetLoadOnSelectToggle.val
+            && !playerPresetStartupSelectionLock
             && !string.IsNullOrEmpty(presetId))
         {
             ApplyPlayerPresetById(presetId);
@@ -252,7 +282,8 @@ public partial class FASyncRuntime : MVRScript
         SelectPlayerPresetId(presetId, true);
 
         if (playerPresetLoadOnSelectToggle != null
-            && playerPresetLoadOnSelectToggle.val)
+            && playerPresetLoadOnSelectToggle.val
+            && !playerPresetStartupSelectionLock)
         {
             ApplyPlayerPresetById(presetId);
         }
@@ -953,6 +984,7 @@ public partial class FASyncRuntime : MVRScript
             playImmediately = false;
         string extraArgsBody = "\"mediaPath\":\"" + EscapeJsonString(selectedMediaPath) + "\""
             + ",\"playlist\":" + BuildMetaProofSamplePlaylistJson(mediaPaths)
+            + ",\"replacePlaylist\":true"
             + ",\"play\":" + (playImmediately ? "true" : "false");
         if (preset.hasLoopMode)
             extraArgsBody += ",\"loopMode\":\"" + EscapeJsonString(preset.loopMode) + "\"";

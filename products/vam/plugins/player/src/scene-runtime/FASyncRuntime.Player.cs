@@ -159,8 +159,8 @@ public partial class FASyncRuntime : MVRScript
         public readonly List<int> randomOrderIndices = new List<int>();
         public int randomOrderCursor = -1;
         public int currentIndex = -1;
-        public string loopMode = PlayerLoopModePlaylist;
-        public bool randomEnabled = true;
+        public string loopMode = PlayerLoopModeNone;
+        public bool randomEnabled = false;
         public bool looping = false;
         public bool prepared = false;
         public bool preparePending = false;
@@ -6526,7 +6526,7 @@ public partial class FASyncRuntime : MVRScript
                     return false;
                 }
 
-                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage))
+                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, false, out errorMessage))
                 {
                     resultJson = BuildBrokerResult(false, errorMessage, "{}");
                     return false;
@@ -7194,6 +7194,19 @@ public partial class FASyncRuntime : MVRScript
             EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
     }
 
+    private void ReplaceStandalonePlayerPlaylistWithSinglePath(StandalonePlayerRecord record, string mediaPath)
+    {
+        if (record == null || string.IsNullOrEmpty(mediaPath))
+            return;
+
+        ClearStandalonePlayerRandomHistory(record);
+        record.playlistPaths.Clear();
+        record.playlistPaths.Add(mediaPath);
+        record.currentIndex = 0;
+        if (record.randomEnabled)
+            EnsureStandalonePlayerRandomOrder(record, record.currentIndex, false);
+    }
+
     private void ClearStandalonePlayerRandomHistory(StandalonePlayerRecord record)
     {
         if (record == null)
@@ -7507,6 +7520,37 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return true;
+    }
+
+    private void CaptureStandalonePlayerFocusLossState()
+    {
+        foreach (KeyValuePair<string, StandalonePlayerRecord> kvp in standalonePlayerRecords)
+        {
+            StandalonePlayerRecord record = kvp.Value;
+            if (record == null || record.mediaIsStillImage)
+                continue;
+
+            double observedTimeSeconds;
+            double durationSeconds;
+            string timelineError;
+            if (TryReadStandalonePlayerTimeline(record, out observedTimeSeconds, out durationSeconds, out timelineError))
+            {
+                record.hasObservedPlaybackTime = true;
+                record.lastObservedPlaybackTimeSeconds = Math.Max(0d, observedTimeSeconds);
+                record.lastPlaybackMotionObservedAt = Time.unscaledTime;
+            }
+
+            if (record.videoPlayer == null)
+                continue;
+
+            try
+            {
+                record.videoPlayer.Pause();
+            }
+            catch
+            {
+            }
+        }
     }
 
     private void TickStandalonePlayerRuntime()
@@ -7924,6 +7968,13 @@ public partial class FASyncRuntime : MVRScript
             return !FrameAngelPlayerMediaParity.IsSupportedImagePath(mediaPath);
 
         return fallbackValue;
+    }
+
+    private bool ShouldReplaceStandalonePlayerPlaylist(string argsJson)
+    {
+        bool replacePlaylist;
+        return TryReadBoolArg(argsJson, out replacePlaylist, "replacePlaylist", "resetPlaylist", "replacePaths")
+            && replacePlaylist;
     }
 
     private bool TryReadStandalonePlayerLooping(string argsJson, bool defaultValue)
@@ -8558,7 +8609,7 @@ public partial class FASyncRuntime : MVRScript
                 return false;
             }
 
-            return TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage);
+            return TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, false, out errorMessage);
         }
 
         InnerPieceInstanceRecord instance;
@@ -8907,6 +8958,7 @@ public partial class FASyncRuntime : MVRScript
 
             DestroyStandalonePlayerPendingImageTexture(record);
             record.pendingImageTexture = loadedTexture;
+            CommitStandalonePlayerPendingImageTexture(record);
             record.mediaIsStillImage = true;
             record.prepared = true;
             record.preparePending = false;

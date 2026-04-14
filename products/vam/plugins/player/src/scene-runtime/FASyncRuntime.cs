@@ -296,6 +296,9 @@ public partial class FASyncRuntime : MVRScript
         if (runtimeApplicationFocusActive == focusStatus)
             return;
 
+        if (!focusStatus)
+            CaptureStandalonePlayerFocusLossState();
+
         runtimeApplicationFocusActive = focusStatus;
         runtimeApplicationFocusGeneration++;
     }
@@ -305,6 +308,9 @@ public partial class FASyncRuntime : MVRScript
         bool focusStatus = !pauseStatus;
         if (runtimeApplicationFocusActive == focusStatus)
             return;
+
+        if (!focusStatus)
+            CaptureStandalonePlayerFocusLossState();
 
         runtimeApplicationFocusActive = focusStatus;
         runtimeApplicationFocusGeneration++;

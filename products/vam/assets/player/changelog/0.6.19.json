@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.19",
+  "title": "Harden preset and playlist truth",
+  "summary": "0.6.19 keeps the 0.6.18 frame-drop posture, but tightens preset startup, single-file playlist behavior, focus-loss resume capture, and hosted image/startup truth so the player stops silently reusing stale playlist state.",
+  "changes": [
+    "Turn loop and shuffle defaults back off for new standalone player records.",
+    "Change preset startup behavior so chooser selection stays neutral until the operator explicitly picks a preset, and default Load Preset On Select back to off.",
+    "Stop expanding a single saved file into a sibling playlist on the hosted path, and let preset loads explicitly replace old playlist state instead of reusing overlapping entries.",
+    "Capture playback time immediately on app focus loss and pause the VideoPlayer before the focus generation flips.",
+    "Commit loaded still images immediately so hosted image surfaces do not wait for a later refresh tick to become truthful.",
+    "Extend hosted autostart retries to give authored host surfaces more time to appear before the plugin gives up.",
+    "Stamp version 0.6.19 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.19 player runtime and refresh the raw dev_deploy baseline player and modern_tv hosted proof artifacts."
+  ],
+  "reasoning": [
+    "The current regression packet points more strongly at playlist and preset authority drift than at transport or decode alone.",
+    "A saved single file should not silently become a whole sibling playlist again, especially on the hosted path where the operator expects explicit selection truth.",
+    "App-switch recovery needs a snapshot before focus loss, not just a later tick trying to infer where playback had been."
+  ],
+  "operatorVisibleOutcomes": [
+    "Saved presets should stop reasserting stale playlist state on startup or after overlapping instance loads.",
+    "Single-file loads should behave like single-file loads unless the operator explicitly asked for a playlist or directory.",
+    "Movie app switches should be less likely to jump back to the beginning, and still-image loads should bind more truthfully without a plugin reload."
+  ],
+  "knownIssues": [
+    "If hosted startup still occasionally needs a plugin reload after 0.6.19, the next seam is likely the authored host contract arrival timing rather than preset or playlist truth.",
+    "Video performance under heavier multi-instance stress may still need additional work beyond this stability packet."
+  ]
+}

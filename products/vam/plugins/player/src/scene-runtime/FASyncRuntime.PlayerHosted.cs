@@ -24,7 +24,7 @@ public partial class FASyncRuntime : MVRScript
     private const string HostedPlayerAuthoredPackageFallbackResourceId = "fa_cua_player_host_v1";
     private const string HostedPlayerAuthoredPackageRootNodeId = "fa_cua_player_host";
     private const string HostedPlayerScreenCoreRootNodeId = "fa_player_screen_core";
-    private const float HostedPlayerAutoStartRetrySeconds = 2.0f;
+    private const float HostedPlayerAutoStartRetrySeconds = 5.0f;
     private const float HostedPlayerAutoStartRetryIntervalSeconds = 0.10f;
     private static readonly Vector3 HostedBootstrapScreenLocalPosition = new Vector3(0f, 0.32f, 0f);
     // Match the established rect Ghost screen proportions instead of the earlier oversized placeholder.
@@ -796,7 +796,7 @@ public partial class FASyncRuntime : MVRScript
             selectedMediaPath = ResolvePrimaryPlayerRuntimeMediaPath(selectedMediaPath, selectedMediaPaths);
             SetPendingPlayerSelection(selectedMediaPath);
             record.desiredPlaying = !FrameAngelPlayerMediaParity.IsSupportedImagePath(selectedMediaPath);
-            if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, selectedMediaPaths, selectedMediaPath, out errorMessage))
+            if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, selectedMediaPaths, selectedMediaPath, false, out errorMessage))
                 return false;
         }
         else
@@ -816,7 +816,7 @@ public partial class FASyncRuntime : MVRScript
             && mediaPaths.Count > 0
             && !string.IsNullOrEmpty(mediaPaths[0]))
         {
-            if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, mediaPaths, mediaPaths[0], out errorMessage))
+            if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, mediaPaths, mediaPaths[0], false, out errorMessage))
                 return false;
         }
         else
@@ -1542,6 +1542,7 @@ public partial class FASyncRuntime : MVRScript
         string hostAtomUid,
         List<string> requestedPaths,
         string selectedMediaPath,
+        bool replacePlaylist,
         out string errorMessage)
     {
         errorMessage = "";
@@ -1596,6 +1597,10 @@ public partial class FASyncRuntime : MVRScript
         List<string> existingPlaylistPaths = new List<string>(record.playlistPaths);
         List<string> resolvedPlaylistPaths = new List<string>();
         bool canReuseExistingPlaylist =
+            !replacePlaylist
+            && requestedPaths != null
+            && requestedPaths.Count <= 1
+            &&
             record.playlistPaths != null
             && record.playlistPaths.Count > 1
             && FindStandalonePlayerPlaylistIndex(record.playlistPaths, mediaPath) >= 0;

@@ -85,8 +85,29 @@ public partial class FASyncRuntime : MVRScript
                 record.playbackKey = hostedPlaybackKey;
                 record.aspectMode = ResolveStandalonePlayerAspectMode(argsJson, record.aspectMode);
                 record.randomEnabled = TryReadStandalonePlayerRandomEnabled(argsJson, record.randomEnabled);
+                List<string> explicitHostedPlaylistPaths = ExtractJsonStringList(argsJson, "playlist", "playlistPaths", "paths");
+                bool hasExplicitHostedPlaylist = explicitHostedPlaylistPaths != null && explicitHostedPlaylistPaths.Count > 0;
+                if (hasExplicitHostedPlaylist)
+                {
+                    hostedMediaPaths = new List<string>();
+                    for (int playlistIndex = 0; playlistIndex < explicitHostedPlaylistPaths.Count; playlistIndex++)
+                    {
+                        string hostedCandidate = explicitHostedPlaylistPaths[playlistIndex];
+                        if (!string.IsNullOrEmpty(hostedCandidate)
+                            && FrameAngelPlayerMediaParity.IsSupportedMediaPath(hostedCandidate))
+                        {
+                            hostedMediaPaths.Add(hostedCandidate);
+                        }
+                    }
 
-                if (!TryResolvePlayerRuntimeMediaPaths(mediaPath, out hostedMediaPaths, out errorMessage)
+                    if (hostedMediaPaths.Count <= 0)
+                    {
+                        errorMessage = "playlist is required";
+                        resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                        return false;
+                    }
+                }
+                else if (!TryResolvePlayerRuntimeMediaPaths(mediaPath, out hostedMediaPaths, out errorMessage)
                     || hostedMediaPaths == null
                     || hostedMediaPaths.Count <= 0)
                 {
@@ -94,6 +115,7 @@ public partial class FASyncRuntime : MVRScript
                     return false;
                 }
 
+                bool replaceHostedPlaylist = ShouldReplaceStandalonePlayerPlaylist(argsJson) || !hasExplicitHostedPlaylist;
                 mediaPath = ResolvePrimaryPlayerRuntimeMediaPath(mediaPath, hostedMediaPaths);
                 record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, mediaPath, record.desiredPlaying);
                 SetPendingPlayerSelection(mediaPath);
@@ -140,7 +162,7 @@ public partial class FASyncRuntime : MVRScript
                     return false;
                 }
 
-                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, mediaPath, out errorMessage))
+                if (!TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, mediaPath, replaceHostedPlaylist, out errorMessage))
                 {
                     resultJson = BuildBrokerResult(false, errorMessage, "{}");
                     return false;
@@ -203,6 +225,10 @@ public partial class FASyncRuntime : MVRScript
         string selectedMediaPath = GetStandalonePlayerCurrentPlaylistPath(record);
         if (string.IsNullOrEmpty(selectedMediaPath))
             selectedMediaPath = mediaPath;
+        bool hasExplicitDirectPlaylist = ExtractJsonStringList(argsJson, "playlist", "playlistPaths", "paths").Count > 0;
+        if (ShouldReplaceStandalonePlayerPlaylist(argsJson)
+            || (!hasExplicitDirectPlaylist && FrameAngelPlayerMediaParity.IsSupportedMediaPath(selectedMediaPath)))
+            ReplaceStandalonePlayerPlaylistWithSinglePath(record, selectedMediaPath);
         record.desiredPlaying = ResolveStandalonePlayerLoadDesiredPlaying(argsJson, selectedMediaPath, record.desiredPlaying);
         SetPendingPlayerSelection(selectedMediaPath);
         record.loopMode = ResolveStandalonePlayerLoopMode(argsJson, record.loopMode, record.playlistPaths.Count);

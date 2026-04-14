@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.19",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T22:20:00-06:00",
+  "endedAt": "2026-04-14T04:35:12.3953842Z",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.19\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.19\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.19.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.19 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T04:34:24.9097587Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.19\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T04:34:25.8075279Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.19\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T04:35:12.3953842Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T22:35:47.8943104-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.19.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.19-operator-regression-report",
+      "after": "2026-04-13T22:20:00-06:00",
+      "before": "2026-04-14T04:34:24.9097587Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator reported that presets still initialized unreliably until plugin reload, a saved image-directory preset could still auto-play images across multiple instances, movies still reset to the beginning on app switch, the hosted gradient sometimes required a plugin reload to appear, and the remaining defaults should stop carrying shuffle and loop as on-by-default behavior.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.19-runtime-seam-isolation",
+      "after": "2026-04-13T22:20:00-06:00",
+      "before": "2026-04-14T04:34:24.9097587Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "The code review isolated several overlapping seams: preset application still rebuilt playlists from saved media paths, hosted load did not honor explicit playlist arguments, file selections were still inflating into sibling playlists, focus-loss handling did not snapshot playback time before the focus generation changed, still-image loads could leave the placeholder grid until a later refresh, and hosted startup allowed too short a retry window.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection",
+        "explorer sidecar findings"
+      ]
+    },
+    {
+      "entryId": "0.6.19-foundation-build",
+      "timestamp": "2026-04-14T04:34:24.9097587Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.19 cleanly after correcting the new focus-loss snapshot helper to use the actual timeline-reader signature.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.19\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.19-package-inventory-built",
+      "timestamp": "2026-04-14T04:34:25.8075279Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.19 package inventory with -SkipVarDistribute and confirmed the report shows distributed:false, so the package exists only as build inventory and not as a live prerelease authority.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.19\\direct_cua\\player_var_package_report_latest.json",
+        "live disk inspection of F:\\sim\\vam\\AddonPackages"
+      ]
+    },
+    {
+      "entryId": "0.6.19-modern-tv-alpha",
+      "timestamp": "2026-04-14T04:35:12.3953842Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.19 alpha dev_deploy seam after the preset and playlist hardening changes.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    },
+    {
+      "entryId": "0.6.19-baseline-player-alpha",
+      "timestamp": "2026-04-13T22:35:47.8943104-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset to the same 0.6.19 alpha core and removed the generic live dev_cua_player/dev_plugin_player copies so one raw authority remained for this version.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.19.alpha.json",
+        "live disk inspection of F:\\sim\\vam\\Custom"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.19 is its own semantic version because preset, playlist, focus, and hosted-startup behavior changed after 0.6.18 had already been built for testing.",
+    "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "Loop mode now defaults to none and shuffle now defaults to off for new player records instead of keeping older dev-convenience defaults.",
+    "Explicit file loads should stay single-item by default; only an explicit playlist argument or a directory selection should widen the playlist.",
+    "Focus-loss recovery should snapshot current playback state before the focus generation changes rather than trying to infer resume state later."
+  ],
+  "openQuestions": [
+    "Does 0.6.19 stop the app-switch reset-to-beginning seam for the problematic movie tests?",
+    "Does 0.6.19 fully stop saved image-directory presets from reviving autoplay or stale grid overlays without a plugin reload?",
+    "What is the correct mixed-media playlist policy when the same playlist intentionally contains both images and videos?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.19.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.19\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.19\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.19.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.19.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.19.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.19.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.19.alpha.dll"
+  ],
+  "notes": [
+    "The 0.6.19 package report exists because the hosted proof script expects package inventory, and the final report records distributed:false so the live authority did not drift away from raw dev_deploy.",
+    "This slice intentionally captures the mixed image-and-video playlist issue as future truth without overcommitting to a final mixed-media policy in the same packet."
+  ]
+}

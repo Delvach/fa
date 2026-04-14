@@ -17,7 +17,7 @@ Packet `1.5` is governed by:
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
-7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.18.alpha.json`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.19.alpha.json`
 
 ## Working rule
 
@@ -189,19 +189,19 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.18 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.19 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.18.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.19.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.18.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.19.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.18.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.19.alpha.vap`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.18.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.19.alpha.assetbundle`
 5. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 6. markdown receipt:
@@ -538,7 +538,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 ## Recommended first interactive proof command
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.16 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.19 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 ## Next implementation targets after the first proof
@@ -712,3 +712,40 @@ frame-drop recovery slice.
 13. a `0.6.18` package report exists because the hosted proof wrapper expects
     package inventory, and it is now built with `-SkipVarDistribute` so no live
     `.var` authority is created in `AddonPackages`.
+
+## Stability checkpoint 2026-04-13T22:35:12.3953842-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.19 alpha`
+preset and playlist hardening slice.
+
+1. `0.6.19 alpha` keeps the `0.6.13` preset-default correction intact while
+   also hardening explicit file and preset loads so they stop silently
+   inflating into sibling playlists.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.19.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.19.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.19.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.19.alpha.dll`
+3. the plugin panel still exposes live version, target, media, timeline, and
+   state readback, and still does not show resize buttons.
+4. loop mode now defaults to `none` and shuffle now defaults to `off` for new
+   player records instead of carrying older dev-convenience defaults.
+5. preset loads now always request playlist replacement, and direct file loads
+   now preserve the explicit file path as a single-item playlist unless the
+   caller deliberately provides a larger playlist.
+6. hosted load now respects explicit playlist arguments instead of rebuilding a
+   sibling playlist from the selected media path.
+7. app-focus loss now snapshots playback time before the focus generation flips
+   so return-to-app resume has a truthful time anchor.
+8. still-image loads now commit the pending image texture immediately so the
+   stale grid/placeholder seam does not linger until a later refresh tick.
+9. hosted player startup keeps a longer retry window so the gradient and screen
+   contract can settle without requiring a manual plugin reload.
+10. the current strongest remaining playback risks are:
+    - mixed-media playlist policy across image and video entries
+    - any remaining focus/app-switch edge cases under real VR load
+    - broader decode pressure unrelated to the retired periodic correction path
+11. the `0.6.19` package report exists because the hosted proof wrapper expects
+    package inventory, but it records `distributed:false`, `FrameAngel.DevPlayer.12.var`
+    is absent from `F:\sim\vam\AddonPackages`, and live authority remains raw
+    `dev_deploy` only.
