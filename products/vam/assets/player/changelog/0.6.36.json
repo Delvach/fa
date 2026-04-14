@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.36",
+  "title": "Stabilize A-B end scrubbing and rebase demo3 side-control transforms",
+  "summary": "0.6.36 keeps A-B scrubbing inside the active loop window more cleanly at the boundaries and fixes the deterministic demo3 side-screen control clones so they inherit the correct relative transform data instead of carrying the middle-screen atom placement forward.",
+  "changes": [
+    "Normalized scrubs now map across the active A-B range when A-B is enabled, instead of mapping across the full movie and only being clamped afterward.",
+    "Paused seeks at an active A-B boundary no longer force a StepForward refresh that can immediately bounce a very short loop endpoint.",
+    "demo3 side-screen control clones now rebase their local transform data from the middle control layout before being linked to screen_left or screen_right."
+  ],
+  "reasoning": [
+    "Very short A-B loops were still behaving badly at the endpoints because the paused-frame refresh could nudge a scrubbed seek straight back into loop handling.",
+    "A-B scrubbing should use the active loop window as the meaningful seek domain for the slider, not the full media duration.",
+    "The demo3 builder was reparenting side controls correctly, but it was not rewriting the cloned atom-level transform fields to match the intended relative layout."
+  ],
+  "operatorVisibleOutcomes": [
+    "Scrubbing to the beginning or end of an active A-B loop should stay on that loop boundary instead of feeling unstable on a very short loop.",
+    "Left and right demo3 control copies should now sit relative to their own screens instead of carrying the middle-screen transform data."
+  ],
+  "knownIssues": [
+    "This slice does not add the later incremental A-B scrub behavior yet.",
+    "This slice does not change audio, slideshow, nav polish, or broader scene layout policy."
+  ]
+}

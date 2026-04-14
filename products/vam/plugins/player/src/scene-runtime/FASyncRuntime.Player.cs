@@ -6673,7 +6673,18 @@ public partial class FASyncRuntime : MVRScript
             }
             else
             {
-                targetTimeSeconds = normalizedTarget * durationSeconds;
+                if (record.abLoopEnabled
+                    && HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+                {
+                    targetTimeSeconds = Mathf.Lerp(
+                        (float)startSeconds,
+                        (float)endSeconds,
+                        normalizedTarget);
+                }
+                else
+                {
+                    targetTimeSeconds = normalizedTarget * durationSeconds;
+                }
             }
             eventName = "player_seek_normalized";
             okMessage = "player_seek_normalized ok";
@@ -8167,7 +8178,8 @@ public partial class FASyncRuntime : MVRScript
                 record.seekResumeRequestedAt = 0f;
                 record.nextAudioVideoSyncCheckTime = 0f;
                 record.desiredPlaying = false;
-                TryRefreshStandalonePlayerPausedFrame(record);
+                if (ShouldRefreshStandalonePlayerPausedFrameAfterSeek(record, targetTimeSeconds))
+                    TryRefreshStandalonePlayerPausedFrame(record);
             }
 
             record.lastError = "";
@@ -8216,20 +8228,30 @@ public partial class FASyncRuntime : MVRScript
             return targetTimeSeconds;
         }
 
-        double upperBoundSeconds = endSeconds - StandalonePlayerPlaybackMotionEpsilonSeconds;
-        if (double.IsNaN(upperBoundSeconds)
-            || double.IsInfinity(upperBoundSeconds)
-            || upperBoundSeconds < startSeconds)
-        {
-            upperBoundSeconds = startSeconds;
-        }
-
         if (targetTimeSeconds < startSeconds)
             return startSeconds;
-        if (targetTimeSeconds > upperBoundSeconds)
-            return upperBoundSeconds;
+        if (targetTimeSeconds > endSeconds)
+            return endSeconds;
 
         return targetTimeSeconds;
+    }
+
+    private bool ShouldRefreshStandalonePlayerPausedFrameAfterSeek(StandalonePlayerRecord record, double targetTimeSeconds)
+    {
+        if (record == null
+            || record.mediaIsStillImage
+            || !record.abLoopEnabled
+            || !HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+        {
+            return true;
+        }
+
+        if (Math.Abs(targetTimeSeconds - startSeconds) <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+            return false;
+        if (Math.Abs(targetTimeSeconds - endSeconds) <= StandalonePlayerPlaybackMotionEpsilonSeconds)
+            return false;
+
+        return true;
     }
 
     private bool HasValidStandalonePlayerAbLoopRange(StandalonePlayerRecord record, out double startSeconds, out double endSeconds)

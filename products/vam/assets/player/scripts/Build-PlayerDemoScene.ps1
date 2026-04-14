@@ -684,6 +684,105 @@ function Set-PlayerDemoSceneAtomLinkToParent {
     $controlStorable | Add-Member -NotePropertyName linkTo -NotePropertyValue ("{0}:object" -f $ParentAtomId) -Force
 }
 
+function Set-PlayerDemoSceneAtomRelativeTransform {
+    param(
+        [object]$Atom,
+        [object]$PositionSource,
+        [object]$RotationSource
+    )
+
+    if ($null -eq $Atom) {
+        return
+    }
+
+    if ($null -ne $PositionSource) {
+        $positionX = [string]$PositionSource.x
+        $positionY = [string]$PositionSource.y
+        $positionZ = [string]$PositionSource.z
+
+        if ($null -ne $Atom.position) {
+            $Atom.position.x = $positionX
+            $Atom.position.y = $positionY
+            $Atom.position.z = $positionZ
+        }
+
+        if ($null -ne $Atom.containerPosition) {
+            $Atom.containerPosition.x = $positionX
+            $Atom.containerPosition.y = $positionY
+            $Atom.containerPosition.z = $positionZ
+        }
+    }
+
+    if ($null -ne $RotationSource) {
+        $rotationX = [string]$RotationSource.x
+        $rotationY = [string]$RotationSource.y
+        $rotationZ = [string]$RotationSource.z
+
+        if ($null -ne $Atom.rotation) {
+            $Atom.rotation.x = $rotationX
+            $Atom.rotation.y = $rotationY
+            $Atom.rotation.z = $rotationZ
+        }
+
+        if ($null -ne $Atom.containerRotation) {
+            $Atom.containerRotation.x = $rotationX
+            $Atom.containerRotation.y = $rotationY
+            $Atom.containerRotation.z = $rotationZ
+        }
+    }
+
+    $controlStorable = Get-StorableById -Storables @($Atom.storables) -Id "control"
+    if ($null -eq $controlStorable) {
+        return
+    }
+
+    if ($null -ne $PositionSource -and $null -ne $controlStorable.position) {
+        $controlStorable.position.x = [string]$PositionSource.x
+        $controlStorable.position.y = [string]$PositionSource.y
+        $controlStorable.position.z = [string]$PositionSource.z
+    }
+
+    if ($null -ne $RotationSource -and $null -ne $controlStorable.rotation) {
+        $controlStorable.rotation.x = [string]$RotationSource.x
+        $controlStorable.rotation.y = [string]$RotationSource.y
+        $controlStorable.rotation.z = [string]$RotationSource.z
+    }
+}
+
+function Copy-PlayerDemoSceneAtomRelativeTransformFromSource {
+    param(
+        [object]$SourceAtom,
+        [object]$TargetAtom
+    )
+
+    if ($null -eq $SourceAtom -or $null -eq $TargetAtom) {
+        return
+    }
+
+    $sourceControl = Get-StorableById -Storables @($SourceAtom.storables) -Id "control"
+    $sourcePosition = if ($null -ne $sourceControl -and $null -ne $sourceControl.position) {
+        $sourceControl.position
+    }
+    elseif ($null -ne $SourceAtom.containerPosition) {
+        $SourceAtom.containerPosition
+    }
+    else {
+        $SourceAtom.position
+    }
+
+    $sourceRotation = if ($null -ne $sourceControl -and $null -ne $sourceControl.rotation) {
+        $sourceControl.rotation
+    }
+    elseif ($null -ne $SourceAtom.containerRotation) {
+        $SourceAtom.containerRotation
+    }
+    else {
+        $SourceAtom.rotation
+    }
+
+    Set-PlayerDemoSceneAtomRelativeTransform -Atom $TargetAtom -PositionSource $sourcePosition -RotationSource $sourceRotation
+}
+
 function New-PlayerDemoPluginActionEntry {
     param(
         [string]$ScreenAtomId,
@@ -932,6 +1031,9 @@ function Apply-PlayerDemoThreeScreenControls {
             }
 
             Set-SceneAtomId -Atom $targetAtom -Id $desiredId
+            if ($role -ne "middle") {
+                Copy-PlayerDemoSceneAtomRelativeTransformFromSource -SourceAtom $middleAtom -TargetAtom $targetAtom
+            }
             Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
             Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId
         }

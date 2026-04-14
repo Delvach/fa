@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.36",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.36 fixes a short-range A-B endpoint scrub regression and rebases demo3 side-screen control clones to the correct relative transforms.",
+  "repoAnchors": {
+    "branch": "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.36.json"
+  },
+  "operatorSignals": [
+    "Very short A-B ranges still felt wrong when scrubbing to the end of the loop window.",
+    "demo3 side-screen controls were parented correctly but still carrying the middle-screen transform data."
+  ],
+  "actionsTaken": [
+    "Mapped normalized A-B scrubs across the active loop window and suppressed paused-frame refresh at active A-B boundaries.",
+    "Added a demo3-only relative-transform rebase step for left and right control clones before linking them to their target screens."
+  ],
+  "nonGoals": [
+    "No incremental A-B scrub behavior beyond the shared boundary fix.",
+    "No nav changes.",
+    "No slideshow work.",
+    "No audio implementation yet."
+  ]
+}
