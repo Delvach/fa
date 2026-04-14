@@ -1,6 +1,6 @@
 {
   "schemaVersion": "frameangel_player_operator_conversation_log_index_v1",
-  "generatedAtLocal": "2026-04-13T18:25:27.3551050-06:00",
+  "generatedAtLocal": "2026-04-13T19:14:46.2594797-06:00",
   "root": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs",
   "logs": [
     {
@@ -44,6 +44,12 @@
       "iteration": "alpha",
       "captureMode": "live_with_exact_repo_anchors",
       "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.14.alpha.json"
+    },
+    {
+      "version": "0.6.15",
+      "iteration": "alpha",
+      "captureMode": "live_with_exact_repo_anchors",
+      "path": "C:\\projects\\fa\\products\\vam\\assets\\player\\docs\\handoffs\\operator_conversation_logs\\0.6.15.alpha.json"
     }
   ]
 }

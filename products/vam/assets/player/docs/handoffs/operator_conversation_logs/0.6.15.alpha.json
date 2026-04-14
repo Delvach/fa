@@ -1,0 +1,141 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.15",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T18:55:00-06:00",
+  "endedAt": "2026-04-13T19:14:46.2594797-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.15\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.15\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.15.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The package report for 0.6.15 records a build/distribution event, but the distributed .var was removed immediately so the live authority remained raw dev_deploy only."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-13T19:13:35.3057770-06:00",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.15\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-13T19:13:36.1346294-06:00",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.15\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-13T19:13:54.1434006-06:00",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T19:14:46.2594797-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.15.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.15-resize-authority-clue",
+      "after": "2026-04-13T18:55:00-06:00",
+      "before": "2026-04-13T19:13:35.3057770-06:00",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator confirmed that manual Object-scale changes on the hosted CUA work perfectly, making it clear that attached resize should follow host Object scale instead of the older internal surface-resize seam.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.15-safe-scope-choice",
+      "after": "2026-04-13T18:55:00-06:00",
+      "before": "2026-04-13T19:13:35.3057770-06:00",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Chose the lower-risk correction: keep the generic Player.SetDisplaySize contract unchanged for now, and move the attached visible/exposed resize actions onto the hosted CUA Control/Scale authority already used by presets.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.15-foundation-build",
+      "timestamp": "2026-04-13T19:13:35.3057770-06:00",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.15 cleanly and stamped the release boundary before deploying the raw alpha artifacts.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.15\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.15-package-inventory-built",
+      "timestamp": "2026-04-13T19:13:36.1346294-06:00",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built the 0.6.15 package inventory rung because the hosted proof script expects the package report, then immediately treated that package as historical inventory rather than live authority for this slice.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.15\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.15-modern-tv-alpha",
+      "timestamp": "2026-04-13T19:13:54.1434006-06:00",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.15 alpha dev_deploy seam with the hosted resize correction in place.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    },
+    {
+      "entryId": "0.6.15-baseline-player-alpha",
+      "timestamp": "2026-04-13T19:14:46.2594797-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset to the same 0.6.15 alpha core so the operator can compare the generic player baseline and modern_tv host proof on one coherent dev_deploy slice.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.15.alpha.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.15 is its own semantic version because the attached resize behavior changed after 0.6.14 had already been built and tested.",
+    "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "The attached visible/exposed resize actions now follow the hosted CUA Control/Scale authority instead of the older attached internal display-size seam.",
+    "The generic Player.SetDisplaySize contract remains unchanged in this slice to avoid silently redefining a broader API boundary.",
+    "Right-joystick resize mapping is explicitly deferred to a later version."
+  ],
+  "openQuestions": [
+    "How does the 0.6.15 alpha resize feel in VR now that it follows hosted Object scale?",
+    "Should resize step semantics stay multiplier-based for now or move to the later +/- 0.1 model once the current authority is proven stable?",
+    "How much of the next plugin UI redesign should be mirrored into the deterministic scene controls once the operator supplies the updated base scene layout?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.15.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.15\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.15\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.15.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.15.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.15.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.15.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.15.alpha.dll"
+  ],
+  "notes": [
+    "The 0.6.15 package report exists because the hosted proof script expects package inventory, but the distributed FrameAngel.DevPlayer.12.var file was removed immediately so the live authority did not drift away from raw dev_deploy.",
+    "This slice does not add new features beyond the resize authority correction and does not widen the Meta interaction lane."
+  ]
+}

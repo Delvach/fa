@@ -763,7 +763,7 @@ public partial class FASyncRuntime : MVRScript
 
         if (storeScale)
         {
-            if (TryReadPlayerPresetHostScale(hostAtom, out float hostScale, out string scaleError))
+            if (TryReadPlayerHostScale(hostAtom, out float hostScale, out string scaleError))
             {
                 preset.hasHostScale = true;
                 preset.hostScale = hostScale;
@@ -901,7 +901,7 @@ public partial class FASyncRuntime : MVRScript
         if (preset.hasHostScale)
         {
             Atom hostAtom;
-            if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null || !TryApplyPlayerPresetHostScale(hostAtom, preset.hostScale, out lastError))
+            if (!TryResolveHostedPlayerAtom(out hostAtom) || hostAtom == null || !TryApplyPlayerHostScale(hostAtom, preset.hostScale, out lastError))
             {
                 lastError = string.IsNullOrEmpty(lastError) ? "player preset host scale failed" : lastError;
                 SetLastError(lastError);
@@ -1109,13 +1109,13 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryReadPlayerPresetHostScale(Atom hostAtom, out float hostScale, out string errorMessage)
+    private bool TryReadPlayerHostScale(Atom hostAtom, out float hostScale, out string errorMessage)
     {
         hostScale = 1f;
         errorMessage = "";
 
         JSONStorableFloat scaleParam;
-        if (!TryResolvePlayerPresetHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
+        if (!TryResolvePlayerHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
         {
             errorMessage = "player preset host scale parameter not resolved";
             return false;
@@ -1125,12 +1125,12 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryApplyPlayerPresetHostScale(Atom hostAtom, float hostScale, out string errorMessage)
+    private bool TryApplyPlayerHostScale(Atom hostAtom, float hostScale, out string errorMessage)
     {
         errorMessage = "";
 
         JSONStorableFloat scaleParam;
-        if (!TryResolvePlayerPresetHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
+        if (!TryResolvePlayerHostScaleParam(hostAtom, out scaleParam) || scaleParam == null)
         {
             errorMessage = "player preset host scale parameter not resolved";
             return false;
@@ -1140,7 +1140,7 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryResolvePlayerPresetHostScaleParam(Atom hostAtom, out JSONStorableFloat scaleParam)
+    private bool TryResolvePlayerHostScaleParam(Atom hostAtom, out JSONStorableFloat scaleParam)
     {
         scaleParam = null;
         if (hostAtom == null)

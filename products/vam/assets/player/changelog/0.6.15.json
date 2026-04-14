@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.15",
+  "title": "Move attached resize actions onto hosted CUA scale authority",
+  "summary": "0.6.15 fixes the visible and exposed resize actions for hosted player CUAs by driving the same host Object scale authority that already behaves correctly when adjusted manually in VaM.",
+  "reasoning": "0.6.14 surfaced resize controls in the plugin UI but kept the older attached resize behavior, which still tried to resize the player surface internally. The operator proved that the correct authority is the hosted CUA Object scale itself. This slice keeps the fix narrowly focused: the attached resize actions now use the host Control/Scale parameter with the existing tweened feel, while the broader Player.SetDisplaySize contract remains untouched for now so we do not silently redefine a larger API boundary.",
+  "changes": [
+    {
+      "area": "attached-resize-authority",
+      "summary": "Player Resize Down and Player Resize Up now scale the hosted CUA through its Control > Scale parameter instead of routing attached resize through the legacy internal display-size seam.",
+      "reasoning": "That matches the operator-verified Object scale behavior in VaM and keeps the visible resize controls aligned with the actual host authority."
+    },
+    {
+      "area": "host-scale-consistency",
+      "summary": "The player runtime now reuses the same host-scale helper family already used by presets, so resize and preset scale behavior point at the same authoritative parameter.",
+      "reasoning": "This avoids layering a second hosted scale path and reduces the chance of preset state and resize controls fighting each other."
+    }
+  ],
+  "verification": [
+    "Stamp 0.6.15 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.15 player runtime and release outputs cleanly.",
+    "Deploy raw dev_deploy alpha artifacts for the baseline direct player and the modern_tv hosted proof.",
+    "Confirm Player Resize Up and Player Resize Down now follow hosted CUA scale authority through the plugin UI and exposed action path."
+  ],
+  "knownIssues": [
+    "This slice does not redesign the resize contract for the generic Player.SetDisplaySize broker action; it only corrects the attached visible/exposed resize control path.",
+    "This slice does not add right-joystick resize mapping; that remains a later version feature.",
+    "This slice does not widen the Meta runtime surface interaction lane beyond the current proof status."
+  ]
+}

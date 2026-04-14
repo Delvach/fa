@@ -168,24 +168,20 @@ public partial class FASyncRuntime
             return;
         }
 
-        FAInnerPiecePlaneData plane;
         string errorMessage;
-        if (!TryResolveInnerPieceScreenPlane(record.instanceId, record.slotId, out plane, out errorMessage))
+        string resultJson;
+        if (!TryResizeAttachedHostedPlayerHostScale(record, hostAtom, multiplier, out resultJson, out errorMessage))
         {
             SetLastError(errorMessage);
-            SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
+            SetLastReceipt(resultJson);
             RefreshVisiblePlayerDebugFields();
             return;
         }
 
-        float targetWidthMeters = Mathf.Max(0.05f, plane.widthMeters * multiplier);
-        float targetHeightMeters = Mathf.Max(0.05f, plane.heightMeters * multiplier);
-        RunAttachedPlayerDirectAction(
-            PlayerActionSetDisplaySizeId,
-            "\"displayWidthMeters\":" + FormatFloat(targetWidthMeters)
-                + ",\"displayHeightMeters\":" + FormatFloat(targetHeightMeters)
-                + ",\"resizeBehavior\":\"smooth\""
-                + ",\"resizeAnchor\":\"bottom_anchor\"",
-            successStatus);
+        SetLastError("");
+        SetLastReceipt(resultJson);
+        if (playerRuntimeStateField != null)
+            playerRuntimeStateField.valNoCallback = string.IsNullOrEmpty(successStatus) ? "Player resized" : successStatus;
+        RefreshVisiblePlayerDebugFields();
     }
 }
