@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.15",
-    "notes":  "0.6.15 moves the attached resize actions onto the hosted CUA Object scale authority so visible resize controls and exposed resize methods match the manual scale path that already works in VaM.",
+    "version":  "0.6.16",
+    "notes":  "0.6.16 removes the plugin resize buttons, rolls back the failed custom resize tween path, and aligns host scale handling with VaM's native CUA scale storable discovered in demo3.json while preserving the existing action contract.",
     "branch":  "release/0.6.14-plugin-ui-readback",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.15.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.16.json"
 }

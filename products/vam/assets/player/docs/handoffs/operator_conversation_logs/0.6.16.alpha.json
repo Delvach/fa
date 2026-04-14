@@ -1,0 +1,156 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.16",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T20:45:00-06:00",
+  "endedAt": "2026-04-13T21:08:42.2795339-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.16\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.16\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.16.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The package report for 0.6.16 records a build/distribution event, but the distributed .var was removed immediately so the live authority remained raw dev_deploy only."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T03:08:13.0091321Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.16\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T03:01:20.1150103Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.16\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T03:08:42.2795339Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T21:08:27.5974564-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.16.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.16-demo3-native-scale-discovery",
+      "after": "2026-04-13T20:45:00-06:00",
+      "before": "2026-04-14T03:08:13.0091321Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator provided demo3.json and isolated the working 25%, 50%, 100%, and 150% buttons, proving that native VaM UIButton triggers can target the hosted CUA native scale storable directly and use VaM's own timer and tween fields.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "F:\\sim\\vam\\Saves\\scene\\demo3.json"
+      ]
+    },
+    {
+      "entryId": "0.6.16-rollback-request",
+      "after": "2026-04-13T20:45:00-06:00",
+      "before": "2026-04-14T03:08:13.0091321Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator requested a rollback of the failed custom scaling path and asked that the resize up/down buttons be removed from the plugin UI.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.16-minimal-contract-choice",
+      "after": "2026-04-13T20:45:00-06:00",
+      "before": "2026-04-14T03:08:13.0091321Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Chose the lower-risk correction: remove the plugin panel resize buttons, delete the failed custom resize tween implementation, prefer the hosted CUA native scale storable for host-scale resolution, and keep the existing resize action names registered temporarily so scene/control wiring does not silently break before deterministic scene generation is updated.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.16-foundation-build",
+      "timestamp": "2026-04-14T03:08:13.0091321Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.16 cleanly and stamped the release boundary before redeploying the raw alpha artifacts.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.16\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.16-package-inventory-built",
+      "timestamp": "2026-04-14T03:01:20.1150103Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built the 0.6.16 package inventory rung because the hosted proof script expects the package report, then removed the distributed FrameAngel.DevPlayer.12.var immediately so the live authority stayed raw dev_deploy only.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.16\\direct_cua\\player_var_package_report_latest.json",
+        "live disk inspection of F:\\sim\\vam\\AddonPackages"
+      ]
+    },
+    {
+      "entryId": "0.6.16-baseline-player-alpha",
+      "timestamp": "2026-04-13T21:08:27.5974564-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset to the same 0.6.16 alpha core so the operator can compare the generic player baseline and hosted proofs on one coherent dev_deploy slice.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.16.alpha.json"
+      ]
+    },
+    {
+      "entryId": "0.6.16-modern-tv-alpha",
+      "timestamp": "2026-04-14T03:08:42.2795339Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.16 alpha dev_deploy seam after the native-scale rollback.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.16 is its own semantic version because the resize rollback and plugin-panel control surface changed after 0.6.15 had already been built and tested.",
+    "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "The plugin panel no longer exposes resize buttons in this slice.",
+    "The failed custom resize tween path introduced in 0.6.15 is removed in favor of the native hosted CUA scale storable authority already proven by demo3.json.",
+    "The existing Player Resize Up and Player Resize Down action names stay registered temporarily for compatibility until deterministic scene generation is updated to native percentage scale triggers."
+  ],
+  "openQuestions": [
+    "Should the deterministic scene generator's next resize revision emit 25%, 50%, 100%, and 150% native scale triggers as the canonical first set?",
+    "Once deterministic scene generation adopts native percentage scale triggers, should the old multiplier-style resize actions be retired entirely or kept as compatibility aliases?",
+    "What is the cleanest minimal first Meta runtime surface that should consume the same control contract after the current hosted proof lane is stable?"
+  ],
+  "relatedArtifacts": [
+    "F:\\sim\\vam\\Saves\\scene\\demo3.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.16.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.16\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.16\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.16.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.16.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.16.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.16.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.16.alpha.dll"
+  ],
+  "notes": [
+    "The 0.6.16 package report exists because the hosted proof script expects package inventory, but the distributed FrameAngel.DevPlayer.12.var file was removed immediately so the live authority did not drift away from raw dev_deploy.",
+    "The deterministic scene generator still needs a later focused update to emit the native percentage scale triggers discovered in demo3.json."
+  ]
+}

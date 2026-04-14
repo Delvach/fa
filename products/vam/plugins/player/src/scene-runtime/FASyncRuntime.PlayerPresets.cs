@@ -1146,6 +1146,18 @@ public partial class FASyncRuntime : MVRScript
         if (hostAtom == null)
             return false;
 
+        JSONStorable nativeScale = hostAtom.GetStorableByID("scale");
+        if (nativeScale == null)
+            nativeScale = hostAtom.GetStorableByID("Scale");
+        if (nativeScale != null)
+        {
+            scaleParam = nativeScale.GetFloatJSONParam("scale");
+            if (scaleParam == null)
+                scaleParam = nativeScale.GetFloatJSONParam("Scale");
+            if (scaleParam != null)
+                return true;
+        }
+
         JSONStorable control = hostAtom.GetStorableByID("Control");
         if (control == null)
             control = hostAtom.GetStorableByID("control");

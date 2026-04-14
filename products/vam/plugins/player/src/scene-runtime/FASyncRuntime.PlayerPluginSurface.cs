@@ -169,15 +169,27 @@ public partial class FASyncRuntime
         }
 
         string errorMessage;
-        string resultJson;
-        if (!TryResizeAttachedHostedPlayerHostScale(record, hostAtom, multiplier, out resultJson, out errorMessage))
+        float currentScale;
+        if (!TryReadPlayerHostScale(hostAtom, out currentScale, out errorMessage))
         {
             SetLastError(errorMessage);
-            SetLastReceipt(resultJson);
+            SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
             RefreshVisiblePlayerDebugFields();
             return;
         }
 
+        float targetScale = Mathf.Clamp(currentScale * multiplier, 0.01f, 100f);
+        if (!TryApplyPlayerHostScale(hostAtom, targetScale, out errorMessage))
+        {
+            SetLastError(errorMessage);
+            SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
+            RefreshVisiblePlayerDebugFields();
+            return;
+        }
+
+        record.needsScreenRefresh = true;
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        string resultJson = BuildBrokerResult(true, "player_host_scale ok", payload);
         SetLastError("");
         SetLastReceipt(resultJson);
         if (playerRuntimeStateField != null)

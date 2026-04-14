@@ -749,18 +749,6 @@ public partial class FASyncRuntime : MVRScript
                 }
             );
         }
-        CreateButton("Player Resize Down").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerResizeAction(PlayerResizeDownMultiplier, "Player resized down");
-            }
-        );
-        CreateButton("Player Resize Up").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerResizeAction(PlayerResizeUpMultiplier, "Player resized up");
-            }
-        );
         CreateSpacer(true);
         CreateButton("Player Load Media").button.onClick.AddListener(
             delegate

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.16",
+  "title": "Roll back failed custom resize path and remove plugin resize buttons",
+  "summary": "0.6.16 removes the plugin resize buttons, rolls back the failed custom resize implementation, and aligns host scale handling with VaM's native CUA scale storable as proven by the percentage buttons in demo3.json.",
+  "reasoning": "The operator proved a working native path in demo3.json: UIButton triggers target the hosted CUA's native scale storable directly and use VaM's own timer/tween fields. Our custom resize path did not work reliably, so this slice removes the misleading plugin buttons and restores a cleaner baseline while preserving the existing exposed action contract for future deterministic scene generation.",
+  "changes": [
+    {
+      "area": "plugin-ui-resize-removal",
+      "summary": "Removed Player Resize Down and Player Resize Up from the plugin UI while keeping the existing action names registered for external scene/control wiring.",
+      "reasoning": "Those controls should not remain visible in the plugin panel while the lane moves back to native VaM scale triggers, but the action contract still needs to stay alive until deterministic scene generation is updated."
+    },
+    {
+      "area": "custom-resize-rollback",
+      "summary": "Removed the 0.6.15 custom attached host-scale resize tween path and returned attached resize handling to a simpler native host-scale write path only.",
+      "reasoning": "The custom implementation was not producing the correct result in VaM and should not accumulate further patches."
+    },
+    {
+      "area": "host-scale-authority",
+      "summary": "Host-scale resolution now prefers the native CUA scale storable (`scale` -> `scale`) before falling back to the older control-based path.",
+      "reasoning": "That matches the working trigger contract proven in demo3.json."
+    }
+  ],
+  "verification": [
+    "Inspect demo3.json and confirm the working percentage buttons target receiverAtom=fap, receiver=scale, receiverTargetName=scale, with floatValue and VaM timer/tween fields.",
+    "Stamp 0.6.16 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the 0.6.16 player runtime and release outputs cleanly.",
+    "Deploy raw dev_deploy alpha artifacts for the baseline direct player and the modern_tv hosted proof.",
+    "Confirm the plugin panel no longer shows resize buttons."
+  ],
+  "knownIssues": [
+    "This slice does not yet upgrade deterministic scene generation to emit the new percentage scale buttons; that should follow the operator's updated base scene.",
+    "This slice leaves the generic internal display-size broker contract in place even though the preferred future deterministic scene-control path is native CUA scale triggering.",
+    "This slice does not add joystick resize mapping; that remains for a later version."
+  ]
+}

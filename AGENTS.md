@@ -42,7 +42,7 @@ As of this update:
 
 1. `main` is the latest merged tested player line
 2. the current stable player baseline is `0.6.10`
-3. the active feature work beyond that advanced the `0.6.15` `modern_tv` hosted interactive proof seam, preserved the `0.6.13` preset-default hardening, kept the `0.6.14` plugin panel readback improvements, and corrected the attached resize actions so they now follow the hosted CUA Object scale authority
+3. the active feature work beyond that advanced the `0.6.16` `modern_tv` hosted interactive proof seam, preserved the `0.6.13` preset-default hardening, kept the `0.6.14` plugin panel readback improvements, and rolled back the failed custom resize tween path in favor of the native hosted CUA `scale -> scale` authority proven in `demo3.json`
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 
 Primary current docs:
@@ -61,17 +61,17 @@ Primary current docs:
 The current real `modern_tv` hosted-player proof is:
 
 1. preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.15.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.16.alpha.vap`
 2. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.15.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.16.alpha.assetbundle`
 3. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.15.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.16.alpha.dll`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.15.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.16.alpha.assetbundle`
 5. proof receipt:
    `C:\projects\fa\products\vam\assets\player\build\meta_interactive_host_proof\modern_tv\receipts\meta_interactive_hosted_player_proof_receipt.json`
 6. build-only package report reference:
-   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.15\direct_cua\player_var_package_report_latest.json`
+   `C:\projects\fa\products\vam\assets\player\build\var_packages\0.6.16\direct_cua\player_var_package_report_latest.json`
 
 Important:
 
@@ -82,9 +82,10 @@ Important:
    `C:\projects\fa\products\vam\assets\player\docs\handoffs\operator_conversation_logs`
 5. keep exact repo timestamps and reconstructed chat timing explicitly separate
 6. the current preset chooser fix means saved presets must stay on an explicit `(none)` state until the operator chooses one
-7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback plus visible resize controls
-8. the attached `Player Resize Up` and `Player Resize Down` actions now follow the hosted CUA `Control > Scale` authority instead of the older attached internal display-size seam
-9. the `0.6.15` package report exists as build inventory only for this slice; the distributed `FrameAngel.DevPlayer.12.var` was removed immediately so live authority remained raw `dev_deploy`
+7. the current plugin UI test-surface slice exposes live build version, target, media, timeline, and state readback, but no longer shows resize buttons in the plugin panel
+8. the current deterministic resize truth for future scene generation is the hosted CUA native `scale` storable targeted directly with VaM trigger timer/tween fields, as proven by `F:\sim\vam\Saves\scene\demo3.json`
+9. the exposed `Player Resize Up` and `Player Resize Down` action names remain registered for scene/control compatibility, but the failed custom resize tween path is gone
+10. the `0.6.16` package report exists as build inventory only for this slice; the distributed `FrameAngel.DevPlayer.12.var` was removed immediately so live authority remained raw `dev_deploy`
 
 ## Volodeck boundary
 
