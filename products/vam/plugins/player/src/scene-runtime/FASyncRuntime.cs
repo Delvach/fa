@@ -715,9 +715,13 @@ public partial class FASyncRuntime : MVRScript
     private void BuildUi()
     {
         BuildPlayerPresetUi();
+        CreateSpacer(true);
+        BuildPlayerOperatorReadbackUi();
+        CreateSpacer(true);
         CreateTextField(playerMediaPathField, true);
         CreateSlider(playerScrubNormalizedField, false);
         CreateSlider(playerVolumeNormalizedField, false);
+        CreateSpacer(true);
         if (ShouldExposePlayerAspectControls())
         {
             CreateButton("Player Aspect Fit").button.onClick.AddListener(
@@ -745,6 +749,19 @@ public partial class FASyncRuntime : MVRScript
                 }
             );
         }
+        CreateButton("Player Resize Down").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerResizeAction(PlayerResizeDownMultiplier, "Player resized down");
+            }
+        );
+        CreateButton("Player Resize Up").button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerResizeAction(PlayerResizeUpMultiplier, "Player resized up");
+            }
+        );
+        CreateSpacer(true);
         CreateButton("Player Load Media").button.onClick.AddListener(
             delegate
             {
@@ -885,6 +902,15 @@ public partial class FASyncRuntime : MVRScript
         CreateTextField(syncEventOutboxPathField, true);
 #endif
 #endif
+    }
+
+    private void BuildPlayerOperatorReadbackUi()
+    {
+        CreateTextField(buildVersionField, false);
+        CreateTextField(playerRuntimeTargetField, false);
+        CreateTextField(playerRuntimeMediaField, false);
+        CreateTextField(playerRuntimeTimelineField, false);
+        CreateTextField(playerRuntimeStateField, false);
     }
 
     // These values must stay live for runtime testing and broker transport, but

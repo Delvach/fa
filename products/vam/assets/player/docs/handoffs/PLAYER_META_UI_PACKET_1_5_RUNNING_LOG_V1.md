@@ -17,7 +17,7 @@ Packet `1.5` is governed by:
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
-7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.13.alpha.json`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.14.alpha.json`
 
 ## Working rule
 
@@ -189,22 +189,22 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.13 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.14 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.13.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.14.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.13.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.14.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.13.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.14.alpha.vap`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.13.alpha.assetbundle`
-4. receipt:
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.14.alpha.assetbundle`
+5. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
-5. markdown receipt:
+6. markdown receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.md`
 
 Current proof interpretation:
@@ -212,14 +212,14 @@ Current proof interpretation:
 1. this artifact is player-backed and no longer ships an empty `PluginManager`
 2. the dev interaction seam now uses raw `Custom/Plugins/dev_plugin_player.<version>.dll`
    through the canonical `dev_deploy` alpha naming as
-   `plugin_player_dev.0.6.13.alpha.dll`
+   `plugin_player_dev.0.6.14.alpha.dll`
 3. the raw proof now consumes the composed host catalog package root instead of
    the shell-only root, so the current host bundle carries a visible control
    carrier while staying in the `2018.1.9f2` VaM-valid bundle class
 4. the `.var` package remains the release/output reference, not the live proof
    dependency for this interactive Meta host artifact
 5. current release reference is:
-   `products/vam/assets/player/build/var_packages/0.6.13/direct_cua/player_var_package_report_latest.json`
+   `products/vam/assets/player/build/var_packages/0.6.14/direct_cua/player_var_package_report_latest.json`
 6. current shell/control confidence is now:
    - shell orientation and stance from Volodeck shell export preview
    - control visual fidelity from the authored Meta video-player Volodeck proof
@@ -231,9 +231,42 @@ Current proof interpretation:
 8. manual raw attach remains a valid witness path even if the current preset
    browser path does not surface the versioned alpha preset:
    - add a `CustomUnityAsset`
-   - load `asset_dev_modern_tv.0.6.13.alpha.assetbundle`
-   - attach `plugin_player_dev.0.6.13.alpha.dll`
+   - load `asset_dev_modern_tv.0.6.14.alpha.assetbundle`
+   - attach `plugin_player_dev.0.6.14.alpha.dll`
    - confirm the hosted screen comes up before judging interaction behavior
+
+## Current 0.6.14 alpha plugin UI test-surface truth
+
+The next safe rung after the preset-default recovery is now live in the raw
+`dev_deploy` seam:
+
+1. `0.6.14` does not change playback transport logic
+2. it turns the plugin panel into a better operator test surface by exposing:
+   - build version
+   - player target
+   - player media
+   - player timeline
+   - player state
+3. it also surfaces the already-existing resize actions directly in the plugin
+   UI:
+   - `Player Resize Down`
+   - `Player Resize Up`
+4. the live raw authority for this slice is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.14.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.14.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.14.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.14.alpha.dll`
+5. the refreshed exact anchors for this slice are:
+   - release validation:
+     `products/vam/assets/player/build/releases/0.6.14/foundation_release_validation.json`
+   - package report:
+     `products/vam/assets/player/build/var_packages/0.6.14/direct_cua/player_var_package_report_latest.json`
+   - hosted proof receipt:
+     `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
+   - baseline raw deploy receipt:
+     `products/vam/assets/player/build/raw_dev_deploys/player/player_dev_deploy.0.6.14.alpha.json`
+   - Volodeck witness receipt:
+     `products/vam/assets/player/build/meta_video_player_proof_volodeck_witness/meta_video_player_proof_volodeck_witness_receipt.json`
 
 ## Current 0.6.13 alpha preset truth
 
@@ -505,7 +538,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 ## Recommended first interactive proof command
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.13 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.14 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 ## Next implementation targets after the first proof
@@ -545,3 +578,28 @@ preset overlap recovery.
    control rig all bind to the same actions/state.
 9. do not layer compensating fixes over stale behavior if the original seam can
    be corrected directly.
+
+## Stability checkpoint 2026-04-13T18:25:27.3551050-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.14 alpha`
+plugin UI test-surface pass.
+
+1. `0.6.14 alpha` keeps the `0.6.13` preset-default correction intact and does
+   not change playback transport logic.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.14.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.14.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.14.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.14.alpha.dll`
+3. the plugin panel now exposes live version, target, media, timeline, and
+   state readback plus visible resize controls, making it a more truthful
+   operator test surface.
+4. the current Volodeck witness packet was refreshed in the same slice and
+   remains the authoritative visual preflight seam.
+5. shells remain ready for operator-led Unity shell work.
+6. true interactive Meta runtime surfaces remain the active assistant-owned
+   product lane.
+7. the operator still needs to provide an updated base scene layout before the
+   deterministic scene generator is revised around the new control placement.
+8. an optional runtime-owned control rig is still a scheduled `v2` or `v3`
+   modular feature, not a `v1` dependency.

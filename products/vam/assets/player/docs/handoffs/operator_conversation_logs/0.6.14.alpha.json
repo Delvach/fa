@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.14",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T18:00:00-06:00",
+  "endedAt": "2026-04-13T18:25:27.3551050-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.14\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.14\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.14.alpha.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_video_player_proof_volodeck_witness\\meta_video_player_proof_volodeck_witness_receipt.json"
+    ],
+    "limitations": [
+      "Operator chat timestamps inside this slice are approximate unless anchored to repo receipts.",
+      "This log preserves the bounded plugin-ui reassessment and exact raw dev_deploy authority even though the client does not export exact per-message telemetry."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T00:23:11.0980154Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.14\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T00:23:12.0391201Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.14\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T00:23:46.0715952Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T18:25:27.3551050-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.14.alpha.json"
+    },
+    {
+      "timestamp": "2026-04-14T00:24:45.9099047Z",
+      "kind": "volodeck_witness_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_video_player_proof_volodeck_witness\\meta_video_player_proof_volodeck_witness_receipt.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.14-safe-slice-selected",
+      "after": "2026-04-13T18:00:00-06:00",
+      "before": "2026-04-14T00:23:11.0980154Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator deliberately constrained the next versioned slice to a plugin UI reassessment so the lane could improve safely while current VR testing continued.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.14-plugin-ui-plan",
+      "after": "2026-04-13T18:00:00-06:00",
+      "before": "2026-04-14T00:23:11.0980154Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Planned the slice as a bounded operator test-surface pass: expose already-registered runtime readback in the plugin panel, surface the existing resize actions visibly, and avoid transport, scene-generator, or Meta-runtime interaction changes.",
+      "reconstructedFrom": [
+        "surviving thread conversation",
+        "live code inspection"
+      ]
+    },
+    {
+      "entryId": "0.6.14-foundation-build",
+      "timestamp": "2026-04-14T00:23:11.0980154Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.14 cleanly, stamped the release artifacts, and produced a validated release boundary plus a build-only DevPlayer package report for the same version.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.14\\foundation_release_validation.json",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.14\\direct_cua\\player_var_package_report_latest.json"
+      ]
+    },
+    {
+      "entryId": "0.6.14-modern-tv-alpha",
+      "timestamp": "2026-04-14T00:23:46.0715952Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.14 alpha dev_deploy seam, keeping the 2018 raw shell export authority and versioned preset, host asset, and plugin names aligned.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
+    },
+    {
+      "entryId": "0.6.14-baseline-player-alpha",
+      "timestamp": "2026-04-13T18:25:27.3551050-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset from the validated 0.6.14 release output so the operator has both the generic player baseline and the modern_tv host proof on the same alpha core.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.14.alpha.json"
+      ]
+    },
+    {
+      "entryId": "0.6.14-volodeck-refresh",
+      "timestamp": "2026-04-14T00:24:45.9099047Z",
+      "timestampKind": "exact_volodeck_witness_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the authored Volodeck witness packet so the current visual proof remains in lockstep with the raw 0.6.14 alpha while the operator tests in VR.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_video_player_proof_volodeck_witness\\meta_video_player_proof_volodeck_witness_receipt.json"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.14 is the next semantic version because the plugin UI and operator test surface changed after 0.6.13 had already been built and committed.",
+    "The live authority seam for this slice remains dev_deploy raw Custom artifacts, not the .var package.",
+    "This slice is intentionally bounded to plugin UI readback and visible resize controls and does not change playback transport logic.",
+    "The baseline direct-player raw asset and the modern_tv hosted proof must stay on the same 0.6.14 alpha player core.",
+    "Volodeck remains a visual witness seam and should be refreshed whenever the live raw alpha changes."
+  ],
+  "openQuestions": [
+    "How does the 0.6.14 alpha plugin test surface feel in VR now that the panel exposes live readback and visible resize controls?",
+    "Which specific plugin UI groupings should be promoted next once the operator has live comfort feedback from the new panel shape?",
+    "When the operator provides the updated base scene layout, how much of the plugin UI should be mirrored or intentionally separated from the deterministic scene controls?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.14.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.14\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.14\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.14.alpha.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_video_player_proof_volodeck_witness\\meta_video_player_proof_volodeck_witness_receipt.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\preset_dev_modern_tv.0.6.14.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.14.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.14.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.14.alpha.dll"
+  ],
+  "notes": [
+    "The .var package report for 0.6.14 is build evidence only and remains undistributed.",
+    "This slice leaves the deeper Meta-runtime interaction lane intentionally untouched so the operator can test the current alpha safely."
+  ]
+}

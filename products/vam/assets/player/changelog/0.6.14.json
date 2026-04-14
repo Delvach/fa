@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "frameangel_player_release_changelog_v1",
+  "version": "0.6.14",
+  "title": "Expose operator readback and visible resize controls in the plugin UI",
+  "summary": "0.6.14 improves the player plugin panel as a live operator test surface by surfacing current version, target, media, timeline, and play-state readback, and by adding visible resize controls that already existed in the runtime contract.",
+  "reasoning": "With 0.6.13 correcting the preset overlap, the next safest quality rung is the plugin UI itself. The operator needs a more truthful test surface while validating the current raw dev_deploy alpha in VR, but this slice should not destabilize playback transport, Meta interaction, or scene generation. Exposing existing runtime readback and already-implemented resize actions improves observability and operator control without changing the player core behavior.",
+  "changes": [
+    {
+      "area": "plugin-ui-readback",
+      "summary": "The plugin UI now shows live build version, player target, media, timeline, and state readback fields.",
+      "reasoning": "These storables already existed and updated at runtime, but they were hidden from the operator panel."
+    },
+    {
+      "area": "plugin-ui-resize",
+      "summary": "The plugin UI now exposes Player Resize Down and Player Resize Up actions.",
+      "reasoning": "Resize already existed in the runtime and deterministic scene wiring; surfacing it in the plugin panel makes the test surface more complete."
+    },
+    {
+      "area": "plugin-ui-grouping",
+      "summary": "The plugin UI now uses light spacer grouping so presets, readback, editable path/transport, and advanced sections are easier to read.",
+      "reasoning": "The current panel remains VaM-native, but small structure improvements make it more usable as a live test surface."
+    }
+  ],
+  "verification": [
+    "Stamp 0.6.14 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build the player runtime cleanly from vs/fa_cua_player/fa_cua_player.csproj.",
+    "Refresh the 0.6.14 foundation outputs.",
+    "Deploy the raw modern_tv 0.6.14 alpha proof and the baseline direct-player raw asset.",
+    "Confirm the plugin panel shows readback fields and visible resize controls while keeping the current raw dev_deploy seam authoritative.",
+    "Refresh the Volodeck witness packet so visual proof remains current while the operator tests the live raw alpha in VR."
+  ],
+  "knownIssues": [
+    "This slice does not redesign the full plugin layout into a custom grid system; it remains a VaM-native row flow.",
+    "This slice does not promote the Meta runtime surface to full interaction; that remains a later lane.",
+    "This slice does not change packaged prerelease authority; the live test seam remains raw dev_deploy."
+  ]
+}

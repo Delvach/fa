@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.13",
-    "notes":  "0.6.13 makes preset selection truthful by always keeping a real none state instead of silently selecting the alphabetically first saved preset, which prevents stale presets from steering startup or load behavior before the operator explicitly chooses one.",
-    "branch":  "feature/docs-canon-release-strategy",
+    "version":  "0.6.14",
+    "notes":  "0.6.14 turns the plugin UI into a better operator test surface by exposing live player readback fields and visible resize controls without changing playback transport logic.",
+    "branch":  "release/0.6.14-plugin-ui-readback",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.13.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.14.json"
 }
