@@ -7077,7 +7077,10 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             if (record.videoPlayer != null)
+            {
                 record.videoPlayer.targetTexture = null;
+                record.videoPlayer.time = 0d;
+            }
         }
         catch
         {
@@ -8203,6 +8206,14 @@ public partial class FASyncRuntime : MVRScript
         record.hasAbLoopEnd = false;
         record.abLoopEndSeconds = 0d;
         record.abLoopEnabled = false;
+    }
+
+    private bool ShouldReportStandalonePlayerZeroTimeline(StandalonePlayerRecord record)
+    {
+        return record == null
+            || record.mediaIsStillImage
+            || record.preparePending
+            || !record.prepared;
     }
 
     private void ClearStandalonePlayerAbLoopStateForPlaylistNavigation(StandalonePlayerRecord record, string targetMediaPath)
@@ -9962,7 +9973,7 @@ public partial class FASyncRuntime : MVRScript
         double currentTimeSeconds = 0d;
         double currentDurationSeconds = 0d;
         double currentTimeNormalized = 0d;
-        if (!record.mediaIsStillImage)
+        if (!ShouldReportStandalonePlayerZeroTimeline(record))
         {
             try
             {
@@ -10404,7 +10415,7 @@ public partial class FASyncRuntime : MVRScript
         double currentTimeSeconds = 0d;
         double currentDurationSeconds = 0d;
         double currentTimeNormalized = 0d;
-        if (!record.mediaIsStillImage)
+        if (!ShouldReportStandalonePlayerZeroTimeline(record))
         {
             try
             {

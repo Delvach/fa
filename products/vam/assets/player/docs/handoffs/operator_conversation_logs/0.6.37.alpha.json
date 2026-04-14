@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.37",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.37 resets visible playback progress immediately when Next or Previous changes movies so the new media starts from a clean beginning state instead of carrying stale timeline visibility through prepare.",
+  "repoAnchors": {
+    "branch": "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.37.json"
+  },
+  "operatorSignals": [
+    "A-B was clearing on playlist navigation, but progress still looked like it was being carried into the next movie.",
+    "The lane needed a boring media-change reset instead of another transport policy layer."
+  ],
+  "actionsTaken": [
+    "Raw player loads now zero the video timeline immediately when a different media path is loaded.",
+    "Hosted player loads now reset seek, timeline, and A-B state consistently before preparing a new media path.",
+    "Visible runtime readback now reports zero timeline while a new movie is still preparing."
+  ],
+  "nonGoals": [
+    "No demo3 placement changes.",
+    "No slider/text display state wiring yet.",
+    "No audio changes.",
+    "No navigation changes."
+  ]
+}

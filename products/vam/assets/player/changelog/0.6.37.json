@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.37",
+  "title": "Reset progress cleanly on playlist navigation",
+  "summary": "0.6.37 keeps Next and Previous boring again by resetting visible timeline state as soon as playback moves to a different movie, instead of briefly carrying the prior clip's progress through prepare.",
+  "changes": [
+    "Raw standalone player loads now zero the video timeline immediately when a new media path is loaded.",
+    "Hosted standalone player loads now reset seek, timeline, and A-B state consistently before preparing a new media path.",
+    "Visible player readback now reports zero timeline while a new movie is still preparing, instead of showing stale progress from the previous clip."
+  ],
+  "reasoning": [
+    "The remaining A-B navigation concern looked like progress was being preserved across a real media change even though A-B itself was clearing.",
+    "The likely culprit was stale timeline visibility during prepare, not a new transport policy change, so the fix stays in the media-change reset seam.",
+    "Raw and hosted paths should not diverge here, even though the current live test seam is raw core-player."
+  ],
+  "operatorVisibleOutcomes": [
+    "When Next or Previous actually changes movies, progress should jump back to the beginning immediately instead of looking like it carried over.",
+    "The new movie should start from the beginning with A-B cleared, rather than inheriting stale visible timeline state during load."
+  ],
+  "knownIssues": [
+    "This slice does not change demo3 control placement, slider/state readback, or text display formatting.",
+    "This slice does not add the later A-B incremental scrub behavior."
+  ]
+}

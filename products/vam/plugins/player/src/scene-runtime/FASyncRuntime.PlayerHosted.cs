@@ -1590,6 +1590,9 @@ public partial class FASyncRuntime : MVRScript
         record.prepared = false;
         record.preparePending = false;
         record.prepareStartedAt = 0f;
+        record.seekResumePending = false;
+        record.seekResumeTargetSeconds = 0d;
+        record.seekResumeRequestedAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
@@ -1597,7 +1600,9 @@ public partial class FASyncRuntime : MVRScript
         record.hasObservedPlaybackTime = false;
         record.lastObservedPlaybackTimeSeconds = 0d;
         record.lastPlaybackMotionObservedAt = 0f;
+        ResetStandalonePlayerMasterTimeline(record);
         record.naturalEndHandled = false;
+        ClearStandalonePlayerAbLoopState(record);
 
         DestroyStandalonePlayerImageTexture(record);
 
@@ -1713,7 +1718,10 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             if (record.videoPlayer != null)
+            {
                 record.videoPlayer.Stop();
+                record.videoPlayer.time = 0d;
+            }
         }
         catch
         {
