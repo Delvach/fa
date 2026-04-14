@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.35",
+  "title": "Keep A-B transport bounded to the active clip and loop window",
+  "summary": "0.6.35 makes A-B behave more cleanly during transport: moving to another movie clears the current A-B loop state, and scrub seeks stay inside the active A-B window instead of jumping outside it.",
+  "changes": [
+    "Clear A-B state when manual next or previous transport moves the player to a different playlist item.",
+    "Clamp shared seek targets into the active A-B loop range when A-B is enabled and valid.",
+    "Leave playlist truth, nav behavior, surfaces, and deployment seams unchanged."
+  ],
+  "reasoning": [
+    "A-B should belong to the current movie, not leak forward when the operator intentionally navigates to another one.",
+    "If A-B is active, scrubbing outside the active window creates a confusing fight between the slider and the loop rule.",
+    "Both behaviors belong in the shared transport seam so direct and hosted paths keep one rule."
+  ],
+  "operatorVisibleOutcomes": [
+    "After setting A-B on a movie, pressing next or previous to load another movie clears the old A-B state.",
+    "While A-B is enabled, scrub seeks stay within the active A-B range."
+  ],
+  "knownIssues": [
+    "This slice does not change slideshow, volume gestures, spatial audio, or the remaining grab-nav polish."
+  ]
+}

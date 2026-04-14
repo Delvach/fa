@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.34",
-    "notes":  "0.6.34 backs the 0.6.33 collider-suppression experiment back out. The live lane returns to the simpler 0.6.32 rule where button 5 disables player gaze and focus behavior, without temporarily toggling hosted interaction colliders.",
-    "branch":  "release/0.6.34-back-out-collider-suppression",
+    "version":  "0.6.35",
+    "notes":  "0.6.35 keeps A-B owned by the current movie and the current loop window. Manual next and previous clear old A-B state, and shared scrub seeks clamp into the active A-B range while the loop is enabled.",
+    "branch":  "release/0.6.35-ab-loop-transport",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.34.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.35.json"
 }

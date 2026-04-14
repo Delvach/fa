@@ -6509,6 +6509,7 @@ public partial class FASyncRuntime : MVRScript
         {
             record.currentIndex = targetIndex;
             string targetPath = record.playlistPaths[targetIndex];
+            ClearStandalonePlayerAbLoopStateForPlaylistNavigation(record, targetPath);
             if (IsHostedPlayerInstanceId(record.instanceId))
             {
                 string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
@@ -6695,6 +6696,7 @@ public partial class FASyncRuntime : MVRScript
             okMessage = "player_seek_seconds ok";
         }
 
+        targetTimeSeconds = ClampStandalonePlayerSeekTargetToActiveAbLoopRange(record, targetTimeSeconds);
         bool shouldResumePlayback = record.desiredPlaying && !record.mediaIsStillImage;
         if (!TrySeekStandalonePlayerRecordToSeconds(record, targetTimeSeconds, shouldResumePlayback, out errorMessage))
         {
@@ -8189,6 +8191,45 @@ public partial class FASyncRuntime : MVRScript
         record.hasAbLoopEnd = false;
         record.abLoopEndSeconds = 0d;
         record.abLoopEnabled = false;
+    }
+
+    private void ClearStandalonePlayerAbLoopStateForPlaylistNavigation(StandalonePlayerRecord record, string targetMediaPath)
+    {
+        if (record == null || string.IsNullOrEmpty(targetMediaPath))
+            return;
+
+        string currentMediaPath = string.IsNullOrEmpty(record.mediaPath) ? "" : record.mediaPath.Trim();
+        string nextMediaPath = targetMediaPath.Trim();
+        if (string.Equals(currentMediaPath, nextMediaPath, StringComparison.OrdinalIgnoreCase))
+            return;
+
+        ClearStandalonePlayerAbLoopState(record);
+    }
+
+    private double ClampStandalonePlayerSeekTargetToActiveAbLoopRange(StandalonePlayerRecord record, double targetTimeSeconds)
+    {
+        if (record == null
+            || record.mediaIsStillImage
+            || !record.abLoopEnabled
+            || !HasValidStandalonePlayerAbLoopRange(record, out double startSeconds, out double endSeconds))
+        {
+            return targetTimeSeconds;
+        }
+
+        double upperBoundSeconds = endSeconds - StandalonePlayerPlaybackMotionEpsilonSeconds;
+        if (double.IsNaN(upperBoundSeconds)
+            || double.IsInfinity(upperBoundSeconds)
+            || upperBoundSeconds < startSeconds)
+        {
+            upperBoundSeconds = startSeconds;
+        }
+
+        if (targetTimeSeconds < startSeconds)
+            return startSeconds;
+        if (targetTimeSeconds > upperBoundSeconds)
+            return upperBoundSeconds;
+
+        return targetTimeSeconds;
     }
 
     private bool HasValidStandalonePlayerAbLoopRange(StandalonePlayerRecord record, out double startSeconds, out double endSeconds)

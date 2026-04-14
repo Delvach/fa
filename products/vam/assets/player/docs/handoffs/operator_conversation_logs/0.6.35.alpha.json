@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.35",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.35 tightens A-B transport behavior so A-B clears on manual movie navigation and scrub seeks stay inside the active A-B window.",
+  "repoAnchors": {
+    "branch": "release/0.6.35-ab-loop-transport",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.35.json"
+  },
+  "operatorSignals": [
+    "A-B should clear when navigating to another movie.",
+    "Scrubbing should stay inside the active A-B range."
+  ],
+  "actionsTaken": [
+    "Cleared A-B state when manual next or previous transport changes the current playlist item.",
+    "Clamped shared seek targets into the active A-B range while A-B is enabled."
+  ],
+  "nonGoals": [
+    "No playlist-truth rewrite.",
+    "No navigation or grab-nav changes.",
+    "No slideshow work.",
+    "No volume gesture work.",
+    "No spatial-audio work."
+  ]
+}
