@@ -9867,17 +9867,17 @@ public partial class FASyncRuntime : MVRScript
         {
             EnsurePendingPlayerDebugSummaries();
             if (playerRuntimeTargetField != null)
-                playerRuntimeTargetField.valNoCallback = playerPendingTargetSummary;
+                AssignVisiblePlayerStringField(playerRuntimeTargetField, playerPendingTargetSummary);
             if (playerRuntimeMediaField != null)
-                playerRuntimeMediaField.valNoCallback = playerPendingMediaSummary;
+                AssignVisiblePlayerStringField(playerRuntimeMediaField, playerPendingMediaSummary);
             if (playerRuntimeStateField != null)
-                playerRuntimeStateField.valNoCallback = playerPendingStateSummary;
+                AssignVisiblePlayerStringField(playerRuntimeStateField, playerPendingStateSummary);
             if (playerRuntimeParityField != null)
-                playerRuntimeParityField.valNoCallback = playerPendingParitySummary;
+                AssignVisiblePlayerStringField(playerRuntimeParityField, playerPendingParitySummary);
             if (playerRuntimeTimelineField != null)
-                playerRuntimeTimelineField.valNoCallback = playerPendingTimelineSummary;
+                AssignVisiblePlayerStringField(playerRuntimeTimelineField, playerPendingTimelineSummary);
             if (playerRuntimePlaylistField != null)
-                playerRuntimePlaylistField.valNoCallback = playerPendingPlaylistSummary;
+                AssignVisiblePlayerStringField(playerRuntimePlaylistField, playerPendingPlaylistSummary);
             UpdateStandalonePlayerSliderFields(0f, 1f);
             return;
         }
@@ -10023,18 +10023,30 @@ public partial class FASyncRuntime : MVRScript
         playerPendingPlaylistSummary = playlistSummary;
 
         if (playerRuntimeTargetField != null)
-            playerRuntimeTargetField.valNoCallback = targetSummary;
+            AssignVisiblePlayerStringField(playerRuntimeTargetField, targetSummary);
         if (playerRuntimeMediaField != null)
-            playerRuntimeMediaField.valNoCallback = mediaSummary;
+            AssignVisiblePlayerStringField(playerRuntimeMediaField, mediaSummary);
         if (playerRuntimeStateField != null)
-            playerRuntimeStateField.valNoCallback = stateSummary;
+            AssignVisiblePlayerStringField(playerRuntimeStateField, stateSummary);
         if (playerRuntimeParityField != null)
-            playerRuntimeParityField.valNoCallback = paritySummary;
+            AssignVisiblePlayerStringField(playerRuntimeParityField, paritySummary);
         if (playerRuntimeTimelineField != null)
-            playerRuntimeTimelineField.valNoCallback = timelineSummary;
+            AssignVisiblePlayerStringField(playerRuntimeTimelineField, timelineSummary);
         if (playerRuntimePlaylistField != null)
-            playerRuntimePlaylistField.valNoCallback = playlistSummary;
+            AssignVisiblePlayerStringField(playerRuntimePlaylistField, playlistSummary);
         UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
+    }
+
+    private void AssignVisiblePlayerStringField(JSONStorableString field, string value)
+    {
+        if (field == null)
+            return;
+
+        string normalized = value ?? "";
+        if (string.Equals(field.val, normalized, StringComparison.Ordinal))
+            return;
+
+        field.valNoCallback = normalized;
     }
 
     private void UpdateStandalonePlayerSliderFields(float scrubNormalized, float volumeNormalized)
@@ -10047,9 +10059,23 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             if (playerScrubNormalizedField != null && now >= standalonePlayerScrubFieldSyncHoldoffUntil)
-                playerScrubNormalizedField.valNoCallback = Mathf.Clamp01(scrubNormalized);
+            {
+                float clampedScrub = Mathf.Clamp01(scrubNormalized);
+                if (Mathf.Abs(lastPlayerScrubNormalizedValue - clampedScrub) > 0.0005f)
+                {
+                    playerScrubNormalizedField.valNoCallback = clampedScrub;
+                    lastPlayerScrubNormalizedValue = clampedScrub;
+                }
+            }
             if (playerVolumeNormalizedField != null)
-                playerVolumeNormalizedField.valNoCallback = Mathf.Clamp01(volumeNormalized);
+            {
+                float clampedVolume = Mathf.Clamp01(volumeNormalized);
+                if (Mathf.Abs(lastPlayerVolumeNormalizedValue - clampedVolume) > 0.0005f)
+                {
+                    playerVolumeNormalizedField.valNoCallback = clampedVolume;
+                    lastPlayerVolumeNormalizedValue = clampedVolume;
+                }
+            }
         }
         finally
         {

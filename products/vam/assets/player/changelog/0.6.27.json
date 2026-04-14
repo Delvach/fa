@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.27",
+  "title": "Remove stray outbox writes and trim idle player readback churn",
+  "summary": "0.6.27 keeps the restored 0.6.24 core-player baseline and the 0.6.26 video-time-owned sync seam, but removes normal-build runtime event outbox appends and slows or change-gates player readback updates so idle and paused playback stop paying for test-surface baggage.",
+  "changes": [
+    "Disable runtime event outbox file appends in the normal non-test core-player build so the player no longer writes session event JSONL during ordinary playback use.",
+    "Slow the shared rig or player readback refresh cadence from 0.20s to 1.00s for this lane.",
+    "Only write player target, media, state, parity, timeline, playlist, scrub, and volume storables when the visible value actually changes.",
+    "Stamp version 0.6.27 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and raw-deploy the 0.6.27 core-player alpha seam with package inventory generated via -SkipVarDistribute."
+  ],
+  "reasoning": [
+    "The current lag report described worsening hourglass freezes even when playback was paused on images, which pointed away from the new video-time-owned sync seam and toward hidden background work.",
+    "Code review showed that the runtime still carried an event outbox append path and that player readback summaries were being rebuilt and reassigned on a frequent cadence even when they were unchanged.",
+    "This slice stays narrow on file-I/O hygiene and idle refresh churn only; it does not redesign the panel, reopen playlist policy, or change the sync authority model."
+  ],
+  "operatorVisibleOutcomes": [
+    "The core player should stop appending runtime event outbox files during ordinary non-test playback.",
+    "Idle or paused playback should spend less time rebuilding hidden readback payloads and writing unchanged slider or status values."
+  ],
+  "knownIssues": [
+    "Preset read and write behavior still exists intentionally for saved preset and playlist workflows.",
+    "Meta and innerpiece package-storage code paths still exist in the repo, but this slice targets the core-player runtime lane only."
+  ]
+}

@@ -12,7 +12,7 @@ public partial class FASyncRuntime : MVRScript
 {
     private const float PrimitiveSurfaceDepth = 0.01f;
     private const float MarkerSphereDiameter = 0.06f;
-    private const float RigStateRefreshIntervalSeconds = 0.20f;
+    private const float RigStateRefreshIntervalSeconds = 1.00f;
     private const float MinPrimitiveScale = 0.001f;
     private const float MinPanelDistanceMeters = 0.15f;
     private const float DirectManipulationGrabRadiusMeters = 0.20f;
@@ -167,6 +167,8 @@ public partial class FASyncRuntime : MVRScript
     private string playerPendingParitySummary = "";
     private string playerPendingTimelineSummary = "";
     private string playerPendingPlaylistSummary = "";
+    private float lastPlayerScrubNormalizedValue = -1f;
+    private float lastPlayerVolumeNormalizedValue = -1f;
     private string pendingPlayerMediaBrowserSuccessStatus = "";
     private bool pendingPlayerMediaBrowserTargetsMetaProof = false;
     private bool playerMediaBrowserOpen = false;
@@ -5424,7 +5426,7 @@ public partial class FASyncRuntime : MVRScript
         string payloadJson = ""
     )
     {
-#if FRAMEANGEL_CUA_PLAYER
+#if !FRAMEANGEL_TEST_SURFACES || FRAMEANGEL_CUA_PLAYER
         return;
 #else
         syncEventSequence++;

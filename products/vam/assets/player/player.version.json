@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.26",
-    "notes":  "0.6.26 keeps the once-per-second sync seam but removes AudioSource.time from correction decisions, seeds the player-owned timeline from prepareCompleted and started, and keeps audio as output plumbing instead of hidden time authority.",
-    "branch":  "release/0.6.26-video-time-authority-sync",
+    "version":  "0.6.27",
+    "notes":  "0.6.27 keeps the 0.6.26 video-time-owned sync seam, disables runtime event outbox file appends in the normal core-player build, and trims player status refresh churn so idle and paused use stop paying for test-surface baggage.",
+    "branch":  "release/0.6.27-core-player-io-and-refresh-hygiene",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.26.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.27.json"
 }

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.27",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.27 is the core-player file-I/O and refresh-hygiene slice after 0.6.26 fixed the video sync issue but the operator still reported worsening hourglass freezes even when paused on images.",
+  "repoAnchors": {
+    "branch": "release/0.6.27-core-player-io-and-refresh-hygiene",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.27.json"
+  },
+  "operatorSignals": [
+    "0.6.26 fixed the video sync issue.",
+    "A separate worsening lag remained, with hourglass freezes every few seconds until the player became unusable.",
+    "The lag still appeared even when movies were paused and only images were loaded.",
+    "The operator asked for absolute confidence that the core player was not drifting into stray file reads or writes outside media and playlist handling."
+  ],
+  "actionsTaken": [
+    "Verified official VaM's built-in ImageControl seam in Assembly-CSharp.dll and kept the 0.6.26 video-time-owned sync model intact.",
+    "Checked the current player runtime for stray file-I/O and found the SessionBridgeJsonl event outbox append path was still present in the normal scene-runtime code.",
+    "Disabled runtime event outbox appends for non-test core-player builds.",
+    "Reduced the status refresh cadence and changed player readback and slider writes to update only on meaningful value changes."
+  ],
+  "nonGoals": [
+    "No panel redesign.",
+    "No surface, binding, TV, or Volodeck work.",
+    "No playlist or autoplay policy changes.",
+    "No same-version raw and .var overlap."
+  ]
+}
