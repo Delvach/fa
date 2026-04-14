@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.29",
-    "notes":  "0.6.29 keeps the 0.6.28 CUA focus and trigger-tap behavior, but broadens the grab-navigation override input so the official joystick button 5 path can also temporarily release gaze capture and restore navigation while it is held.",
-    "branch":  "release/0.6.28-cua-nav-focus-trigger",
+    "version":  "0.6.30",
+    "notes":  "0.6.30 keeps the 0.6.28/0.6.29 CUA focus and trigger-tap behavior, but changes the joystick button 5 override into a true grab-navigation handoff that keeps ordinary locomotion disabled while the user is holding the grab-nav control.",
+    "branch":  "release/0.6.30-grab-nav-handoff",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.29.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.30.json"
 }

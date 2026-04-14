@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.30",
+  "title": "Turn the joystick button 5 override into a true grab-navigation handoff",
+  "summary": "0.6.30 keeps the current CUA focus and trigger-tap behavior intact, but stops treating the joystick button 5 override as a broad navigation unlock. While the override is held, ordinary locomotion stays disabled and VaM's own grab-navigation path is given the handoff instead.",
+  "changes": [
+    "Keep the existing thumbstick-click and joystick button 5 detection paths for the temporary grab-navigation override.",
+    "Replace the broad override release with a dedicated grab-navigation handoff state inside the CUA input module.",
+    "While the grab-nav override is held, keep ordinary navigation disabled, keep pointers hidden, and avoid running local CUA navigation handling.",
+    "Restore the original VaM navigation snapshot cleanly when the grab-nav override ends, then let gaze focus re-engage naturally from the existing rules."
+  ],
+  "reasoning": [
+    "The 0.6.29 slice correctly found the operator's button path, but it yielded too broadly and restored normal stick locomotion instead of true grab-navigation.",
+    "Official VaM grab-navigation is a separate path from ordinary joystick locomotion, so the correct fix is a narrower handoff state instead of a general navigation unlock.",
+    "Keeping the change inside the CUA input module avoids reopening playback, playlists, surfaces, or deployment behavior."
+  ],
+  "operatorVisibleOutcomes": [
+    "If the user is looking at the screen and holds the joystick button 5 grab-nav control, ordinary joystick locomotion should stay out of the way while VaM grab-navigation remains available.",
+    "When the override ends, gaze focus can re-engage using the existing focus rules instead of forcing an immediate recapture while the override is still active."
+  ],
+  "knownIssues": [
+    "This slice does not change playback, slideshow behavior, A-B policy, right-stick volume, or spatial audio.",
+    "This slice does not redesign surfaces, panel UI, or TV placement."
+  ]
+}

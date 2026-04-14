@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.30",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.30 is a narrow follow-up to 0.6.29 that turns the joystick button 5 override into a true grab-navigation handoff instead of a broad normal-navigation unlock.",
+  "repoAnchors": {
+    "branch": "release/0.6.30-grab-nav-handoff",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.30.json"
+  },
+  "operatorSignals": [
+    "0.6.29 re-enabled movement while the override was held, but it restored ordinary joystick locomotion instead of the intended grab-navigation behavior.",
+    "The requested action is still strictly the temporary navigation override seam, not a broader panel, playback, playlist, or deployment change."
+  ],
+  "actionsTaken": [
+    "Kept the slice strictly inside the CUA input and focus seam.",
+    "Replaced the broad override release with a dedicated grab-navigation handoff state.",
+    "Kept ordinary locomotion disabled while the handoff is active, restored the original VaM navigation snapshot when it ends, and left the rest of the player untouched."
+  ],
+  "nonGoals": [
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}
