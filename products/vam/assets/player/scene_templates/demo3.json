@@ -1,0 +1,2188 @@
+{ 
+   "playerHeightAdjust" : "0.9001113", 
+   "monitorCameraRotation" : { 
+      "x" : "8.763025", 
+      "y" : "0", 
+      "z" : "0"
+   }, 
+   "useSceneLoadPosition" : "false", 
+   "atoms" : [ 
+      { 
+         "id" : "WindowCamera", 
+         "on" : "true", 
+         "type" : "WindowCamera", 
+         "position" : { 
+            "x" : "0.351", 
+            "y" : "1.831", 
+            "z" : "0.155"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.351", 
+            "y" : "1.831", 
+            "z" : "0.155"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0.351", 
+                  "y" : "1.831", 
+                  "z" : "0.155"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "DisplayControl", 
+               "position" : { 
+                  "x" : "0.51", 
+                  "y" : "1.831", 
+                  "z" : "0.155"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "WindowCamera:control"
+            }
+         ]
+      }, 
+      { 
+         "id" : "PlayerNavigationPanel", 
+         "on" : "true", 
+         "type" : "PlayerNavigationPanel", 
+         "position" : { 
+            "x" : "0.5", 
+            "y" : "0", 
+            "z" : "0.5"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.5", 
+            "y" : "0", 
+            "z" : "0.5"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "control", 
+               "interactableInPlayMode" : "false", 
+               "xPositionLock" : "true", 
+               "yPositionLock" : "true", 
+               "zPositionLock" : "true", 
+               "xRotationLock" : "true", 
+               "yRotationLock" : "true", 
+               "zRotationLock" : "true", 
+               "position" : { 
+                  "x" : "0.5", 
+                  "y" : "0", 
+                  "z" : "0.5"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "CoreControl", 
+         "on" : "true", 
+         "type" : "CoreControl", 
+         "storables" : [ 
+            { 
+               "id" : "MotionAnimationMaster", 
+               "triggers" : [ 
+               ]
+            }
+         ]
+      }, 
+      { 
+         "id" : "[CameraRig]", 
+         "on" : "true", 
+         "type" : "VRController", 
+         "position" : { 
+            "x" : "0.1526278", 
+            "y" : "0", 
+            "z" : "3.112866"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "138.6504", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+         ]
+      }, 
+      { 
+         "id" : "100%", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "100%"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_scale:1.00", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_scale:1.00", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "scale", 
+                        "receiverTargetName" : "scale", 
+                        "floatValue" : "1", 
+                        "useTimer" : "true", 
+                        "timerLength" : "0.5", 
+                        "timerType" : "EaseInOut"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0.5999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "150%", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-0.3000001", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "150%"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_scale:1.50", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_scale:1.50", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "scale", 
+                        "receiverTargetName" : "scale", 
+                        "floatValue" : "1.5", 
+                        "useTimer" : "true", 
+                        "timerLength" : "0.5", 
+                        "timerType" : "EaseInOut"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-0.3000001", 
+                  "y" : "0.5999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "50%", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.3000001", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "50%"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_scale:0.50", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_scale:0.50", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "scale", 
+                        "receiverTargetName" : "scale", 
+                        "floatValue" : "0.4999999", 
+                        "useTimer" : "true", 
+                        "timerLength" : "0.5", 
+                        "timerType" : "EaseInOut"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.3000001", 
+                  "y" : "0.5999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "CUA_SKY", 
+         "on" : "false", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-3.364094E-06", 
+            "y" : "-9.607811", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "-1.264502E-05", 
+            "y" : "219.0728", 
+            "z" : "1.557476E-05"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "Assets/skyboxclouds.unity", 
+               "assetUrl" : "TacoCat.Greece_ruins.2:/Custom/Assets/[TacoCat]/skyboxclouds.scene"
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "-3.364094E-06", 
+                  "y" : "-9.607811", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "-1.264502E-05", 
+                  "y" : "219.0728", 
+                  "z" : "1.557476E-05"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "InvisibleLight_SUN", 
+         "on" : "false", 
+         "type" : "InvisibleLight", 
+         "position" : { 
+            "x" : "0.29", 
+            "y" : "1.833", 
+            "z" : "0.238"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.29", 
+            "y" : "1.833", 
+            "z" : "0.238"
+         }, 
+         "containerRotation" : { 
+            "x" : "43.18985", 
+            "y" : "12.7718", 
+            "z" : "129.9093"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Light", 
+               "intensity" : "1.2", 
+               "shadowStrength" : "1", 
+               "type" : "Directional", 
+               "renderType" : "ForcePixel", 
+               "shadowResolution" : "VeryHigh", 
+               "color" : { 
+                  "h" : "0.086", 
+                  "s" : "0.2265117", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0.29", 
+                  "y" : "1.833", 
+                  "z" : "0.238"
+               }, 
+               "rotation" : { 
+                  "x" : "43.18985", 
+                  "y" : "12.7718", 
+                  "z" : "129.9093"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_toggle_play", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "1.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Play/pause"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_previous", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "1.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.3000001", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Previous"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.3000001", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_load", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "1.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0.6999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Load"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_Player Load Media", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_Player Load Media", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "Player Load Media"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0.6999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "screen_middle", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "scale", 
+               "scale" : "2"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "assets/fa/player/main.prefab", 
+               "assetUrl" : "Custom/Assets/FrameAngel/Player/asset_dev_player.0.6.7.alpha.assetbundle"
+            }, 
+            { 
+               "id" : "PluginManager", 
+               "plugins" : { 
+                  "plugin#0" : "Custom/Plugins/plugin_player_dev.0.6.27.alpha.dll"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "1", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "plugin#0_FASyncRuntime", 
+               "Favorite" : "true", 
+               "Preset Name" : "1024", 
+               "Favorites" : "1024", 
+               "Select Existing..." : "1024"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_next", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "1.4", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-0.3000001", 
+            "y" : "0.8", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Next"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-0.3000001", 
+                  "y" : "0.8", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "slider_progress", 
+         "on" : "true", 
+         "type" : "UISlider", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "30", 
+               "text" : " "
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "1400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "SliderColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8"
+            }, 
+            { 
+               "id" : "Trigger", 
+               "value" : "0.7334521", 
+               "trigger" : { 
+                  "displayName" : "A_scrub_normalized:0.00_1.00", 
+                  "startActions" : [ 
+                  ], 
+                  "transitionActions" : [ 
+                     { 
+                        "name" : "A_scrub_normalized:0.00_1.00", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "scrub_normalized", 
+                        "startValue" : "0", 
+                        "endValue" : "1", 
+                        "startWithCurrentVal" : "false"
+                     }
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "display_curr", 
+         "on" : "true", 
+         "type" : "UIText", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.47", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "00:00"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "Panel", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.47", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "display_total", 
+         "on" : "true", 
+         "type" : "UIText", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0.47", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-0.47", 
+            "y" : "0.9", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "30:00"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "Panel", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-0.47", 
+                  "y" : "0.9", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "checkbox_shuffle", 
+         "on" : "true", 
+         "type" : "UIToggle", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-0.29", 
+            "y" : "0.6999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Shuffle"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "300", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "SliderColor", 
+               "alpha" : "0", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-0.29", 
+                  "y" : "0.6999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "25%", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0.3000001", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.6", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "25%"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_scale:0.25", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_scale:0.25", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "scale", 
+                        "receiverTargetName" : "scale", 
+                        "floatValue" : "0.25", 
+                        "useTimer" : "true", 
+                        "timerLength" : "0.5", 
+                        "timerType" : "EaseInOut"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.6", 
+                  "y" : "0.5999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "Slate", 
+         "on" : "true", 
+         "type" : "Slate", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "materials", 
+               "Diffuse Color" : { 
+                  "h" : "0.5892416", 
+                  "s" : "0.3808538", 
+                  "v" : "0.9661254"
+               }, 
+               "Specular Color" : { 
+                  "h" : "0.5892416", 
+                  "s" : "0.3808538", 
+                  "v" : "0.9661254"
+               }, 
+               "Subsurface Color" : { 
+                  "h" : "0.5892416", 
+                  "s" : "0.3808538", 
+                  "v" : "0.9661254"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "xPositionLock" : "true", 
+               "zPositionLock" : "true", 
+               "xRotationLock" : "true", 
+               "yRotationLock" : "true", 
+               "zRotationLock" : "true", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }
+            }
+         ]
+      }, 
+      { 
+         "id" : "spotlight_middle", 
+         "on" : "true", 
+         "type" : "InvisibleLight", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0", 
+            "y" : "5", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "90", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Light", 
+               "intensity" : "2", 
+               "range" : "6", 
+               "spotAngle" : "30", 
+               "type" : "Spot", 
+               "renderType" : "ForcePixel", 
+               "color" : { 
+                  "h" : "0.086", 
+                  "s" : "0.22", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "canGrabPosition" : "false", 
+               "canGrabRotation" : "false", 
+               "xRotationLock" : "true", 
+               "yRotationLock" : "true", 
+               "zRotationLock" : "true", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0", 
+                  "y" : "5", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "90", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "screen_left", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "1"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "315", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "scale", 
+               "scale" : "1.5"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "assets/fa/player/main.prefab", 
+               "assetUrl" : "Custom/Assets/FrameAngel/Player/asset_dev_player.0.6.27.alpha.assetbundle"
+            }, 
+            { 
+               "id" : "PluginManager", 
+               "plugins" : { 
+                  "plugin#0" : "Custom/Plugins/plugin_player_dev.0.6.27.alpha.dll"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "2.4", 
+                  "y" : "1", 
+                  "z" : "1"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "315", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "plugin#0_FASyncRuntime", 
+               "Favorite" : "true", 
+               "Preset Name" : "1024", 
+               "Favorites" : "1024", 
+               "Select Existing..." : "1024"
+            }
+         ]
+      }, 
+      { 
+         "id" : "screen_right", 
+         "on" : "true", 
+         "type" : "CustomUnityAsset", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-2.4", 
+            "y" : "1", 
+            "z" : "1"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "45", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "scale", 
+               "scale" : "1.5"
+            }, 
+            { 
+               "id" : "asset", 
+               "assetName" : "assets/fa/player/main.prefab", 
+               "assetUrl" : "Custom/Assets/FrameAngel/Player/asset_dev_player.0.6.27.alpha.assetbundle"
+            }, 
+            { 
+               "id" : "PluginManager", 
+               "plugins" : { 
+                  "plugin#0" : "Custom/Plugins/plugin_player_dev.0.6.27.alpha.dll"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "position" : { 
+                  "x" : "-2.4", 
+                  "y" : "1", 
+                  "z" : "1"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "45", 
+                  "z" : "0"
+               }
+            }, 
+            { 
+               "id" : "plugin#0_FASyncRuntime", 
+               "Favorite" : "true", 
+               "Preset Name" : "mck", 
+               "Favorites" : "mck", 
+               "Select Existing..." : "mck"
+            }
+         ]
+      }, 
+      { 
+         "id" : "spotlight_left", 
+         "on" : "true", 
+         "type" : "InvisibleLight", 
+         "parentAtom" : "screen_left", 
+         "position" : { 
+            "x" : "2.4", 
+            "y" : "1", 
+            "z" : "1"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "315", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "2.4", 
+            "y" : "5", 
+            "z" : "1"
+         }, 
+         "containerRotation" : { 
+            "x" : "90", 
+            "y" : "315", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Light", 
+               "intensity" : "2", 
+               "range" : "6", 
+               "spotAngle" : "30", 
+               "type" : "Spot", 
+               "renderType" : "ForcePixel", 
+               "color" : { 
+                  "h" : "0.086", 
+                  "s" : "0.22", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "canGrabPosition" : "false", 
+               "canGrabRotation" : "false", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "2.4", 
+                  "y" : "5", 
+                  "z" : "1"
+               }, 
+               "rotation" : { 
+                  "x" : "90", 
+                  "y" : "315", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_left:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "spotlight_right", 
+         "on" : "true", 
+         "type" : "InvisibleLight", 
+         "parentAtom" : "screen_right", 
+         "position" : { 
+            "x" : "-2.4", 
+            "y" : "1", 
+            "z" : "1"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "45", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-2.4", 
+            "y" : "5", 
+            "z" : "1"
+         }, 
+         "containerRotation" : { 
+            "x" : "90", 
+            "y" : "45", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Light", 
+               "intensity" : "2", 
+               "range" : "6", 
+               "spotAngle" : "30", 
+               "type" : "Spot", 
+               "renderType" : "ForcePixel", 
+               "color" : { 
+                  "h" : "0.086", 
+                  "s" : "0.22", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "canGrabPosition" : "false", 
+               "canGrabRotation" : "false", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-2.4", 
+                  "y" : "5", 
+                  "z" : "1"
+               }, 
+               "rotation" : { 
+                  "x" : "90", 
+                  "y" : "45", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_right:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "200%", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "spotlight_middle", 
+         "position" : { 
+            "x" : "-0.3000001", 
+            "y" : "0.5999932", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "-0.6", 
+            "y" : "0.5999751", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "200%"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_scale:2.00", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_scale:2.00", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "scale", 
+                        "receiverTargetName" : "scale", 
+                        "floatValue" : "2", 
+                        "useTimer" : "true", 
+                        "timerLength" : "1", 
+                        "timerType" : "EaseInOut"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "-0.6", 
+                  "y" : "0.5999761", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "spotlight_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "slider_volume", 
+         "on" : "true", 
+         "type" : "UISlider", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0", 
+            "y" : "1", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "1.3", 
+            "y" : "1.4", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "270"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "30", 
+               "text" : " "
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "1400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "SliderColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "0.1985294"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_volume_normalized:0.00_1.00", 
+                  "startActions" : [ 
+                  ], 
+                  "transitionActions" : [ 
+                     { 
+                        "name" : "A_volume_normalized:0.00_1.00", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "volume_normalized", 
+                        "startValue" : "0", 
+                        "endValue" : "1", 
+                        "startWithCurrentVal" : "false"
+                     }
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "xRotationLock" : "true", 
+               "yRotationLock" : "true", 
+               "zRotationLock" : "true", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "1.3", 
+                  "y" : "1.4", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "270"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_a", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0.6", 
+            "y" : "0.5999999", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.6", 
+            "y" : "0.3999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "text" : "A"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "200"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_Player A-B Set Start", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_Player A-B Set Start", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "Player A-B Set Start"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.6", 
+                  "y" : "0.3999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_b", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "screen_middle", 
+         "position" : { 
+            "x" : "0.6", 
+            "y" : "0.3999999", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.4", 
+            "y" : "0.3999999", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "text" : "B"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "200"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_Player A-B Set End", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_Player A-B Set End", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "Player A-B Set End"
+                     }, 
+                     { 
+                        "name" : "A_Player A-B Enable", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "Player A-B Enable"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.4", 
+                  "y" : "0.3999999", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }, 
+      { 
+         "id" : "button_clear", 
+         "on" : "true", 
+         "type" : "UIButton", 
+         "parentAtom" : "spotlight_middle", 
+         "position" : { 
+            "x" : "0.4", 
+            "y" : "0.3999991", 
+            "z" : "0"
+         }, 
+         "rotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "containerPosition" : { 
+            "x" : "0.2", 
+            "y" : "0.3999963", 
+            "z" : "0"
+         }, 
+         "containerRotation" : { 
+            "x" : "0", 
+            "y" : "0", 
+            "z" : "0"
+         }, 
+         "storables" : [ 
+            { 
+               "id" : "AtomControl", 
+               "hidden" : "true"
+            }, 
+            { 
+               "id" : "Text", 
+               "fontSize" : "50", 
+               "text" : "Clear"
+            }, 
+            { 
+               "id" : "Canvas", 
+               "xSize" : "400", 
+               "ySize" : "100"
+            }, 
+            { 
+               "id" : "ButtonColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0.7661355", 
+                  "s" : "0.5051217", 
+                  "v" : "0.4531248"
+               }
+            }, 
+            { 
+               "id" : "TextColor", 
+               "alpha" : "0.8", 
+               "color" : { 
+                  "h" : "0", 
+                  "s" : "0", 
+                  "v" : "1"
+               }
+            }, 
+            { 
+               "id" : "Trigger", 
+               "trigger" : { 
+                  "displayName" : "A_Player A-B Clear", 
+                  "startActions" : [ 
+                     { 
+                        "name" : "A_Player A-B Clear", 
+                        "receiverAtom" : "screen_middle", 
+                        "receiver" : "plugin#0_FASyncRuntime", 
+                        "receiverTargetName" : "Player A-B Clear"
+                     }
+                  ], 
+                  "transitionActions" : [ 
+                  ], 
+                  "endActions" : [ 
+                  ]
+               }
+            }, 
+            { 
+               "id" : "control", 
+               "positionState" : "ParentLink", 
+               "rotationState" : "ParentLink", 
+               "position" : { 
+                  "x" : "0.2", 
+                  "y" : "0.3999972", 
+                  "z" : "0"
+               }, 
+               "rotation" : { 
+                  "x" : "0", 
+                  "y" : "0", 
+                  "z" : "0"
+               }, 
+               "linkTo" : "screen_middle:object"
+            }
+         ]
+      }
+   ]
+}

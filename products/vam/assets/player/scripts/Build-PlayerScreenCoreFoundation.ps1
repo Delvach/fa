@@ -15,7 +15,7 @@ param(
     [string]$VarSceneDiagnosticsFilter = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$VarSceneDisplayPolicy = "multi_aspect",
-    [int]$VarSceneIncludeManagedControls = 0,
+    [int]$VarSceneIncludeManagedControls = 1,
     [string]$VarDemoMediaSourceRoot = "",
     [string]$VarDemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$VarCreatorName = "FrameAngel",
@@ -23,6 +23,9 @@ param(
     [string]$VarPackageMetadataPath = "",
     [int]$VarPublicRelease = 0,
     [string]$VarDestinationAddonPackages = "F:\sim\vam\AddonPackages",
+    [switch]$SkipLiveScene,
+    [string]$LiveSceneOutputDirectory = "F:\sim\vam\Saves\scene",
+    [string]$LiveSceneOutputBaseName = "",
     [switch]$SkipVarDistribute
 )
 
@@ -218,7 +221,7 @@ function Convert-PlayerReleaseChangelogToMarkdown {
 $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot $PSScriptRoot -EnsureAssetLaneScaffold
 $RepoRoot = $laneRoots.RepoRoot
 $versionState = Read-FrameAngelPlayerVersionState -RepoRoot $RepoRoot
-$defaultVarSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+$defaultVarSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\demo3.json"
 if ([string]::IsNullOrWhiteSpace($VarSceneTemplatePath)) {
     $VarSceneTemplatePath = $defaultVarSceneTemplatePath
 }
@@ -245,6 +248,7 @@ $livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.
 $manifestPath = Join-Path $releaseRoot "foundation_release_manifest.json"
 $validatorScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Validate-PlayerScreenCoreRelease.ps1"
 $varPackagerScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerVarPackage.ps1"
+$sceneBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerDemoScene.ps1"
 $pluginBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerResource.ps1"
 $assetBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerAssetBundle.ps1"
 $changelogSourcePath = if (($resolvedVersion -eq $versionState.Version) -and -not [string]::IsNullOrWhiteSpace($versionState.ChangelogPath)) {
@@ -389,33 +393,94 @@ if ($LASTEXITCODE -ne 0) {
     throw "Validate-PlayerScreenCoreRelease.ps1 failed."
 }
 
+$liveScenePath = ""
+$liveScenePreviewPath = ""
+if (-not $SkipLiveDeploy.IsPresent -and -not $SkipLiveScene.IsPresent) {
+    $resolvedLiveSceneBaseName = if ([string]::IsNullOrWhiteSpace($LiveSceneOutputBaseName)) {
+        [System.IO.Path]::GetFileNameWithoutExtension($VarSceneTemplatePath)
+    }
+    else {
+        $LiveSceneOutputBaseName.Trim()
+    }
+
+    $liveSceneArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        $sceneBuildScript,
+        "-RepoRoot",
+        $RepoRoot,
+        "-Version",
+        $resolvedVersion,
+        "-SceneTemplatePath",
+        $VarSceneTemplatePath,
+        "-OutputDirectory",
+        $LiveSceneOutputDirectory,
+        "-OutputSceneBaseName",
+        $resolvedLiveSceneBaseName,
+        "-ReceiptLabel",
+        "player_live_demo_scene_build",
+        "-DisplayPolicy",
+        $VarSceneDisplayPolicy,
+        "-IncludeManagedControls",
+        $VarSceneIncludeManagedControls,
+        "-AllowExistingVersion"
+    )
+    if (-not [string]::IsNullOrWhiteSpace($VarScenePrimaryMediaPath)) {
+        $liveSceneArgs += @(
+            "-PrimaryMediaPath",
+            $VarScenePrimaryMediaPath
+        )
+    }
+
+    $liveSceneBuildResult = & powershell @liveSceneArgs
+    if ($LASTEXITCODE -ne 0) {
+        throw "Build-PlayerDemoScene.ps1 failed while emitting the live demo scene."
+    }
+
+    $liveScenePath = [string]($liveSceneBuildResult | Select-Object -Last 1)
+    if (-not [string]::IsNullOrWhiteSpace($liveScenePath)) {
+        $liveScenePath = $liveScenePath.Trim()
+        $candidatePreviewPath = [System.IO.Path]::ChangeExtension($liveScenePath, ".jpg")
+        if (Test-Path -LiteralPath $candidatePreviewPath) {
+            $liveScenePreviewPath = $candidatePreviewPath
+        }
+    }
+}
+
 $manifest = [ordered]@{
-    schemaVersion = "frameangel_player_screen_core_release_v4"
+    schemaVersion = "frameangel_player_screen_core_release_v5"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     version = $resolvedVersion
     repoAssetPath = $repoAssetPath
     repoPluginPath = $repoPluginPath
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
     livePluginPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $livePluginPath }
+    liveScenePath = $liveScenePath
+    liveScenePreviewPath = $liveScenePreviewPath
     releaseSurface = [ordered]@{
         phase = "phase_1_screen_with_vam_controls"
         authoritySeam = "versioned assetbundle plus matching manually attached plugin"
         expectedControlSurface = "VaM buttons and sliders bound to exposed player methods"
-        deterministicSceneWitness = "allowed as a later witness seam, but not required by this build wrapper"
+        deterministicSceneWitness = if ([string]::IsNullOrWhiteSpace($liveScenePath)) { "not emitted by this build wrapper" } else { $liveScenePath }
         includesMetaUi = $false
     }
     process = [ordered]@{
         pluginBuildScript = $pluginBuildScript
         assetBuildScript = $assetBuildScript
+        sceneBuildScript = $sceneBuildScript
         validatorScript = $validatorScript
         deploysVersionedPlugin = -not $SkipLiveDeploy.IsPresent
         deploysVersionedAssetbundle = -not $SkipLiveDeploy.IsPresent
+        deploysLiveDemoScene = -not $SkipLiveDeploy.IsPresent -and -not $SkipLiveScene.IsPresent
         removesLegacyPresetDrift = -not $SkipLiveDeploy.IsPresent
         removesAssetSideDllDrift = -not $SkipLiveDeploy.IsPresent
         packageOnlyDeploy = $PackageOnlyDeploy.IsPresent
         buildsVarPackage = $BuildVarPackage.IsPresent
         includesPackagedScene = $effectiveIncludeVarScene
         includesPackagedShellFamily = $IncludeVarShellFamily.IsPresent
+        liveSceneTemplatePath = if ($SkipLiveScene.IsPresent) { "" } else { $VarSceneTemplatePath }
         varPackageMetadataPath = $VarPackageMetadataPath
     }
     changelog = [ordered]@{
@@ -440,6 +505,8 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     repoPluginPath = $repoPluginPath
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
     livePluginPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $livePluginPath }
+    liveScenePath = $liveScenePath
+    liveScenePreviewPath = $liveScenePreviewPath
 })
 
 $varPackageReport = $null
@@ -529,6 +596,8 @@ if ($BuildVarPackage.IsPresent) {
     repoPluginPath = $repoPluginPath
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
     livePluginPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $livePluginPath }
+    liveScenePath = $liveScenePath
+    liveScenePreviewPath = $liveScenePreviewPath
     manifestPath = $manifestPath
     changelogJsonPath = $releaseChangelogJsonPath
     changelogMarkdownPath = $releaseChangelogMarkdownPath

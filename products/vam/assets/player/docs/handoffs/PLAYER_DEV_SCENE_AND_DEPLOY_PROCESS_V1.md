@@ -7,10 +7,11 @@ This note records the deterministic current process for building, packaging, and
 It exists because the lane already depends on these conventions in practice:
 
 - repo-local scene template generation
-- package-first deployment into `F:\sim\vam\AddonPackages`
+- deterministic raw demo-scene emission into `F:\sim\vam\Saves\scene`
+- packaged-scene staging when a `.var` is built
 - numeric outer `FrameAngel.DevPlayer.<n>.var` identity
 - semantic internal `0.6.x` player versioning
-- current `controls_example` scene control wiring
+- current `demo3` three-screen scene control wiring
 
 This is the operator-facing truth for the current dev lane unless a later repo-local handoff supersedes it.
 
@@ -99,38 +100,69 @@ Call chain:
 
 Default template:
 
-- `products/vam/assets/player/scene_templates/controls_example.json`
+- `products/vam/assets/player/scene_templates/demo3.json`
 - preview image beside it:
-  `products/vam/assets/player/scene_templates/controls_example.jpg`
+  `products/vam/assets/player/scene_templates/demo3.jpg`
 
 The scene builder does these deterministic rewrites:
 
-- finds the player screen atom, preferring `screen_cua`
+- finds the player screen atoms, preferring the three-screen `demo3` layout:
+  - `screen_middle`
+  - `screen_left`
+  - `screen_right`
 - rewrites the scene atom `asset` storable to the passed asset URL
 - rewrites `PluginManager` so `plugin#0` points at the passed plugin path
 - rewrites `plugin#0_FASyncRuntime` values for:
   - `Player Media Path`
 
 For packaged builds, those URLs are package-scoped `Creator.Package.Tag:/Custom/...` paths.
+For raw live deploys, the same builder now emits a versioned witness scene into
+`F:\sim\vam\Saves\scene` unless `-SkipLiveScene` is passed to the wrapper.
 
 ## Current Controls Example Contract
 
 The current repo-local scene template is not the older managed button layout.
+It is the three-screen `demo3` contract, with the center screen treated as the
+authored source of truth for future layout edits.
 
-The current inline scene control IDs are:
+The authored center-screen control IDs are:
 
 - `button_previous`
 - `button_toggle_play`
 - `button_load`
 - `button_next`
 - `slider_progress`
+- `slider_volume`
 - `display_curr`
 - `display_total`
 - `checkbox_shuffle`
+- `button_a`
+- `button_b`
+- scale buttons such as `25%`, `50%`, `100%`, `150%`
 
-The `fap` atom is placement-only. It is a positioning parent, not a runtime dependency.
+`Build-PlayerDemoScene.ps1` now treats `screen_middle` as the authored source,
+renames those atoms to `middle_*`, and deterministically clones matching
+`left_*` and `right_*` control sets for the two angled side screens.
 
-As of `0.6.5+`, `Build-PlayerDemoScene.ps1` detects this current layout and wires the existing scene atoms in place instead of expecting older IDs like:
+The builder preserves authored placement/styling and rewires per-screen
+controls to the screen they belong to. The `middle_*` controls remain the
+authoritative authored layout going forward.
+
+Current deterministic scene trigger wiring includes:
+
+- `*_button_previous` -> `Player Previous`
+- `*_button_toggle_play` -> `Player Play Pause`
+- `*_button_load` -> `Player Load Media`
+- `*_button_next` -> `Player Next`
+- `*_slider_progress` -> `scrub_normalized`
+- `*_slider_volume` -> `volume_normalized`
+- `*_checkbox_shuffle` -> `Player Random On` / `Player Random Off`
+- `*_button_ab_start` -> `Player A-B Set Start`
+- `*_button_ab_end` -> `Player A-B Set End` + `Player A-B Enable`
+- scale buttons retarget directly to the owning screen atom `scale` storable
+  using timer/tween fields
+
+The older IDs still matter only as historical substrate:
 
 - `play_pause_button`
 - `previous_button`
@@ -138,16 +170,14 @@ As of `0.6.5+`, `Build-PlayerDemoScene.ps1` detects this current layout and wire
 - `next_button`
 - `scrub_slider`
 
-Current packaged scene trigger wiring:
+Important honest boundary:
 
-- `button_previous` -> `Player Previous`
-- `button_toggle_play` -> `Player Play Pause`
-- `button_load` -> `Player Load Media`
-- `button_next` -> `Player Next`
-- `slider_progress` -> `scrub_normalized`
-- `checkbox_shuffle` -> `Player Random On`
-
-The current and total text displays are still part of the scene template contract, but this handoff is specifically about the deterministic interactive control seam.
+- deterministic IDs, cloning, attachment, and forward control wiring are part of
+  the builder
+- stateful readback for `display_curr`, `display_total`, shuffle state, and live
+  slider position is not currently solved by deployment alone in this repo
+- that reverse state path requires runtime support; the scene builder should not
+  pretend it can provide it by itself
 
 ## Package-First Deployment Rule
 
@@ -224,6 +254,24 @@ powershell -NoProfile -ExecutionPolicy Bypass `
 
 Use that raw-only inventory pattern when a hosted proof wrapper needs the
 package report but the live authority must stay in `Custom/...`.
+
+Raw live deploy now also emits a matching versioned demo scene by default:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File products/vam/assets/player/scripts/Build-PlayerScreenCoreFoundation.ps1 `
+  -RepoRoot C:\projects\fa `
+  -Version <semantic-version>
+```
+
+Expected raw live outputs:
+
+- `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.<version>.assetbundle`
+- `F:\sim\vam\Custom\Plugins\dev_plugin_player.<version>.dll`
+- `F:\sim\vam\Saves\scene\demo3.<version>.json`
+- `F:\sim\vam\Saves\scene\demo3.<version>.jpg` when the template preview exists
+
+Pass `-SkipLiveScene` only when the raw deploy must not emit the witness scene.
 
 Important:
 

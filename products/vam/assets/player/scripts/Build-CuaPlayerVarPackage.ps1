@@ -18,7 +18,7 @@ param(
     [string]$ShellKeysCsv = "",
     [ValidateSet("single_display_fit", "multi_aspect")]
     [string]$SceneDisplayPolicy = "multi_aspect",
-    [int]$SceneIncludeManagedControls = 0,
+    [int]$SceneIncludeManagedControls = 1,
     [string]$DemoMediaSourceRoot = "",
     [string]$DemoMediaPackageRelativeRoot = "Custom\Images\FrameAngel\Player\demo_media",
     [string]$DestinationAddonPackages = "F:\sim\vam\AddonPackages",
@@ -447,7 +447,7 @@ $resolvedCreatorName = [string]$resolvedPackageMetadata.creatorName
 $resolvedPackageName = [string]$resolvedPackageMetadata.packageName
 
 $sceneBuildScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-PlayerDemoScene.ps1"
-$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\demo3.json"
 if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) {
     $SceneTemplatePath = $defaultSceneTemplatePath
 }

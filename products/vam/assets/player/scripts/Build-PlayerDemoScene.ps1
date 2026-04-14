@@ -111,15 +111,60 @@ function Test-PlayerDemoCurrentControlLayout {
     return $true
 }
 
+function Test-PlayerDemoThreeScreenLayout {
+    param([object[]]$Atoms)
+
+    $requiredScreenIds = @(
+        "screen_middle",
+        "screen_left",
+        "screen_right"
+    )
+
+    foreach ($requiredScreenId in $requiredScreenIds) {
+        $matchedScreen = $Atoms | Where-Object { $null -ne $_ -and [string]$_.id -eq $requiredScreenId } | Select-Object -First 1
+        if ($null -eq $matchedScreen) {
+            return $false
+        }
+    }
+
+    $requiredControlIdGroups = @(
+        @("middle_button_toggle_play", "button_toggle_play"),
+        @("middle_button_previous", "button_previous"),
+        @("middle_button_load", "button_load"),
+        @("middle_button_next", "button_next"),
+        @("middle_slider_progress", "slider_progress"),
+        @("middle_slider_volume", "slider_volume"),
+        @("middle_checkbox_shuffle", "checkbox_shuffle"),
+        @("middle_display_curr", "display_curr"),
+        @("middle_display_total", "display_total")
+    )
+
+    foreach ($candidateGroup in $requiredControlIdGroups) {
+        $matched = $null
+        foreach ($candidateId in @($candidateGroup)) {
+            $matched = $Atoms | Where-Object { $null -ne $_ -and [string]$_.id -eq $candidateId } | Select-Object -First 1
+            if ($null -ne $matched) {
+                break
+            }
+        }
+
+        if ($null -eq $matched) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 function Resolve-PlayerDemoManagedAtomId {
     param(
         [string]$LocalId,
         [string]$ParentAtomId = "",
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
 
-    if ($ControlLayout -eq "current_example") {
+    if ($ControlLayout -ne "legacy") {
         return $LocalId
     }
 
@@ -128,9 +173,13 @@ function Resolve-PlayerDemoManagedAtomId {
 
 function Get-PlayerDemoManagedControlLocalIds {
     param(
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
+
+    if ($ControlLayout -eq "three_screen_demo3") {
+        return @()
+    }
 
     if ($ControlLayout -eq "current_example") {
         return @(
@@ -163,9 +212,13 @@ function Get-PlayerDemoManagedControlLocalIds {
 
 function Get-PlayerDemoManagedSliderLocalIds {
     param(
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
+
+    if ($ControlLayout -eq "three_screen_demo3") {
+        return @()
+    }
 
     if ($ControlLayout -eq "current_example") {
         return @(
@@ -210,7 +263,7 @@ function Get-SceneManagedAtomCandidateIds {
 function Get-PlayerDemoManagedButtonIds {
     param(
         [string]$ParentAtomId = "",
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
 
@@ -229,7 +282,7 @@ function Get-PlayerDemoManagedButtonIds {
 function Get-PlayerDemoManagedControlAtomIds {
     param(
         [string]$ParentAtomId = "",
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
 
@@ -249,11 +302,15 @@ function Get-PlayerDemoButtonSpecs {
     param(
         [string]$Policy,
         [string]$ParentAtomId = "",
-        [ValidateSet("legacy", "current_example")]
+        [ValidateSet("legacy", "current_example", "three_screen_demo3")]
         [string]$ControlLayout = "legacy"
     )
 
     $specs = New-Object System.Collections.Generic.List[object]
+
+    if ($ControlLayout -eq "three_screen_demo3") {
+        return $specs.ToArray()
+    }
 
     if ($ControlLayout -eq "current_example") {
         [void]$specs.Add([pscustomobject]@{
@@ -534,6 +591,353 @@ function New-OffsetSceneSpec {
     return $clone
 }
 
+function Get-PlayerDemoThreeScreenControlSpecs {
+    $specs = New-Object System.Collections.Generic.List[object]
+
+    [void]$specs.Add([pscustomobject]@{ localId = "button_previous"; candidateIds = @("middle_button_previous", "button_previous"); kind = "button"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_toggle_play"; candidateIds = @("middle_button_toggle_play", "button_toggle_play"); kind = "button"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_next"; candidateIds = @("middle_button_next", "button_next"); kind = "button"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_load"; candidateIds = @("middle_button_load", "button_load"); kind = "button"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "checkbox_shuffle"; candidateIds = @("middle_checkbox_shuffle", "checkbox_shuffle"); kind = "toggle"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "slider_progress"; candidateIds = @("middle_slider_progress", "slider_progress"); kind = "slider"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "slider_volume"; candidateIds = @("middle_slider_volume", "slider_volume"); kind = "slider"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "display_curr"; candidateIds = @("middle_display_curr", "display_curr"); kind = "display"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "display_total"; candidateIds = @("middle_display_total", "display_total"); kind = "display"; required = $true })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_25"; candidateIds = @("middle_scale_25", "25%"); kind = "scale"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_50"; candidateIds = @("middle_scale_50", "50%"); kind = "scale"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_100"; candidateIds = @("middle_scale_100", "100%"); kind = "scale"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_150"; candidateIds = @("middle_scale_150", "150%"); kind = "scale"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "scale_200"; candidateIds = @("middle_scale_200", "200%"); kind = "scale"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_start"; candidateIds = @("middle_button_ab_start", "button_a"); kind = "button"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_end"; candidateIds = @("middle_button_ab_end", "button_b"); kind = "button"; required = $false })
+    [void]$specs.Add([pscustomobject]@{ localId = "button_ab_clear"; candidateIds = @("middle_button_ab_clear", "button_clear", "clear"); kind = "button"; required = $false })
+
+    return $specs.ToArray()
+}
+
+function Resolve-PlayerDemoThreeScreenControlId {
+    param(
+        [ValidateSet("middle", "left", "right")]
+        [string]$Role,
+        [string]$LocalId
+    )
+
+    return "{0}_{1}" -f $Role, $LocalId
+}
+
+function Find-SceneAtomByIdsAndParent {
+    param(
+        [System.Collections.ArrayList]$Atoms,
+        [string[]]$CandidateIds,
+        [string]$ParentAtomId = ""
+    )
+
+    foreach ($candidateId in @($CandidateIds)) {
+        if ([string]::IsNullOrWhiteSpace($candidateId)) {
+            continue
+        }
+
+        $match = $Atoms | Where-Object {
+            if ($null -eq $_ -or [string]$_.id -ne $candidateId) {
+                return $false
+            }
+
+            if ([string]::IsNullOrWhiteSpace($ParentAtomId)) {
+                return $true
+            }
+
+            return [string]$_.parentAtom -eq $ParentAtomId
+        } | Select-Object -First 1
+
+        if ($null -ne $match) {
+            return $match
+        }
+    }
+
+    return $null
+}
+
+function Clone-SceneAtomDeep {
+    param([object]$Atom)
+
+    if ($null -eq $Atom) {
+        throw "Scene atom cannot be cloned from null."
+    }
+
+    return ($Atom | ConvertTo-Json -Depth 50 | ConvertFrom-Json)
+}
+
+function Set-PlayerDemoSceneAtomLinkToParent {
+    param(
+        [object]$Atom,
+        [string]$ParentAtomId
+    )
+
+    Set-SceneAtomParent -Atom $Atom -ParentAtomId $ParentAtomId
+    $controlStorable = Get-StorableById -Storables @($Atom.storables) -Id "control"
+    if ($null -eq $controlStorable) {
+        return
+    }
+
+    $controlStorable | Add-Member -NotePropertyName positionState -NotePropertyValue "ParentLink" -Force
+    $controlStorable | Add-Member -NotePropertyName rotationState -NotePropertyValue "ParentLink" -Force
+    $controlStorable | Add-Member -NotePropertyName linkTo -NotePropertyValue ("{0}:object" -f $ParentAtomId) -Force
+}
+
+function New-PlayerDemoPluginActionEntry {
+    param(
+        [string]$ScreenAtomId,
+        [string]$ActionName
+    )
+
+    return [pscustomobject]@{
+        name = "A_$ActionName"
+        receiverAtom = $ScreenAtomId
+        receiver = "plugin#0_FASyncRuntime"
+        receiverTargetName = $ActionName
+    }
+}
+
+function New-PlayerDemoThreeScreenTriggerStorable {
+    param(
+        [object]$Spec,
+        [string]$ScreenAtomId,
+        [object]$ExistingTriggerStorable
+    )
+
+    switch ([string]$Spec.kind) {
+        "button" {
+            $startActions = @(switch ([string]$Spec.localId) {
+                "button_previous" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Previous") }
+                "button_toggle_play" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Play Pause") }
+                "button_next" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Next") }
+                "button_load" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Load Media") }
+                "button_ab_start" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Set Start") }
+                "button_ab_end" {
+                    @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Set End"),
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Enable")
+                    )
+                }
+                "button_ab_clear" { @(New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player A-B Clear") }
+                default { @() }
+            })
+
+            if ($startActions.Count -le 0) {
+                return $null
+            }
+
+            return [pscustomobject]@{
+                id = "Trigger"
+                trigger = [ordered]@{
+                    displayName = ("A_{0}" -f $Spec.localId)
+                    startActions = $startActions
+                    transitionActions = @()
+                    endActions = @()
+                }
+            }
+        }
+        "scale" {
+            $scaleValue = switch ([string]$Spec.localId) {
+                "scale_25" { 0.25 }
+                "scale_50" { 0.50 }
+                "scale_100" { 1.00 }
+                "scale_150" { 1.50 }
+                "scale_200" { 2.00 }
+                default { $null }
+            }
+
+            if ($null -eq $scaleValue) {
+                return $null
+            }
+
+            return [pscustomobject]@{
+                id = "Trigger"
+                trigger = [ordered]@{
+                    displayName = ("A_scale:{0}" -f (Format-SceneNumber -Value $scaleValue))
+                    startActions = @(
+                        [pscustomobject]@{
+                            name = ("A_scale:{0}" -f (Format-SceneNumber -Value $scaleValue))
+                            receiverAtom = $ScreenAtomId
+                            receiver = "scale"
+                            receiverTargetName = "scale"
+                            floatValue = (Format-SceneNumber -Value $scaleValue)
+                            useTimer = "true"
+                            timerLength = "0.5"
+                            timerType = "EaseInOut"
+                        }
+                    )
+                    transitionActions = @()
+                    endActions = @()
+                }
+            }
+        }
+        "toggle" {
+            return [pscustomobject]@{
+                id = "Trigger"
+                trigger = [ordered]@{
+                    displayName = "A_Player Random Toggle"
+                    startActions = @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random On")
+                    )
+                    transitionActions = @()
+                    endActions = @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random Off")
+                    )
+                }
+            }
+        }
+        "slider" {
+            $receiverTargetName = switch ([string]$Spec.localId) {
+                "slider_progress" { "scrub_normalized" }
+                "slider_volume" { "volume_normalized" }
+                default { "" }
+            }
+
+            if ([string]::IsNullOrWhiteSpace($receiverTargetName)) {
+                return $null
+            }
+
+            $existingValue = ""
+            if ($null -ne $ExistingTriggerStorable -and $ExistingTriggerStorable.PSObject.Properties.Name -contains "value") {
+                $existingValue = [string]$ExistingTriggerStorable.value
+            }
+            if ([string]::IsNullOrWhiteSpace($existingValue)) {
+                $existingValue = if ($receiverTargetName -eq "volume_normalized") { "1" } else { "0" }
+            }
+
+            return [pscustomobject]@{
+                id = "Trigger"
+                value = $existingValue
+                trigger = [ordered]@{
+                    displayName = ("A_{0}:0.00_1.00" -f $receiverTargetName)
+                    startActions = @()
+                    transitionActions = @(
+                        [pscustomobject]@{
+                            name = ("A_{0}:0.00_1.00" -f $receiverTargetName)
+                            receiverAtom = $ScreenAtomId
+                            receiver = "plugin#0_FASyncRuntime"
+                            receiverTargetName = $receiverTargetName
+                            startValue = "0"
+                            endValue = "1"
+                            startWithCurrentVal = "false"
+                        }
+                    )
+                    endActions = @()
+                }
+            }
+        }
+    }
+
+    return $null
+}
+
+function Set-PlayerDemoThreeScreenControlWiring {
+    param(
+        [object]$Atom,
+        [object]$Spec,
+        [string]$ScreenAtomId
+    )
+
+    if ($null -eq $Atom -or $null -eq $Spec) {
+        return
+    }
+
+    if ([string]$Spec.kind -eq "display") {
+        return
+    }
+
+    $existingTrigger = Get-StorableById -Storables @($Atom.storables) -Id "Trigger"
+    $storables = New-OrderedStorableList -ExistingStorables @($Atom.storables)
+    Remove-StorableByPredicate -Storables $storables -Predicate {
+        param($entry)
+        return ([string]$entry.id -eq "Trigger")
+    }
+
+    $triggerStorable = New-PlayerDemoThreeScreenTriggerStorable -Spec $Spec -ScreenAtomId $ScreenAtomId -ExistingTriggerStorable $existingTrigger
+    if ($null -ne $triggerStorable) {
+        [void]$storables.Add($triggerStorable)
+    }
+
+    $Atom.storables = $storables
+}
+
+function Apply-PlayerDemoThreeScreenControls {
+    param(
+        [System.Collections.ArrayList]$Atoms,
+        [bool]$IncludeManagedControlsEnabled
+    )
+
+    $screenIdsByRole = [ordered]@{
+        middle = "screen_middle"
+        left = "screen_left"
+        right = "screen_right"
+    }
+
+    $controlSpecs = @(Get-PlayerDemoThreeScreenControlSpecs)
+    if (-not $IncludeManagedControlsEnabled) {
+        $candidateIdsToRemove = New-Object System.Collections.Generic.HashSet[string]([System.StringComparer]::Ordinal)
+        foreach ($spec in $controlSpecs) {
+            foreach ($candidateId in @($spec.candidateIds)) {
+                if (-not [string]::IsNullOrWhiteSpace($candidateId)) {
+                    [void]$candidateIdsToRemove.Add($candidateId)
+                }
+            }
+
+            foreach ($role in @($screenIdsByRole.Keys)) {
+                [void]$candidateIdsToRemove.Add((Resolve-PlayerDemoThreeScreenControlId -Role $role -LocalId $spec.localId))
+            }
+        }
+
+        for ($atomIndex = $Atoms.Count - 1; $atomIndex -ge 0; $atomIndex--) {
+            $atom = $Atoms[$atomIndex]
+            if ($null -eq $atom) {
+                continue
+            }
+
+            if ($candidateIdsToRemove.Contains([string]$atom.id)) {
+                $Atoms.RemoveAt($atomIndex)
+            }
+        }
+
+        return
+    }
+
+    foreach ($spec in $controlSpecs) {
+        $middleAtom = Find-SceneAtomByIdsAndParent -Atoms $Atoms -CandidateIds @($spec.candidateIds) -ParentAtomId "screen_middle"
+        if ($null -eq $middleAtom) {
+            if ($spec.required) {
+                throw "Three-screen template is missing required middle control atom for '$($spec.localId)'."
+            }
+
+            continue
+        }
+
+        foreach ($role in @($screenIdsByRole.Keys)) {
+            $screenAtomId = [string]$screenIdsByRole[$role]
+            $desiredId = Resolve-PlayerDemoThreeScreenControlId -Role $role -LocalId $spec.localId
+            $targetAtom = if ($role -eq "middle") {
+                $middleAtom
+            }
+            else {
+                $existingRoleAtom = Find-SceneAtomByIdsAndParent -Atoms $Atoms -CandidateIds @($desiredId) -ParentAtomId $screenAtomId
+                if ($null -ne $existingRoleAtom) {
+                    $existingRoleAtom
+                }
+                else {
+                    $clone = Clone-SceneAtomDeep -Atom $middleAtom
+                    [void]$Atoms.Add($clone)
+                    $clone
+                }
+            }
+
+            Set-SceneAtomId -Atom $targetAtom -Id $desiredId
+            Set-PlayerDemoSceneAtomLinkToParent -Atom $targetAtom -ParentAtomId $screenAtomId
+            Set-PlayerDemoThreeScreenControlWiring -Atom $targetAtom -Spec $spec -ScreenAtomId $screenAtomId
+        }
+    }
+}
+
 function Get-StorableById {
     param(
         [object[]]$Storables,
@@ -666,7 +1070,7 @@ $laneRoots = Get-FrameAngelPlayerLaneRoots -RepoRoot $RepoRoot -CallerScriptRoot
 $RepoRoot = $laneRoots.RepoRoot
 $resolvedVersion = Resolve-SceneVersion -RepoRootValue $RepoRoot -ExplicitVersion $Version
 
-$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\controls_example.json"
+$defaultSceneTemplatePath = Join-Path $laneRoots.AssetsPlayerRoot "scene_templates\demo3.json"
 $resolvedTemplatePath = Normalize-PathValue -PathValue $(if ([string]::IsNullOrWhiteSpace($SceneTemplatePath)) { $defaultSceneTemplatePath } else { $SceneTemplatePath })
 if (-not (Test-Path -LiteralPath $resolvedTemplatePath)) {
     throw "Scene template path not found: $resolvedTemplatePath"
@@ -741,64 +1145,88 @@ foreach ($atom in @($scene.atoms)) {
     }
 }
 $scene.atoms = $atoms
+$threeScreenLayoutDetected = Test-PlayerDemoThreeScreenLayout -Atoms @($atoms)
+$screenAtoms = New-Object System.Collections.Generic.List[object]
 
-$screenAtom = $atoms | Where-Object { [string]$_.id -eq "screen_cua" } | Select-Object -First 1
-if ($null -eq $screenAtom) {
-    $screenAtom = $atoms | Where-Object {
-        if ($null -eq $_ -or -not [string]::Equals([string]$_.type, "CustomUnityAsset", [System.StringComparison]::OrdinalIgnoreCase)) {
-            return $false
+if ($threeScreenLayoutDetected) {
+    foreach ($threeScreenId in @("screen_middle", "screen_left", "screen_right")) {
+        $threeScreenAtom = $atoms | Where-Object { $null -ne $_ -and [string]$_.id -eq $threeScreenId } | Select-Object -First 1
+        if ($null -eq $threeScreenAtom) {
+            throw "Three-screen template is missing expected screen atom '$threeScreenId': $resolvedTemplatePath"
         }
 
-        foreach ($storable in @($_.storables)) {
-            if ($null -ne $storable -and [string]$storable.id -eq "plugin#0_FASyncRuntime") {
-                return $true
+        [void]$screenAtoms.Add($threeScreenAtom)
+    }
+
+    $screenAtom = $screenAtoms | Where-Object { [string]$_.id -eq "screen_middle" } | Select-Object -First 1
+}
+else {
+    $screenAtom = $atoms | Where-Object { [string]$_.id -eq "screen_cua" } | Select-Object -First 1
+    if ($null -eq $screenAtom) {
+        $screenAtom = $atoms | Where-Object {
+            if ($null -eq $_ -or -not [string]::Equals([string]$_.type, "CustomUnityAsset", [System.StringComparison]::OrdinalIgnoreCase)) {
+                return $false
             }
-        }
 
-        return $false
-    } | Select-Object -First 1
+            foreach ($storable in @($_.storables)) {
+                if ($null -ne $storable -and [string]$storable.id -eq "plugin#0_FASyncRuntime") {
+                    return $true
+                }
+            }
+
+            return $false
+        } | Select-Object -First 1
+    }
+    if ($null -eq $screenAtom) {
+        throw "Scene template does not contain a player screen atom: $resolvedTemplatePath"
+    }
+
+    [void]$screenAtoms.Add($screenAtom)
 }
-if ($null -eq $screenAtom) {
-    throw "Scene template does not contain a player screen atom: $resolvedTemplatePath"
-}
+
 $screenAtomId = [string]$screenAtom.id
 
-$screenStorables = New-OrderedStorableList -ExistingStorables @($screenAtom.storables)
-Remove-StorableByPredicate -Storables $screenStorables -Predicate {
-    param($entry)
-    $id = [string]$entry.id
-    return (
-        $id -eq "asset" -or
-        $id -eq "PluginManager" -or
-        $id -match '^plugin#\d+_FASyncRuntime$'
-    )
+foreach ($currentScreenAtom in $screenAtoms) {
+    $screenStorables = New-OrderedStorableList -ExistingStorables @($currentScreenAtom.storables)
+    Remove-StorableByPredicate -Storables $screenStorables -Predicate {
+        param($entry)
+        $id = [string]$entry.id
+        return (
+            $id -eq "asset" -or
+            $id -eq "PluginManager" -or
+            $id -match '^plugin#\d+_FASyncRuntime$'
+        )
+    }
+
+    [void]$screenStorables.Add([pscustomobject]@{
+        id = "asset"
+        assetName = $assetName
+        assetUrl = $assetUrl
+    })
+    [void]$screenStorables.Add([pscustomobject]@{
+        id = "PluginManager"
+        plugins = [ordered]@{
+            "plugin#0" = $pluginPath
+        }
+    })
+    [void]$screenStorables.Add([pscustomobject]@{
+        id = "plugin#0_FASyncRuntime"
+        "Player Media Path" = $resolvedPrimaryMediaPath
+    })
+    $currentScreenAtom.storables = $screenStorables
 }
 
-[void]$screenStorables.Add([pscustomobject]@{
-    id = "asset"
-    assetName = $assetName
-    assetUrl = $assetUrl
-})
-[void]$screenStorables.Add([pscustomobject]@{
-    id = "PluginManager"
-    plugins = [ordered]@{
-        "plugin#0" = $pluginPath
-    }
-})
-[void]$screenStorables.Add([pscustomobject]@{
-    id = "plugin#0_FASyncRuntime"
-    "Player Media Path" = $resolvedPrimaryMediaPath
-})
-$screenAtom.storables = $screenStorables
-
-$controlLayout = if (Test-PlayerDemoCurrentControlLayout -Atoms @($atoms)) { "current_example" } else { "legacy" }
+$controlLayout = if ($threeScreenLayoutDetected) { "three_screen_demo3" } elseif (Test-PlayerDemoCurrentControlLayout -Atoms @($atoms)) { "current_example" } else { "legacy" }
 $controlRootAtom = if ($controlLayout -eq "legacy") {
     $atoms | Where-Object { [string]$_.id -eq "controls" } | Select-Object -First 1
 }
 else {
     $null
 }
-$controlParentId = if ($controlLayout -eq "current_example") {
+$controlParentId = if ($controlLayout -eq "three_screen_demo3") {
+    "screen_middle"
+}
+elseif ($controlLayout -eq "current_example") {
     "fap"
 }
 elseif ($null -ne $controlRootAtom) {
@@ -811,7 +1239,13 @@ $controlSubSceneStorePath = "Custom/SubScene/FrameAngel/controls/player_controls
 $useControlSubScene = $controlLayout -eq "legacy" -and $null -ne $controlRootAtom -and [string]::Equals([string]$controlRootAtom.type, "SubScene", [System.StringComparison]::OrdinalIgnoreCase)
 $managedControlAtomIds = Get-PlayerDemoManagedControlAtomIds -ParentAtomId $controlParentId -ControlLayout $controlLayout
 $includeManagedControlsEnabled = $IncludeManagedControls -ne 0
+$buttonSpecs = @()
+$sliderSpecs = @()
 
+if ($controlLayout -eq "three_screen_demo3") {
+    Apply-PlayerDemoThreeScreenControls -Atoms $atoms -IncludeManagedControlsEnabled $includeManagedControlsEnabled
+}
+else {
 if ($useControlSubScene -and $includeManagedControlsEnabled) {
     $controlStorables = New-OrderedStorableList -ExistingStorables @($controlRootAtom.storables)
     $subSceneStorable = Get-StorableById -Storables @($controlStorables) -Id "SubScene"
@@ -857,9 +1291,6 @@ if (-not $IncludeDebugConsole.IsPresent) {
         }
     }
 }
-
-$buttonSpecs = @()
-$sliderSpecs = @()
 
 if ($includeManagedControlsEnabled) {
     $buttonSpecs = Get-PlayerDemoButtonSpecs -Policy $DisplayPolicy -ParentAtomId $controlParentId -ControlLayout $controlLayout
@@ -1058,6 +1489,7 @@ if ($includeManagedControlsEnabled -and -not $useControlSubScene) {
 
         $sliderAtom.storables = $sliderStorables
     }
+}
 }
 
 Write-JsonFile -Path $sceneOutputPath -Value $scene
