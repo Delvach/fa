@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.33",
-    "notes":  "0.6.33 keeps the simple button 5 rule from 0.6.32 and adds one more safe polish: while the override is held, the player temporarily disables its own interactive screen and control colliders so the screen stops behaving like a live target.",
-    "branch":  "release/0.6.33-button5-suppresses-interaction",
+    "version":  "0.6.34",
+    "notes":  "0.6.34 backs the 0.6.33 collider-suppression experiment back out. The live lane returns to the simpler 0.6.32 rule where button 5 disables player gaze and focus behavior, without temporarily toggling hosted interaction colliders.",
+    "branch":  "release/0.6.34-back-out-collider-suppression",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.33.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.34.json"
 }

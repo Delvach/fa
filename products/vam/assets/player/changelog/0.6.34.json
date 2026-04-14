@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.34",
+  "title": "Back out the button 5 collider-suppression experiment",
+  "summary": "0.6.34 removes the 0.6.33 collider-suppression layer after operator testing showed it only brought the visible pointers back without unlocking grab-nav. The live lane returns to the simpler 0.6.32 button 5 behavior.",
+  "changes": [
+    "Remove the temporary suppression of player-owned screen and control interaction colliders while button 5 is held.",
+    "Remove the hosted-surface helper that only existed to support that suppression path.",
+    "Keep the simpler 0.6.32 rule: button 5 disables player gaze and focus behavior while held."
+  ],
+  "reasoning": [
+    "The 0.6.33 interaction-layer experiment did not unlock grab-nav; it only made the pointers or lasers visible.",
+    "Keeping dead-end complexity in the input seam would make later navigation polish harder to reason about.",
+    "At this point, the remaining possible route is VaM-global UI-hit/worldUI behavior, which is more invasive than this lane should safely become."
+  ],
+  "operatorVisibleOutcomes": [
+    "The player should behave like 0.6.32 again for button 5, without the extra collider toggling.",
+    "The visible-pointer side effect from 0.6.33 should be gone."
+  ],
+  "knownIssues": [
+    "No further safe player-owned route is currently identified for the remaining grab-nav lock while looking at the screen.",
+    "This slice does not add the queued post-navigation deadband, slideshow work, A-B policy changes, volume gestures, or spatial audio."
+  ]
+}

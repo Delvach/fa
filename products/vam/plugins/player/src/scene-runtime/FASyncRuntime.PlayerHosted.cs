@@ -224,47 +224,6 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
-    private bool TryResolveHostedPlayerInteractionColliders(string hostAtomUid, out Collider[] colliders)
-    {
-        colliders = new Collider[0];
-
-        HostedPlayerSurfaceContract contract;
-        string errorMessage;
-        if (!TryResolveHostedPlayerSurfaceContract(hostAtomUid, out contract, out errorMessage) || contract == null)
-            return false;
-
-        List<Collider> captured = new List<Collider>();
-        CaptureHostedPlayerInteractionColliders(contract.screenSurfaceObject, captured);
-        CaptureHostedPlayerInteractionColliders(contract.controlSurfaceObject, captured);
-        if (!ReferenceEquals(contract.controlColliderObject, contract.controlSurfaceObject))
-            CaptureHostedPlayerInteractionColliders(contract.controlColliderObject, captured);
-
-        if (captured.Count <= 0)
-            return false;
-
-        colliders = captured.ToArray();
-        return true;
-    }
-
-    private void CaptureHostedPlayerInteractionColliders(GameObject nodeObject, List<Collider> captured)
-    {
-        if (nodeObject == null || captured == null)
-            return;
-
-        Collider[] colliders = nodeObject.GetComponentsInChildren<Collider>(true);
-        if (colliders == null || colliders.Length <= 0)
-            return;
-
-        for (int i = 0; i < colliders.Length; i++)
-        {
-            Collider collider = colliders[i];
-            if (collider == null || captured.Contains(collider))
-                continue;
-
-            captured.Add(collider);
-        }
-    }
-
     private bool TryEnsureHostedPlayerScaffold(Atom hostAtom, out string errorMessage)
     {
         errorMessage = "";

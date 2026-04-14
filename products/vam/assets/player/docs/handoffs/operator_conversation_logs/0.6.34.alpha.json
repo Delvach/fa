@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.34",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.34 backs out the 0.6.33 collider-suppression experiment after operator testing showed it only restored visible pointers without actually unlocking grab-nav.",
+  "repoAnchors": {
+    "branch": "release/0.6.34-back-out-collider-suppression",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.34.json"
+  },
+  "operatorSignals": [
+    "The only visible effect of 0.6.33 was that the pointers or lasers appeared when button 5 was pressed.",
+    "That did not actually unlock grab-nav, so the added complexity was not buying the right result."
+  ],
+  "actionsTaken": [
+    "Removed the temporary hosted interaction-collider suppression path.",
+    "Removed the helper that resolved hosted interaction colliders for that path.",
+    "Returned the live lane to the simpler 0.6.32 behavior."
+  ],
+  "nonGoals": [
+    "No further VaM-global UI-hit or worldUI manipulation was added.",
+    "No post-navigation scrub deadband yet.",
+    "No slideshow work yet.",
+    "No A-B or transport policy changes.",
+    "No right-stick volume gesture yet.",
+    "No spatial-audio work yet."
+  ]
+}
