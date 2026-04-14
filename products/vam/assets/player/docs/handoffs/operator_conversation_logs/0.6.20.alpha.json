@@ -113,6 +113,19 @@
         "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\assetbundle_exports\\0.6.20\\player_screen_summary.json",
         "live disk inspection of F:\\sim\\vam\\Custom"
       ]
+    },
+    {
+      "entryId": "0.6.20-thread-drift-note",
+      "after": "2026-04-14T05:03:37.3163005Z",
+      "timestampKind": "post_slice_hydration_note",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Post-slice hydration found that this lane mixed raw dev_deploy authority, build-only package inventory, and naming cleanup while basics like image next/previous playlist truth were still open. It also found that the hosted proof receipt named a deployed 0.6.20 preset path that was not present on disk, so filesystem truth must win over the receipt for this slice.",
+      "reconstructedFrom": [
+        "post-slice repo hydration",
+        "live disk inspection of F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset",
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+      ]
     }
   ],
   "decisions": [
@@ -139,6 +152,7 @@
   ],
   "notes": [
     "The 0.6.20 package report exists because the hosted proof wrapper expects package inventory, and the final report records distributed:false so the live authority did not drift away from raw dev_deploy.",
-    "The current branch name still reflects the older 0.6.14 stability train; branch-process correction still needs to happen separately from this runtime slice."
+    "The current branch name still reflects the older 0.6.14 stability train; branch-process correction still needs to happen separately from this runtime slice.",
+    "Hydration lesson: keep branch label, semantic version, live authority seam, and build-only inventory separate. Do not let receipt claims outrank missing files on disk."
   ]
 }

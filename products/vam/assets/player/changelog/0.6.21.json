@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.21",
+  "title": "Restore image playlist truth on preset and hosted loads",
+  "summary": "0.6.21 keeps the 0.6.20 image-directory pause and focus-loss snapshot work, but removes stale hosted playlist reuse and lets new presets carry their real playlist so image next/previous behavior stays truthful again.",
+  "changes": [
+    "Store the current player playlist in new presets instead of saving only the selected media path.",
+    "Restore preset media using the saved playlist order when it is available, rather than collapsing directory-backed image state to one file.",
+    "Stop hosted loads from reviving an older multi-item playlist when the incoming request is narrower than the current record.",
+    "Stamp version 0.6.21 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the 0.6.21 raw modern_tv dev_deploy proof seam and baseline direct-player raw asset."
+  ],
+  "reasoning": [
+    "The remaining basics regression was playlist truth, not the next/previous stepper math itself.",
+    "A preset that was saved from a real playlist should restore that same playlist order instead of silently degrading to one selected file.",
+    "A narrower hosted load request should replace stale playlist state rather than inheriting a broader earlier playlist."
+  ],
+  "operatorVisibleOutcomes": [
+    "Image next and previous should stay consistent when the current state came from a directory-backed image load or a new preset saved from that state.",
+    "Hosted reloads should stop feeling like they are dragging old playlist order forward into a new narrower selection.",
+    "The 0.6.20 image pause and focus-loss snapshot improvements stay intact."
+  ],
+  "knownIssues": [
+    "Older presets that were saved before playlist paths were recorded still cannot fully reconstruct a directory-backed playlist from file-only data.",
+    "Mixed-media playlist policy across images and videos is still a separate product decision beyond this basics fix."
+  ]
+}

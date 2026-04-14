@@ -26,6 +26,7 @@ public partial class FASyncRuntime : MVRScript
         public bool favorite = false;
         public bool hasMediaPath = false;
         public string mediaPath = "";
+        public readonly List<string> playlistPaths = new List<string>();
         public bool hasTimeSeconds = false;
         public float timeSeconds = 0f;
         public bool hasHostScale = false;
@@ -511,6 +512,13 @@ public partial class FASyncRuntime : MVRScript
             preset.hasMediaPath = hasMediaPath && !string.IsNullOrEmpty(preset.mediaPath);
         else
             preset.hasMediaPath = !string.IsNullOrEmpty(preset.mediaPath);
+        List<string> presetPlaylistPaths = ExtractJsonStringList(presetJson, "playlist", "playlistPaths", "paths");
+        for (int playlistIndex = 0; playlistIndex < presetPlaylistPaths.Count; playlistIndex++)
+        {
+            string playlistPath = presetPlaylistPaths[playlistIndex];
+            if (!string.IsNullOrEmpty(playlistPath))
+                preset.playlistPaths.Add(playlistPath);
+        }
 
         if (TryReadBoolArg(presetJson, out bool hasTimeSeconds, "hasTimeSeconds")
             && hasTimeSeconds
@@ -580,6 +588,9 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"favorite\":").Append(preset.favorite ? "true" : "false").Append(',');
         sb.Append("\"hasMediaPath\":").Append(preset.hasMediaPath ? "true" : "false").Append(',');
         sb.Append("\"mediaPath\":\"").Append(EscapeJsonString(preset.mediaPath ?? "")).Append("\",");
+        sb.Append("\"playlistPaths\":");
+        AppendStandalonePlayerStringArrayJson(sb, preset.playlistPaths);
+        sb.Append(',');
         sb.Append("\"hasTimeSeconds\":").Append(preset.hasTimeSeconds ? "true" : "false").Append(',');
         sb.Append("\"timeSeconds\":").Append(FormatFloat(Mathf.Max(0f, preset.timeSeconds))).Append(',');
         sb.Append("\"hasHostScale\":").Append(preset.hasHostScale ? "true" : "false").Append(',');
@@ -742,6 +753,15 @@ public partial class FASyncRuntime : MVRScript
                 preset.hasMediaPath = true;
                 preset.mediaPath = currentPath;
                 preset.playWhenLoaded = ResolveCurrentStandalonePlayerDesiredPlaying(record);
+                if (record != null && record.playlistPaths != null)
+                {
+                    for (int playlistIndex = 0; playlistIndex < record.playlistPaths.Count; playlistIndex++)
+                    {
+                        string playlistPath = record.playlistPaths[playlistIndex];
+                        if (!string.IsNullOrEmpty(playlistPath))
+                            preset.playlistPaths.Add(playlistPath);
+                    }
+                }
             }
         }
 
@@ -968,11 +988,27 @@ public partial class FASyncRuntime : MVRScript
         resultJson = "{}";
         errorMessage = "";
 
-        List<string> mediaPaths;
-        if (!TryResolvePlayerRuntimeMediaPaths(preset.mediaPath, out mediaPaths, out errorMessage))
+        List<string> mediaPaths = new List<string>();
+        if (preset.playlistPaths != null && preset.playlistPaths.Count > 0)
         {
-            resultJson = BuildBrokerResult(false, errorMessage, "{}");
-            return false;
+            for (int playlistIndex = 0; playlistIndex < preset.playlistPaths.Count; playlistIndex++)
+            {
+                string playlistPath = preset.playlistPaths[playlistIndex];
+                if (!string.IsNullOrEmpty(playlistPath)
+                    && FrameAngelPlayerMediaParity.IsSupportedMediaPath(playlistPath))
+                {
+                    mediaPaths.Add(playlistPath);
+                }
+            }
+        }
+
+        if (mediaPaths.Count <= 0)
+        {
+            if (!TryResolvePlayerRuntimeMediaPaths(preset.mediaPath, out mediaPaths, out errorMessage))
+            {
+                resultJson = BuildBrokerResult(false, errorMessage, "{}");
+                return false;
+            }
         }
 
         string selectedMediaPath = ResolvePrimaryPlayerRuntimeMediaPath(preset.mediaPath, mediaPaths);

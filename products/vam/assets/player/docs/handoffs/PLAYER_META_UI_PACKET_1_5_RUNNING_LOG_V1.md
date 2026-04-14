@@ -17,7 +17,7 @@ Packet `1.5` is governed by:
 4. `products/vam/config/player_version_capability_schedule.v1.json`
 5. `products/vam/assets/player/docs/handoffs/PLAYER_VOLODECK_PARITY_BOUNDARY_V1.md`
 6. `products/vam/assets/player/docs/handoffs/PLAYER_OPERATOR_CONVERSATION_LOG_CANON_V1.md`
-7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.19.alpha.json`
+7. `products/vam/assets/player/docs/handoffs/operator_conversation_logs/0.6.21.alpha.json`
 
 ## Working rule
 
@@ -189,19 +189,19 @@ the raw `Custom/...` dev seam:
 2. current command:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.19 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.21 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 Current deployed outputs:
 
 1. host bundle:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.19.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.21.alpha.assetbundle`
 2. player runtime plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.19.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.21.alpha.dll`
 3. interactive preset:
-   `F:\sim\vam\Custom\Atom\CustomUnityAsset\preset_dev_modern_tv.0.6.19.alpha.vap`
+   `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.21.alpha.vap`
 4. baseline direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.19.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.21.alpha.assetbundle`
 5. receipt:
    `products/vam/assets/player/build/meta_interactive_host_proof/modern_tv/receipts/meta_interactive_hosted_player_proof_receipt.json`
 6. markdown receipt:
@@ -538,7 +538,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\
 ## Recommended first interactive proof command
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.19 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\projects\fa\products\vam\assets\player\scripts\Build-MetaInteractiveHostedPlayerProof.ps1 -RepoRoot C:\projects\fa -Version 0.6.21 -ShellKey modern_tv -PlayerPluginMode raw -DeployLabel dev_deploy -DeploySubject modern_tv -DeployIteration alpha
 ```
 
 ## Next implementation targets after the first proof
@@ -783,3 +783,57 @@ preset-discovery and image-directory default slice.
     package inventory, but it records `distributed:false`, `FrameAngel.DevPlayer.12.var`
     is absent from `F:\sim\vam\AddonPackages`, and live authority remains raw
     `dev_deploy` only.
+
+## Hydration lesson
+
+The `0.6.20 alpha` handoff drifted in a very specific way:
+
+1. the checkout label stayed on the older `release/0.6.14-plugin-ui-readback`
+   branch name while the runtime slice had already moved on semantically to
+   `0.6.20`
+2. the lane mixed raw `dev_deploy` live proof, `-SkipVarDistribute` package
+   inventory, and shell/export naming cleanup into one story even though only
+   raw `dev_deploy` was supposed to be live authority
+3. the hosted proof receipt claimed a deployed preset path that was later
+   missing on disk, so receipt truth and filesystem truth diverged
+4. naming and presentation cleanup continued while basics like image
+   next/previous playlist truth were still open
+
+Working rule for future hydrations:
+
+1. report branch and semantic version separately if they disagree
+2. treat raw `dev_deploy` as the only live authority for this slice
+3. treat `.var` reports as build inventory only unless they are both
+   `distributed:true` and physically present in `F:\sim\vam\AddonPackages`
+4. if a receipt and the live filesystem disagree, stop and fix the authority
+   mismatch before continuing with polish work
+
+## Stability checkpoint 2026-04-13T23:19:14.8517808-06:00
+
+This is the current freeze-safe architectural truth after the `0.6.21 alpha`
+playlist-truth recovery slice.
+
+1. `0.6.21 alpha` keeps the `0.6.20` image-directory pause and focus-loss
+   snapshot work intact while restoring playlist truth for new presets and
+   hosted loads.
+2. the current live raw `dev_deploy` authority is:
+   - `F:\sim\vam\Custom\Atom\CustomUnityAsset\Preset_dev_modern_tv.0.6.21.alpha.vap`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_modern_tv.0.6.21.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.21.alpha.assetbundle`
+   - `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.21.alpha.dll`
+3. new presets now carry the current playlist instead of only the selected
+   media path, so directory-backed image state can round-trip more honestly.
+4. hosted loads no longer revive a broader older playlist when the incoming
+   request is narrower.
+5. the `0.6.21` package report exists because the hosted proof wrapper expects
+   package inventory, but it records `distributed:false`, `FrameAngel.DevPlayer.12.var`
+   is absent from `F:\sim\vam\AddonPackages`, and live authority remains raw
+   `dev_deploy` only.
+6. the `0.6.21` hosted proof receipt and the live filesystem agree on the
+   deployed preset path, so this slice does not repeat the `0.6.20` receipt
+   mismatch.
+7. the strongest remaining known limits are:
+   - older presets saved before playlist paths were recorded cannot fully
+     reconstruct a directory-backed playlist from file-only data
+   - mixed-media playlist policy across image and video entries is still a
+     separate product decision

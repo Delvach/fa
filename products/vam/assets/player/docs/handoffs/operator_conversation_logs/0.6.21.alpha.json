@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "frameangel_player_operator_conversation_log_v1",
+  "version": "0.6.21",
+  "iteration": "alpha",
+  "deployLabel": "dev_deploy",
+  "captureMode": "live_with_exact_repo_anchors",
+  "startedAt": "2026-04-13T23:10:00-06:00",
+  "endedAt": "2026-04-13T23:19:14.8517808-06:00",
+  "timeAuthority": {
+    "exactSources": [
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.21\\foundation_release_validation.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.21\\direct_cua\\player_var_package_report_latest.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+      "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.21.alpha.json"
+    ],
+    "limitations": [
+      "Operator chat timing inside this slice is approximate unless anchored to repo receipts.",
+      "The 0.6.21 package report proves build inventory only; it records distributed:false and does not establish live prerelease authority."
+    ]
+  },
+  "exactAnchors": [
+    {
+      "timestamp": "2026-04-14T05:17:59.6633577Z",
+      "kind": "release_validation",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.21\\foundation_release_validation.json"
+    },
+    {
+      "timestamp": "2026-04-14T05:18:00.7078969Z",
+      "kind": "package_report",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.21\\direct_cua\\player_var_package_report_latest.json"
+    },
+    {
+      "timestamp": "2026-04-14T05:18:14.7524997Z",
+      "kind": "proof_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json"
+    },
+    {
+      "timestamp": "2026-04-13T23:19:14.8517808-06:00",
+      "kind": "baseline_raw_deploy_receipt",
+      "value": "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.21.alpha.json"
+    }
+  ],
+  "entries": [
+    {
+      "entryId": "0.6.21-operator-basics-reset",
+      "after": "2026-04-13T23:10:00-06:00",
+      "before": "2026-04-14T05:17:59.6633577Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "operator",
+      "verbatim": false,
+      "message": "The operator explicitly reset the lane to basics only: be boring, do not layer solutions, and fix the remaining playlist-truth seam before any more audio/video experimentation.",
+      "reconstructedFrom": [
+        "surviving thread conversation"
+      ]
+    },
+    {
+      "entryId": "0.6.21-runtime-seam-isolation",
+      "after": "2026-04-13T23:10:00-06:00",
+      "before": "2026-04-14T05:17:59.6633577Z",
+      "timestampKind": "approx_before_exact_build_receipts",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "A bounded repo review confirmed that the remaining basics bug was playlist truth rather than next/previous step math: new presets were only saving mediaPath, and hosted loads could still revive an older broader playlist from a narrower request.",
+      "reconstructedFrom": [
+        "live code inspection",
+        "explorer sidecar findings"
+      ]
+    },
+    {
+      "entryId": "0.6.21-foundation-build",
+      "timestamp": "2026-04-14T05:17:59.6633577Z",
+      "timestampKind": "exact_release_validation",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Built 0.6.21 cleanly with preset playlist capture and hosted stale-playlist reuse removed.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.21\\foundation_release_validation.json"
+      ]
+    },
+    {
+      "entryId": "0.6.21-package-inventory-built",
+      "timestamp": "2026-04-14T05:18:00.7078969Z",
+      "timestampKind": "exact_package_report",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Regenerated the 0.6.21 package inventory with -SkipVarDistribute and confirmed the report still shows distributed:false, so the package exists only as build inventory and not as a live prerelease authority.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.21\\direct_cua\\player_var_package_report_latest.json",
+        "live disk inspection of F:\\sim\\vam\\AddonPackages"
+      ]
+    },
+    {
+      "entryId": "0.6.21-modern-tv-alpha",
+      "timestamp": "2026-04-14T05:18:14.7524997Z",
+      "timestampKind": "exact_proof_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Redeployed the raw modern_tv hosted-player proof as the canonical 0.6.21 alpha dev_deploy seam and verified that the hosted proof receipt and live filesystem agree on the deployed preset path.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+        "live disk inspection of F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset"
+      ]
+    },
+    {
+      "entryId": "0.6.21-baseline-player-alpha",
+      "timestamp": "2026-04-13T23:19:14.8517808-06:00",
+      "timestampKind": "exact_baseline_raw_deploy_receipt",
+      "speaker": "assistant",
+      "verbatim": false,
+      "message": "Refreshed the baseline direct-player raw asset to the same 0.6.21 alpha core and wrote a matching raw dev_deploy receipt so the full raw authority set is present on disk.",
+      "reconstructedFrom": [
+        "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.21.alpha.json",
+        "live disk inspection of F:\\sim\\vam\\Custom"
+      ]
+    }
+  ],
+  "decisions": [
+    "0.6.21 is its own semantic version because playlist persistence and hosted playlist replacement behavior changed after 0.6.20 had already been built for testing.",
+    "The current live authority seam for this slice remains raw dev_deploy Custom artifacts, not the .var package.",
+    "This slice is basics-only: preserve playlist truth and do not layer new sync or naming behavior into the same recovery packet."
+  ],
+  "openQuestions": [
+    "Does 0.6.21 restore truthful image next and previous behavior for the problematic hosted and preset-backed image cases?",
+    "How should older presets saved before playlist paths were recorded be handled if the operator still needs them to widen back into directory playlists?",
+    "What is the correct mixed-media playlist policy when the same playlist intentionally contains both images and videos?"
+  ],
+  "relatedArtifacts": [
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.21.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\releases\\0.6.21\\foundation_release_validation.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\var_packages\\0.6.21\\direct_cua\\player_var_package_report_latest.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\meta_interactive_host_proof\\modern_tv\\receipts\\meta_interactive_hosted_player_proof_receipt.json",
+    "C:\\projects\\fa\\products\\vam\\assets\\player\\build\\raw_dev_deploys\\player\\player_dev_deploy.0.6.21.alpha.json",
+    "F:\\sim\\vam\\Custom\\Atom\\CustomUnityAsset\\Preset_dev_modern_tv.0.6.21.alpha.vap",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_modern_tv.0.6.21.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Assets\\FrameAngel\\Player\\asset_dev_player.0.6.21.alpha.assetbundle",
+    "F:\\sim\\vam\\Custom\\Plugins\\plugin_player_dev.0.6.21.alpha.dll"
+  ],
+  "notes": [
+    "The 0.6.21 package report exists because the hosted proof wrapper expects package inventory, and the final report records distributed:false so the live authority did not drift away from raw dev_deploy.",
+    "Hydration lesson from 0.6.20 remains active: if receipt truth and filesystem truth disagree, the lane is not ready to call tested."
+  ]
+}

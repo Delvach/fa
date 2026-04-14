@@ -1596,14 +1596,6 @@ public partial class FASyncRuntime : MVRScript
 
         List<string> existingPlaylistPaths = new List<string>(record.playlistPaths);
         List<string> resolvedPlaylistPaths = new List<string>();
-        bool canReuseExistingPlaylist =
-            !replacePlaylist
-            && requestedPaths != null
-            && requestedPaths.Count <= 1
-            &&
-            record.playlistPaths != null
-            && record.playlistPaths.Count > 1
-            && FindStandalonePlayerPlaylistIndex(record.playlistPaths, mediaPath) >= 0;
 
         if (requestedPaths != null)
         {
@@ -1614,20 +1606,6 @@ public partial class FASyncRuntime : MVRScript
                     && FrameAngelPlayerMediaParity.IsSupportedMediaPath(candidate))
                 {
                     resolvedPlaylistPaths.Add(candidate);
-                }
-            }
-        }
-
-        if (resolvedPlaylistPaths.Count <= 1 && canReuseExistingPlaylist)
-        {
-            resolvedPlaylistPaths.Clear();
-            for (int i = 0; i < record.playlistPaths.Count; i++)
-            {
-                string existingPath = record.playlistPaths[i];
-                if (!string.IsNullOrEmpty(existingPath)
-                    && FrameAngelPlayerMediaParity.IsSupportedMediaPath(existingPath))
-                {
-                    resolvedPlaylistPaths.Add(existingPath);
                 }
             }
         }
