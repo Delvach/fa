@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.40",
-    "notes":  "0.6.40 rebases demo3 left and right control clones with the owning screen transform delta so the side controls stop overlapping the middle stack in world space.",
+    "version":  "0.6.41",
+    "notes":  "0.6.41 makes demo3 text displays repaint from live state, defaults total to 00:00, and rotates side control groups around their owning screens instead of only shifting them.",
     "branch":  "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.40.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.41.json"
 }

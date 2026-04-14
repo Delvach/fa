@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.41",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.41 fixes demo3 text displays staying on authored defaults and rotates the side control groups around the side-screen yaw instead of only shifting them into left and right screen space.",
+  "repoAnchors": {
+    "branch": "release/0.6.36-ab-boundaries-and-demo3-control-rebase",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.41.json"
+  },
+  "operatorSignals": [
+    "Demo3 sliders were moving, but the current and total text displays were still showing the authored defaults.",
+    "Display total should not default to 30:00; it should start at 00:00.",
+    "The side control groups were translated and yawed correctly, but the whole cluster was not rotated relative to the 45 degree side-screen angle."
+  ],
+  "actionsTaken": [
+    "Changed the demo3 runtime text update path so UIText labels repaint from live state.",
+    "Changed the demo3 builder defaults so current and total displays both start at 00:00.",
+    "Changed the demo3 builder transform rebase so left and right control clones rotate their local offset around the owning screen yaw delta before parent linking."
+  ],
+  "nonGoals": [
+    "No audio changes.",
+    "No nav changes.",
+    "No folder, filename, or remaining-time display additions."
+  ]
+}

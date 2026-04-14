@@ -10401,7 +10401,8 @@ public partial class FASyncRuntime : MVRScript
         if (string.Equals(lastValue ?? "", normalized, StringComparison.Ordinal))
             return;
 
-        field.valNoCallback = normalized;
+        // UIText storables need the live setter so the visible label actually repaints.
+        field.val = normalized;
         lastValue = normalized;
     }
 

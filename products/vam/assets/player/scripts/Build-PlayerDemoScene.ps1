@@ -817,6 +817,23 @@ function Resolve-PlayerDemoSceneAtomTransformSources {
     }
 }
 
+function Rotate-PlayerDemoSceneOffsetAroundY {
+    param(
+        [double]$X,
+        [double]$Z,
+        [double]$Degrees
+    )
+
+    $radians = $Degrees * [Math]::PI / 180.0
+    $cosine = [Math]::Cos($radians)
+    $sine = [Math]::Sin($radians)
+
+    return [pscustomobject]@{
+        x = (($X * $cosine) + ($Z * $sine))
+        z = ((-$X * $sine) + ($Z * $cosine))
+    }
+}
+
 function Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta {
     param(
         [object]$SourceAtom,
@@ -837,16 +854,25 @@ function Copy-PlayerDemoSceneAtomRelativeTransformWithScreenDelta {
         return
     }
 
+    $rotationDeltaX = (([double]$targetScreenTransform.rotation.x) - ([double]$sourceScreenTransform.rotation.x))
+    $rotationDeltaY = (([double]$targetScreenTransform.rotation.y) - ([double]$sourceScreenTransform.rotation.y))
+    $rotationDeltaZ = (([double]$targetScreenTransform.rotation.z) - ([double]$sourceScreenTransform.rotation.z))
+
+    $localOffsetX = (([double]$sourceTransform.position.x) - ([double]$sourceScreenTransform.position.x))
+    $localOffsetY = (([double]$sourceTransform.position.y) - ([double]$sourceScreenTransform.position.y))
+    $localOffsetZ = (([double]$sourceTransform.position.z) - ([double]$sourceScreenTransform.position.z))
+    $rotatedLocalOffset = Rotate-PlayerDemoSceneOffsetAroundY -X $localOffsetX -Z $localOffsetZ -Degrees $rotationDeltaY
+
     $position = [pscustomobject]@{
-        x = ([double]$sourceTransform.position.x + (([double]$targetScreenTransform.position.x) - ([double]$sourceScreenTransform.position.x)))
-        y = ([double]$sourceTransform.position.y + (([double]$targetScreenTransform.position.y) - ([double]$sourceScreenTransform.position.y)))
-        z = ([double]$sourceTransform.position.z + (([double]$targetScreenTransform.position.z) - ([double]$sourceScreenTransform.position.z)))
+        x = (([double]$targetScreenTransform.position.x) + [double]$rotatedLocalOffset.x)
+        y = (([double]$targetScreenTransform.position.y) + $localOffsetY)
+        z = (([double]$targetScreenTransform.position.z) + [double]$rotatedLocalOffset.z)
     }
 
     $rotation = [pscustomobject]@{
-        x = ([double]$sourceTransform.rotation.x + (([double]$targetScreenTransform.rotation.x) - ([double]$sourceScreenTransform.rotation.x)))
-        y = ([double]$sourceTransform.rotation.y + (([double]$targetScreenTransform.rotation.y) - ([double]$sourceScreenTransform.rotation.y)))
-        z = ([double]$sourceTransform.rotation.z + (([double]$targetScreenTransform.rotation.z) - ([double]$sourceScreenTransform.rotation.z)))
+        x = ([double]$sourceTransform.rotation.x + $rotationDeltaX)
+        y = ([double]$sourceTransform.rotation.y + $rotationDeltaY)
+        z = ([double]$sourceTransform.rotation.z + $rotationDeltaZ)
     }
 
     Set-PlayerDemoSceneAtomRelativeTransform -Atom $TargetAtom -PositionSource $position -RotationSource $rotation
@@ -1012,6 +1038,19 @@ function Set-PlayerDemoThreeScreenControlWiring {
     }
 
     if ([string]$Spec.kind -eq "display") {
+        $textStorable = Get-StorableById -Storables @($Atom.storables) -Id "Text"
+        if ($null -ne $textStorable) {
+            $defaultDisplayText = switch ([string]$Spec.localId) {
+                "display_curr" { "00:00" }
+                "display_total" { "00:00" }
+                default { "" }
+            }
+
+            if (-not [string]::IsNullOrWhiteSpace($defaultDisplayText)) {
+                $textStorable | Add-Member -NotePropertyName text -NotePropertyValue $defaultDisplayText -Force
+            }
+        }
+
         return
     }
 

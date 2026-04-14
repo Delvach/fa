@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.41",
+  "title": "Polish demo3 text readback and side control orientation",
+  "summary": "0.6.41 fixes demo3 text displays staying on authored defaults and rotates the side control groups around their owning screens so the whole cluster aligns to the side-screen angle.",
+  "changes": [
+    "Demo3 current and total text displays now repaint from live runtime state instead of staying on the authored default labels.",
+    "Demo3 display defaults now start at 00:00 for both current and total until live state arrives.",
+    "Left and right demo3 control clones now rotate their local offset around the owning screen yaw delta, so the control cluster aligns to the side-screen orientation instead of only shifting in world space."
+  ],
+  "reasoning": [
+    "The slider readback path was alive, but the visible text labels were still showing the authored scene defaults, so the runtime text setter needed to drive the actual UIText repaint path.",
+    "The first transform rebase fixed overlap but not group orientation, because it translated controls into the side screens without rotating the control offsets around the new screen angle."
+  ],
+  "operatorVisibleOutcomes": [
+    "Demo3 current and total labels should now reflect live state instead of staying at 00:00 and 30:00.",
+    "Side control groups should now sit near their own screens and angle with those screens instead of keeping the middle screen's horizontal spread."
+  ],
+  "knownIssues": [
+    "This slice does not add remaining-time, folder, or filename displays yet.",
+    "This slice does not widen the A-B Clear family beyond the current authored template structure."
+  ]
+}
