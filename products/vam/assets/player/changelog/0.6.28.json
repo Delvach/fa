@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.28",
+  "title": "Tighten CUA focus and grab-nav behavior without reopening the player core",
+  "summary": "0.6.28 keeps the 0.6.27 core-player sync and lag baseline intact, but makes the CUA input seam behave better in VR by letting thumbstick-click grab navigation temporarily override gaze capture, preventing nav lock from re-engaging while locomotion is still active, toggling play or pause on trigger release when no joystick navigation was used, and exposing a lightweight active-screen state hook for future indicators.",
+  "changes": [
+    "Treat thumbstick-click grab navigation as a temporary override that releases CUA capture and leaves VaM navigation unlocked while the button is held.",
+    "Only let gaze focus re-engage when the user is still looking at the screen and joystick navigation has actually stopped.",
+    "Add a trigger-tap release action that toggles play or pause when the trigger was not used together with joystick navigation.",
+    "Expose a transient active-screen readback field so a future visible-screen indicator can hang off current runtime truth without renderer walking or UI work.",
+    "Stamp version 0.6.28 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and raw-deploy the 0.6.28 core-player alpha seam with package inventory generated via -SkipVarDistribute."
+  ],
+  "reasoning": [
+    "The current front-trigger plus joystick image and movie transport behavior is already good, so this slice stays strictly in the CUA focus and navigation seam instead of reopening playback, sync, playlists, or surfaces.",
+    "The operator's VR experience showed that immediate gaze recapture while moving can trap navigation, especially if the user looks at the screen mid-locomotion or while using grab navigation.",
+    "A future visible-screen indicator needs a cheap state seam, but not a UI implementation yet, so this slice exposes only the transient runtime truth."
+  ],
+  "operatorVisibleOutcomes": [
+    "Looking at a screen no longer steals navigation while thumbstick-click grab navigation is active.",
+    "If the user is still moving with joystick locomotion, gaze focus waits until movement stops completely.",
+    "If the user releases thumbstick-click while still looking at the screen and locomotion has stopped, gaze focus can re-engage naturally.",
+    "A trigger tap without joystick navigation now toggles play or pause on release."
+  ],
+  "knownIssues": [
+    "This slice does not redesign the panel, change surfaces, or revisit TV placement.",
+    "This slice does not reopen sync, playlist, autoplay, or packaging policy."
+  ]
+}

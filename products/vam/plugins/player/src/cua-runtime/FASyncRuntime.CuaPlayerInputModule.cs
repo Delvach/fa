@@ -118,15 +118,20 @@ public partial class FASyncRuntime : MVRScript
     private bool cuaPlayerVideoScrubSessionActive = false;
     private bool cuaPlayerVideoScrubResumeAfterRelease = false;
     private string cuaPlayerVideoScrubPlaybackKey = "";
+    private bool cuaPlayerTriggerTapArmed = false;
+    private bool cuaPlayerTriggerTapUsedWithNavigation = false;
+    private bool cuaPlayerLastTriggerTapActive = false;
     private float cuaPlayerNextInputStateUpdateAt = 0f;
     private string cuaPlayerLastInputState = "";
     private string cuaPlayerLastNavigationSource = "none";
     private string cuaPlayerLastNavigationStick = "none";
     private string cuaPlayerLastActiveDirectStick = "none";
     private bool cuaPlayerLastTriggerModifierActive = false;
+    private bool cuaPlayerLastGrabNavigateOverrideActive = false;
     private float cuaPlayerLastActiveDirectStickAt = -1000f;
     private string cuaPlayerCachedSurfaceHostAtomUid = "";
     private GameObject cuaPlayerCachedScreenSurfaceObject;
+    private string cuaPlayerLastVisibleScreenHostAtomUid = "";
 
     private void BuildCuaPlayerInputStorables()
     {
@@ -139,12 +144,18 @@ public partial class FASyncRuntime : MVRScript
             "FrameAngel Player Focus Active",
             false);
         ConfigureTransientField(playerFocusActiveField, true);
+
+        playerVisibleScreenField = new JSONStorableString(
+            "FrameAngel Player Active Screen",
+            "screen=none");
+        ConfigureTransientField(playerVisibleScreenField, true);
     }
 
     private void RegisterCuaPlayerInputStorables()
     {
         RegisterString(playerInputStateField);
         RegisterBool(playerFocusActiveField);
+        RegisterString(playerVisibleScreenField);
     }
 
     private void BuildCuaPlayerInputUi()
@@ -157,6 +168,8 @@ public partial class FASyncRuntime : MVRScript
         SuperController sc = SuperController.singleton;
         if (sc == null)
         {
+            ResetCuaPlayerTriggerTapState();
+            UpdateCuaPlayerVisibleScreenState("");
             ReleaseCuaPlayerInputFocus("no_supercontroller");
             return;
         }
@@ -167,18 +180,36 @@ public partial class FASyncRuntime : MVRScript
             cuaPlayerLastGazeSeenAt = now;
 
         Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
+        bool navigationActive = IsCuaPlayerNavigationActive(navigation);
         bool triggerModifierActive = ReadCuaPlayerTriggerModifier();
+        bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
         cuaPlayerLastTriggerModifierActive = triggerModifierActive;
         float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
         float vertical = Mathf.Abs(navigation.y) >= CuaPlayerNavigationDeadzone ? navigation.y : 0f;
-        if (Mathf.Abs(horizontal) > 0f || Mathf.Abs(vertical) > 0f)
+        if (navigationActive)
             cuaPlayerLastInputActiveAt = now;
 
+        string currentHostAtomUid = ResolveCuaPlayerCurrentHostAtomUid();
+        UpdateCuaPlayerVisibleScreenState(currentHostAtomUid);
+
+        if (grabNavigateOverrideActive)
+        {
+            ResetCuaPlayerTriggerTapState();
+            if (ReferenceEquals(cuaPlayerInputOwner, this) || cuaPlayerNavigationCaptureActive || cuaPlayerFocusActive)
+                ReleaseCuaPlayerInputFocus("grab_nav_override");
+
+            cuaPlayerLastGrabNavigateOverrideActive = true;
+            UpdateCuaPlayerInputState(false, gazeActive, "grab_nav", navigation, gazeReason);
+            return;
+        }
+
+        cuaPlayerLastGrabNavigateOverrideActive = false;
+
         if (gazeActive)
-            TryPreemptCuaPlayerInputOwnerForGazeTarget(ResolveCuaPlayerCurrentHostAtomUid());
+            TryPreemptCuaPlayerInputOwnerForGazeTarget(currentHostAtomUid);
 
         bool inputActiveRecently = (now - cuaPlayerLastInputActiveAt) <= CuaPlayerFocusInputGraceSeconds;
-        bool wantsFocus = gazeActive
+        bool wantsFocus = (gazeActive && !navigationActive)
             || (cuaPlayerFocusActive
                 && ((now - cuaPlayerLastGazeSeenAt) <= CuaPlayerFocusReleaseGraceSeconds
                     || inputActiveRecently));
@@ -209,10 +240,13 @@ public partial class FASyncRuntime : MVRScript
 
         if (!ownsFocus)
         {
+            ResetCuaPlayerTriggerTapState();
             UpdateCuaPlayerInputState(
                 cuaPlayerFocusActive,
                 gazeActive,
-                ownerAvailable ? "idle" : "waiting",
+                ownerAvailable
+                    ? (navigationActive ? "moving" : "idle")
+                    : "waiting",
                 navigation,
                 gazeReason);
             return;
@@ -220,9 +254,13 @@ public partial class FASyncRuntime : MVRScript
 
         if (!TryResolveAttachedHostedStandalonePlayerRecord(out StandalonePlayerRecord record, out Atom hostAtom) || record == null || hostAtom == null)
         {
+            ResetCuaPlayerTriggerTapState();
             ReleaseCuaPlayerInputFocus("player_unresolved");
             return;
         }
+
+        UpdateCuaPlayerVisibleScreenState(string.IsNullOrEmpty(hostAtom.uid) ? "" : hostAtom.uid.Trim());
+        TickCuaPlayerTriggerTapState(record, triggerModifierActive, navigationActive);
 
         if (record.mediaIsStillImage)
         {
@@ -258,11 +296,15 @@ public partial class FASyncRuntime : MVRScript
 
     private void OnCuaPlayerInputDestroy()
     {
+        ResetCuaPlayerTriggerTapState();
+        UpdateCuaPlayerVisibleScreenState("");
         ReleaseCuaPlayerInputFocus("destroy");
         if (playerFocusActiveField != null)
             playerFocusActiveField.valNoCallback = false;
         if (playerInputStateField != null)
             playerInputStateField.valNoCallback = "focus=off gaze=off mode=destroyed";
+        if (playerVisibleScreenField != null)
+            playerVisibleScreenField.valNoCallback = "screen=none";
     }
 
     private void SetCuaPlayerInputCaptureState(bool enabled)
@@ -319,6 +361,7 @@ public partial class FASyncRuntime : MVRScript
     {
         bool wasOwner = ReferenceEquals(cuaPlayerInputOwner, this);
         EndCuaPlayerVideoScrubSession(true);
+        ResetCuaPlayerTriggerTapState();
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
@@ -344,7 +387,9 @@ public partial class FASyncRuntime : MVRScript
         sb.Append(" stick=").Append(string.IsNullOrEmpty(cuaPlayerLastNavigationStick) ? "none" : cuaPlayerLastNavigationStick);
         sb.Append(" src=").Append(string.IsNullOrEmpty(cuaPlayerLastNavigationSource) ? "none" : cuaPlayerLastNavigationSource);
         sb.Append(" mod=").Append(cuaPlayerLastTriggerModifierActive ? "trigger" : "none");
+        sb.Append(" grab=").Append(cuaPlayerLastGrabNavigateOverrideActive ? "on" : "off");
         sb.Append(" lock=").Append(FormatCuaPlayerNavigationAxisLock(cuaPlayerNavigationAxisLock));
+        sb.Append(" screen=").Append(string.IsNullOrEmpty(cuaPlayerLastVisibleScreenHostAtomUid) ? "none" : cuaPlayerLastVisibleScreenHostAtomUid);
         sb.Append(" x=").Append(navigation.x.ToString("0.00", CultureInfo.InvariantCulture));
         sb.Append(" y=").Append(navigation.y.ToString("0.00", CultureInfo.InvariantCulture));
         if (!string.IsNullOrEmpty(reason))
@@ -359,6 +404,86 @@ public partial class FASyncRuntime : MVRScript
         playerInputStateField.valNoCallback = summary;
         cuaPlayerLastInputState = summary;
         cuaPlayerNextInputStateUpdateAt = now + CuaPlayerInputStateUpdateIntervalSeconds;
+    }
+
+    private void UpdateCuaPlayerVisibleScreenState(string hostAtomUid)
+    {
+        string normalizedHostAtomUid = string.IsNullOrEmpty(hostAtomUid) ? "" : hostAtomUid.Trim();
+        if (string.Equals(cuaPlayerLastVisibleScreenHostAtomUid, normalizedHostAtomUid, StringComparison.Ordinal))
+            return;
+
+        cuaPlayerLastVisibleScreenHostAtomUid = normalizedHostAtomUid;
+        if (playerVisibleScreenField == null)
+            return;
+
+        string summary = "screen=" + (string.IsNullOrEmpty(normalizedHostAtomUid) ? "none" : normalizedHostAtomUid);
+        if (!string.Equals(playerVisibleScreenField.val, summary, StringComparison.Ordinal))
+            playerVisibleScreenField.valNoCallback = summary;
+    }
+
+    private void TickCuaPlayerTriggerTapState(StandalonePlayerRecord record, bool triggerActive, bool navigationActive)
+    {
+        if (record == null || string.IsNullOrEmpty(record.playbackKey))
+        {
+            ResetCuaPlayerTriggerTapState();
+            return;
+        }
+
+        if (triggerActive)
+        {
+            if (!cuaPlayerLastTriggerTapActive)
+            {
+                cuaPlayerTriggerTapArmed = true;
+                cuaPlayerTriggerTapUsedWithNavigation = navigationActive;
+            }
+            else if (navigationActive)
+            {
+                cuaPlayerTriggerTapUsedWithNavigation = true;
+            }
+        }
+        else if (cuaPlayerLastTriggerTapActive)
+        {
+            if (cuaPlayerTriggerTapArmed && !cuaPlayerTriggerTapUsedWithNavigation)
+                TryApplyCuaPlayerTriggerTapAction(record);
+
+            cuaPlayerTriggerTapArmed = false;
+            cuaPlayerTriggerTapUsedWithNavigation = false;
+        }
+
+        cuaPlayerLastTriggerTapActive = triggerActive;
+    }
+
+    private void ResetCuaPlayerTriggerTapState()
+    {
+        cuaPlayerTriggerTapArmed = false;
+        cuaPlayerTriggerTapUsedWithNavigation = false;
+        cuaPlayerLastTriggerTapActive = false;
+    }
+
+    private void TryApplyCuaPlayerTriggerTapAction(StandalonePlayerRecord record)
+    {
+        if (record == null || string.IsNullOrEmpty(record.playbackKey))
+            return;
+
+        bool shouldPause = record.desiredPlaying;
+        if (!record.mediaIsStillImage)
+        {
+            try
+            {
+                shouldPause = shouldPause || (record.videoPlayer != null && record.videoPlayer.isPlaying);
+            }
+            catch
+            {
+            }
+        }
+
+        string argsJson = "{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}";
+        string ignoredResult;
+        string errorMessage;
+        if (shouldPause)
+            TryPauseStandalonePlayer("Player.InputTriggerTapPause", argsJson, out ignoredResult, out errorMessage);
+        else
+            TryPlayStandalonePlayer("Player.InputTriggerTapPlay", argsJson, out ignoredResult, out errorMessage);
     }
 
     private bool TryResolveCuaPlayerGazeHit(out string reason)
@@ -729,6 +854,30 @@ public partial class FASyncRuntime : MVRScript
             return false;
 
         return Mathf.Abs(triggerValue) >= CuaPlayerTriggerModifierThreshold;
+    }
+
+    private bool ReadCuaPlayerGrabNavigateOverrideActive()
+    {
+        return ReadCuaPlayerThumbstickButtonActive(
+                   OVRInput.Button.PrimaryThumbstick,
+                   OVRInput.RawButton.LThumbstick)
+            || ReadCuaPlayerThumbstickButtonActive(
+                   OVRInput.Button.SecondaryThumbstick,
+                   OVRInput.RawButton.RThumbstick);
+    }
+
+    private static bool ReadCuaPlayerThumbstickButtonActive(OVRInput.Button button, OVRInput.RawButton rawButton)
+    {
+        try
+        {
+            if (OVRInput.Get(button) || OVRInput.Get(rawButton))
+                return true;
+        }
+        catch
+        {
+        }
+
+        return false;
     }
 
     private Vector2 ApplyCuaPlayerNavigationAxisLock(Vector2 navigation)

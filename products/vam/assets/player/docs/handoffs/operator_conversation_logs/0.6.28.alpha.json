@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.28",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.28 is the bounded CUA input and focus slice on top of the good 0.6.27 core-player baseline, aimed at keeping VR gaze capture from trapping navigation while preserving the already-good trigger-plus-joystick transport behavior.",
+  "repoAnchors": {
+    "branch": "release/0.6.28-cua-nav-focus-trigger",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.28.json"
+  },
+  "operatorSignals": [
+    "0.6.27 is a good baseline and already hides controller pointers while the user looks at the screen.",
+    "The operator wants thumbstick-click grab navigation to always override disabled navigation while the button is held.",
+    "Gaze focus should only re-engage on release or stop if the user is still looking at a screen.",
+    "If the trigger is pressed without joystick navigation, releasing it should toggle play or pause.",
+    "A stateful visible-screen seam is needed for future indicators, but no indicator UI should be implemented yet."
+  ],
+  "actionsTaken": [
+    "Kept the slice strictly inside the CUA input and focus seam instead of reopening playback, sync, playlists, or surfaces.",
+    "Added a thumbstick-click grab-navigation override that releases CUA capture while the override is active.",
+    "Changed gaze focus reacquisition so it waits for locomotion to stop before it can re-engage.",
+    "Added a trigger-tap release action that toggles play or pause only when joystick navigation was not used during the trigger hold.",
+    "Exposed a transient active-screen string field for future screen indicators without adding new UI."
+  ],
+  "nonGoals": [
+    "No panel redesign.",
+    "No surface, binding, TV, or Volodeck work.",
+    "No playlist or autoplay policy changes.",
+    "No same-version raw and .var overlap."
+  ]
+}
