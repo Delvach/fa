@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.52",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.52 restores movie joystick scrub to discrete 15-second skip behavior after live testing showed the analog-rate path was only moving about a second per scrub action.",
+  "repoAnchors": {
+    "branch": "release/0.6.52-cua-movie-scrub-step-restore",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.52.json"
+  },
+  "operatorSignals": [
+    "The historical logs correctly recorded that 15 seconds was the intended scrub amount.",
+    "Fresh live testing on a paused movie showed roughly 8 seconds after 10 joystick scrubs, proving the current behavior was a real bug rather than perception."
+  ],
+  "actionsTaken": [
+    "Rechecked the 0.6.42 and 0.6.43 logs to confirm the intended 15-second behavior.",
+    "Compared the current CUA input seam against the historical scrub change and verified the analog-rate path was still in place.",
+    "Replaced that movie stick path with the existing discrete 15-second skip transport on a fresh version boundary."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice."
+  ]
+}

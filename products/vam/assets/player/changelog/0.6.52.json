@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.52",
+  "title": "Restore movie joystick scrub as discrete 15-second skip steps",
+  "summary": "0.6.52 fixes movie joystick scrub by routing the non-trigger stick path through the existing 15-second skip transport instead of analog-rate accumulation, which had been producing much smaller live movement than intended.",
+  "changes": [
+    "The CUA non-trigger movie scrub path now reuses the existing discrete skip-forward and skip-backward transport actions.",
+    "Trigger-modified movie transport remains the separate next and previous media path.",
+    "This slice stays entirely inside the CUA input module and does not widen player transport, scene-builder, or slideshow behavior."
+  ],
+  "reasoning": [
+    "Live testing showed repeated paused joystick scrubs only advanced around one second per action, which proved the analog-rate interpretation was not matching the intended product behavior.",
+    "Using the already-proven discrete skip transport is safer than layering another scale correction on top of the analog scrub path."
+  ],
+  "operatorVisibleOutcomes": [
+    "Movie joystick scrub should again move in clear 15-second increments instead of tiny live nudges.",
+    "No slideshow, volume, or scene-builder changes ride along with this slice."
+  ],
+  "knownIssues": [
+    "This slice does not yet advance slideshow, right-stick volume, or deferred gaze work.",
+    "The parked Unity shell dirt remains intentionally outside this version."
+  ]
+}

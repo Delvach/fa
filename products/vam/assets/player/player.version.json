@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.51",
-    "notes":  "0.6.51 is a sanity-check rebuild of the 0.6.49 baseline after backing out the 0.6.50 scrub-feedback experiment.",
-    "branch":  "release/0.6.51-sanity-check-baseline",
+    "version":  "0.6.52",
+    "notes":  "0.6.52 restores movie joystick scrub to discrete 15-second skip behavior by reusing the existing skip transport instead of analog-rate accumulation.",
+    "branch":  "release/0.6.52-cua-movie-scrub-step-restore",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.51.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.52.json"
 }

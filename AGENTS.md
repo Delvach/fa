@@ -69,10 +69,10 @@ As of this update:
    - `0.6.41` fixed demo3 text repaint and rotated the side control groups around the owning screen yaw
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 5. the current immediate queue is:
-   - `0.6.51` is the active raw operator sanity-check seam, intentionally rebuilding the reverted `0.6.49` baseline on a fresh version boundary after backing out `0.6.50`
-   - `0.6.52`: slideshow
-   - `0.6.53`: right-stick up/down volume without trigger
-   - `0.6.54`: deferred gaze-enable polish for unloaded or cleared screens
+   - `0.6.52` is the active raw operator seam, restoring movie joystick scrub to discrete 15-second skip behavior after the analog-rate path proved incorrect in live use
+   - `0.6.53`: slideshow
+   - `0.6.54`: right-stick up/down volume without trigger
+   - `0.6.55`: deferred gaze-enable polish for unloaded or cleared screens
    - deferred gaze polish:
      - disable gaze for a screen until media has actually started playing or showing
       - investigate feasibility of limiting gaze to visible image content instead of the full transparent screen area
@@ -97,13 +97,13 @@ Primary current docs:
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.0.6.51.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\dev_cua_player.0.6.52.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.51.dll`
+   `F:\sim\vam\Custom\Plugins\dev_plugin_player.0.6.52.dll`
 3. deterministic live scene:
-   `F:\sim\vam\Saves\scene\demo3.0.6.51.json`
+   `F:\sim\vam\Saves\scene\demo3.0.6.52.json`
 4. release validation receipt:
-   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.51\foundation_release_validation.json`
+   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.52\foundation_release_validation.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
@@ -131,7 +131,7 @@ Important:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
 11. the current one-second sync seam remains active for this lane, but its correction authority is fully video-time-owned: `AudioSource.time` is no longer consulted, while `prepareCompleted`, `started`, `seekCompleted`, and `clockResyncOccurred` refresh the player-owned timeline
-12. the current mixed-media policy is still explicit: mixed directories are valid playlists, image slider navigation is an intentional transport extension, discovered numbered media follow natural sequence when shuffle is off, and `0.6.51` is only a sanity-check rebuild of that baseline rather than a new transport change
+12. the current mixed-media policy is still explicit: mixed directories are valid playlists, image slider navigation is an intentional transport extension, discovered numbered media follow natural sequence when shuffle is off, and `0.6.52` restores movie joystick scrub by routing it back through the existing discrete skip transport instead of analog-rate accumulation
 
 ## Volodeck boundary
 
