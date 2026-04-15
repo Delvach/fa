@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.59",
+  "title": "Restore shuffle defaults to off for new player records",
+  "summary": "0.6.59 restores shuffle defaults to off for new standalone player and preset records, so image directories follow the existing natural ordering helper when shuffle is not explicitly enabled.",
+  "changes": [
+    "New standalone player records now default shuffle off instead of on.",
+    "New preset records now default shuffle off instead of on when random state is absent.",
+    "Pending playlist summary text now reflects shuffle off as the default."
+  ],
+  "reasoning": "The natural ordering helper from 0.6.49 is already in place. The live regression is that new records still default randomEnabled true, which makes the shuffle toggle appear checked and pushes image directories through random order even when shuffle should be off.",
+  "operatorVisibleOutcomes": [
+    "Shuffle should load unchecked by default on a fresh player record.",
+    "With shuffle off, numbered images should follow natural sequence like 1, 2, 3, ... 10, 11, 12.",
+    "Current image scrub and navigation behavior should remain unchanged."
+  ],
+  "knownIssues": [
+    "This slice does not change slideshow, right-stick volume, or deferred gaze work.",
+    "This slice does not change movie joystick transport."
+  ],
+  "verification": [
+    "StandalonePlayerRecord.randomEnabled now defaults false in FASyncRuntime.Player.cs.",
+    "PlayerPresetRecord.randomEnabled now defaults false in FASyncRuntime.PlayerPresets.cs.",
+    "Directory-discovered media ordering still routes through FrameAngelPlayerMediaParity.SortMediaPathsInNaturalOrder."
+  ]
+}

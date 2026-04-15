@@ -32,7 +32,7 @@ public partial class FASyncRuntime : MVRScript
         public bool hasLoopMode = false;
         public string loopMode = "";
         public bool hasRandomEnabled = false;
-        public bool randomEnabled = true;
+        public bool randomEnabled = false;
         public bool hasAbLoopEnabled = false;
         public bool abLoopEnabled = false;
         public bool hasAbLoopStart = false;

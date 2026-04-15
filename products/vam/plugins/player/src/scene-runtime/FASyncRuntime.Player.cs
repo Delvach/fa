@@ -159,7 +159,7 @@ public partial class FASyncRuntime : MVRScript
         public int randomOrderCursor = -1;
         public int currentIndex = -1;
         public string loopMode = PlayerLoopModePlaylist;
-        public bool randomEnabled = true;
+        public bool randomEnabled = false;
         public bool looping = false;
         public bool prepared = false;
         public bool preparePending = false;
@@ -10770,9 +10770,9 @@ public partial class FASyncRuntime : MVRScript
     {
         string directoryName = TryGetPathParentLeafName(playerMediaPath);
         if (string.IsNullOrEmpty(directoryName))
-            return "playlist=idle loop=playlist random=on";
+            return "playlist=idle loop=playlist random=off";
 
-        return "playlist=selected dir=" + directoryName + " loop=playlist random=on";
+        return "playlist=selected dir=" + directoryName + " loop=playlist random=off";
     }
 
     private string TryGetPathParentLeafName(string rawPath)

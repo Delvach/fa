@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.59",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.59 is a small shuffle-default recovery slice: the ordering helper was already correct, but new player and preset records still defaulted shuffle on, which made image directories appear shuffled even when the operator expected plain natural order.",
+  "repoAnchors": {
+    "branch": "release/0.6.59-shuffle-default-off",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.59.json"
+  },
+  "operatorSignals": [
+    "Images always appeared shuffled even though the natural ordering helper should keep numbered files in sequence.",
+    "The shuffle toggle appeared checked on load, suggesting a default-state parity bug rather than a playlist-sort bug.",
+    "The current image scrub and navigation behavior was already good and should not be disturbed."
+  ],
+  "actionsTaken": [
+    "Confirmed that directory-discovered media ordering still uses the shared natural sort helper.",
+    "Restored shuffle defaults to off for new standalone player records.",
+    "Restored shuffle defaults to off for new preset records when random state is absent."
+  ],
+  "nonGoals": [
+    "No image scrub transport changes in this slice.",
+    "No movie joystick transport changes in this slice.",
+    "No slideshow, volume, or gaze work in this slice."
+  ]
+}
