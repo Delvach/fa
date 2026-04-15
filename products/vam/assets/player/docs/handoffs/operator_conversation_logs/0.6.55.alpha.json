@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.55",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.55 keeps the restored movie scrub session model and rolls only the non-trigger movie scrub rate math back to the 0.6.28 normalized law, so video scrub distance returns to the older feel without changing image stepping or trigger-modified behavior.",
+  "repoAnchors": {
+    "branch": "release/0.6.55-cua-movie-scrub-rate-restore",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.55.json"
+  },
+  "operatorSignals": [
+    "After the 0.6.54 button-5 rollback, image scrubbing worked well again but movie scrub still felt tiny at around 1 to 2 seconds per nudge.",
+    "The lane wants a tiny scrub-rate tweak only, not another scrub-model or transport change."
+  ],
+  "actionsTaken": [
+    "Compared 0.6.28 directly to the current 0.6.54 CUA input module and confirmed the non-trigger movie scrub lifecycle is the same while the rate math is the only real delta.",
+    "Restored the 0.6.28 fixed normalized movie scrub rate inside the current scrub-session model.",
+    "Kept the exact seek finalize path, trigger-modified video step path, image stepping behavior, and canonical raw dev_deploy filenames intact."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice.",
+    "No scrub-model redesign, skip-action substitution, or trigger-path changes in this slice."
+  ]
+}

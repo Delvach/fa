@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.55",
+  "title": "Restore the 0.6.28 movie scrub rate law inside the current scrub session",
+  "summary": "0.6.55 keeps the restored CUA movie scrub session intact and rolls only the non-trigger movie scrub rate math back to the fixed normalized law from 0.6.28, so joystick video scrub nudge distance returns to the older feel without changing trigger-modified behavior or image stepping.",
+  "changes": [
+    "Replaced the duration-scaled 15-seconds-per-second movie scrub rate with the older fixed normalized scrub rate from 0.6.28.",
+    "Kept the current scrub-session lifecycle, exact seek finalize path, trigger-modified video step path, and image stepping behavior intact.",
+    "Stamped a fresh raw dev_deploy version boundary so the scrub-rate rollback can be tested on canonical alpha filenames."
+  ],
+  "reasoning": "Direct comparison between 0.6.28 and the current 0.6.54 input module shows that the non-trigger movie scrub lifecycle is already the same and the only real behavior delta is the rate math introduced in 0.6.43. Restoring the 0.6.28 normalized scrub rate is the smallest safe tweak because it fixes movie nudge distance inside the existing scrub-session model without borrowing skip transport or disturbing trigger and image paths.",
+  "operatorVisibleOutcomes": [
+    "Video scrub nudges move farther again, matching the older pre-0.6.43 feel instead of the tiny 1-to-2-second movement on typical clips.",
+    "Image stepping stays smooth and incremental.",
+    "Trigger-modified video behavior stays on its existing step path."
+  ],
+  "knownIssues": [
+    "This slice does not yet change slideshow, right-stick volume, or deferred gaze work.",
+    "This slice does not redesign movie scrub semantics; it only restores the earlier scrub-rate law inside the current session model."
+  ],
+  "verification": [
+    "Build-PlayerScreenCoreFoundation.ps1 produces the raw dev_deploy alpha seam under canonical filenames for 0.6.55.",
+    "The non-trigger movie scrub code path preserves BeginCuaPlayerVideoScrubSession, EndCuaPlayerVideoScrubSession, and exact seek finalize behavior while changing only the scrub-rate math."
+  ]
+}
