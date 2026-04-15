@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.56",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.56 stops adjusting analog movie scrub formulas and routes non-trigger movie joystick input through the exact existing 15-second skip transport, because the operator wants the joystick to match the skip button behavior directly while keeping image stepping intact.",
+  "repoAnchors": {
+    "branch": "release/0.6.56-cua-movie-skip-align",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.56.json"
+  },
+  "operatorSignals": [
+    "0.6.54 still made movie joystick movement feel tiny, around one second.",
+    "0.6.55 overshot badly and moved around two minutes on long videos.",
+    "The operator explicitly asked for the same behavior as the existing skip-forward control and did not want another new movie scrub experiment."
+  ],
+  "actionsTaken": [
+    "Removed the analog movie scrub-rate experiment from the non-trigger movie joystick branch.",
+    "Reused the exact existing 15-second skip transport only in the non-trigger movie joystick branch.",
+    "Left image stepping and trigger-modified video behavior alone."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice.",
+    "No change to image stepping behavior in this slice."
+  ]
+}

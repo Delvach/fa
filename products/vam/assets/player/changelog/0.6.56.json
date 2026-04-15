@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.56",
+  "title": "Route non-trigger movie joystick input through the exact 15-second skip transport",
+  "summary": "0.6.56 stops changing analog movie scrub rate math and instead routes non-trigger movie joystick input through the existing 15-second skip transport, so video joystick movement now matches the skip-forward and skip-backward control behavior directly while image stepping and trigger-modified video behavior stay intact.",
+  "changes": [
+    "Non-trigger movie joystick input now uses the existing 15-second skip forward and skip backward transport path.",
+    "Image stepping remains on the current smooth incremental path restored in 0.6.54.",
+    "Trigger-modified video next and previous behavior remains unchanged."
+  ],
+  "reasoning": "The repo proves that both 0.6.54 and 0.6.55 were different analog movie scrub formulas, which is why one felt tiny and the other overshot massively on long clips. The operator asked for the same behavior as the existing 15-second skip action, so the smallest honest fix is to use that exact transport only in the non-trigger movie joystick branch instead of inventing another scrub-rate formula.",
+  "operatorVisibleOutcomes": [
+    "Non-trigger movie joystick movement should now match the 15-second skip button behavior directly.",
+    "Image stepping stays smooth and incremental.",
+    "Trigger-modified video next and previous still behave as before."
+  ],
+  "knownIssues": [
+    "This slice does not change slideshow, right-stick volume, or deferred gaze work.",
+    "This slice intentionally narrows only the movie non-trigger joystick path."
+  ],
+  "verification": [
+    "The non-trigger movie joystick branch in FASyncRuntime.CuaPlayerInputModule.cs dispatches to Player.SkipForward and Player.SkipBackward instead of another analog scrub-rate formula.",
+    "Image and trigger-modified video branches remain on their existing transport paths."
+  ]
+}

@@ -64,7 +64,6 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerNavigationSourceActiveThreshold = 0.02f;
     private const float CuaPlayerNavigationStickContinuitySeconds = 0.30f;
     private const float CuaPlayerTriggerModifierThreshold = 0.50f;
-    private const float CuaPlayerVideoScrubNormalizedPerSecond = 0.40f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
@@ -287,7 +286,7 @@ public partial class FASyncRuntime : MVRScript
             true,
             gazeActive,
             Mathf.Abs(horizontal) > 0f
-                ? (triggerModifierActive ? "video_step" : "video_scrub")
+                ? (triggerModifierActive ? "video_step" : "video_skip")
                 : "focused",
             navigation,
             gazeReason);
@@ -964,34 +963,14 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        ResetCuaPlayerStepRepeatState();
-
-        if (Mathf.Abs(horizontal) <= 0f)
-        {
-            EndCuaPlayerVideoScrubSession(true);
-            return;
-        }
-
-        double currentTimeSeconds;
-        double durationSeconds;
-        string errorMessage;
-        if (!TryReadStandalonePlayerTimeline(record, out currentTimeSeconds, out durationSeconds, out errorMessage))
-            return;
-
-        if (durationSeconds <= 0.0001d)
-            return;
-
-        if (!cuaPlayerVideoScrubTargetKnown)
-        {
-            cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01((float)(currentTimeSeconds / durationSeconds));
-            cuaPlayerVideoScrubTargetKnown = true;
-        }
-
-        BeginCuaPlayerVideoScrubSession(record);
-
-        cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
-            cuaPlayerVideoScrubTargetNormalized
-            + (horizontal * CuaPlayerVideoScrubNormalizedPerSecond * Time.unscaledDeltaTime));
+        EndCuaPlayerVideoScrubSession(true);
+        TickCuaPlayerStepInput(
+            record,
+            horizontal,
+            CuaPlayerImageStepInitialRepeatSeconds,
+            CuaPlayerImageStepRepeatSeconds,
+            PlayerActionSkipForwardId,
+            PlayerActionSkipBackwardId);
     }
 
     private void BeginCuaPlayerVideoScrubSession(StandalonePlayerRecord record)
@@ -1110,9 +1089,19 @@ public partial class FASyncRuntime : MVRScript
         string argsJson = "{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}";
         string ignoredResult;
         string errorMessage;
-        bool ok = desiredDirection > 0
-            ? TryNextStandalonePlayer(nextActionId, argsJson, out ignoredResult, out errorMessage)
-            : TryPreviousStandalonePlayer(previousActionId, argsJson, out ignoredResult, out errorMessage);
+        bool ok;
+        if (desiredDirection > 0)
+        {
+            ok = string.Equals(nextActionId, PlayerActionSkipForwardId, StringComparison.Ordinal)
+                ? TrySkipForwardStandalonePlayer(nextActionId, argsJson, out ignoredResult, out errorMessage)
+                : TryNextStandalonePlayer(nextActionId, argsJson, out ignoredResult, out errorMessage);
+        }
+        else
+        {
+            ok = string.Equals(previousActionId, PlayerActionSkipBackwardId, StringComparison.Ordinal)
+                ? TrySkipBackwardStandalonePlayer(previousActionId, argsJson, out ignoredResult, out errorMessage)
+                : TryPreviousStandalonePlayer(previousActionId, argsJson, out ignoredResult, out errorMessage);
+        }
 
         if (!ok)
             return;
