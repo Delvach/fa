@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.61",
-    "notes":  "0.6.61 keeps the current CUA thumbstick-click override seam, exposes a development checkbox for the direct disableNavigation capture bit, and leaves the rest of the focus and capture path intact.",
-    "branch":  "release/0.6.61-cua-navigation-disable-toggle",
+    "version":  "0.6.62",
+    "notes":  "0.6.62 consolidates the visible player readout into one multiline summary field, hides the noisy CUA status text from the panel, and leaves the playback and demo3 transport seams unchanged.",
+    "branch":  "release/0.6.62-plugin-ui-status-summary",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.61.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.62.json"
 }

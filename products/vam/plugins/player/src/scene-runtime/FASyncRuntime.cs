@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using FrameAngel.Runtime.Shared;
 using MVR.FileManagementSecure;
 using UnityEngine;
+using UnityEngine.UI;
 
 public partial class FASyncRuntime : MVRScript
 {
@@ -109,6 +110,7 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerRuntimeTargetField;
     private JSONStorableString playerRuntimeMediaField;
     private JSONStorableString playerRuntimeStateField;
+    private JSONStorableString playerRuntimeSummaryField;
     private JSONStorableString playerMediaPathField;
     private JSONStorableString playerRuntimeParityField;
     private JSONStorableString playerRuntimeAspectModeField;
@@ -168,6 +170,7 @@ public partial class FASyncRuntime : MVRScript
     private string playerPendingTargetSummary = "";
     private string playerPendingMediaSummary = "";
     private string playerPendingStateSummary = "";
+    private string playerPendingRuntimeSummary = "";
     private string playerPendingParitySummary = "";
     private string playerPendingTimelineSummary = "";
     private string playerPendingPlaylistSummary = "";
@@ -327,6 +330,9 @@ public partial class FASyncRuntime : MVRScript
 
         playerRuntimeStateField = new JSONStorableString("FrameAngel Player State", "state=idle");
         ConfigureTransientField(playerRuntimeStateField, false);
+
+        playerRuntimeSummaryField = new JSONStorableString("FrameAngel Player Summary", "Playback status: Idle");
+        ConfigureTransientField(playerRuntimeSummaryField, false);
 
         playerMediaPathField = new JSONStorableString("Player Media Path", playerMediaPath);
         playerMediaPathField.setCallbackFunction = delegate(string v)
@@ -646,6 +652,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterString(playerRuntimeTargetField);
         RegisterString(playerRuntimeMediaField);
         RegisterString(playerRuntimeStateField);
+        RegisterString(playerRuntimeSummaryField);
         RegisterString(playerMediaPathField);
         RegisterString(playerRuntimeParityField);
         RegisterString(playerRuntimeAspectModeField);
@@ -714,7 +721,8 @@ public partial class FASyncRuntime : MVRScript
     private void BuildUi()
     {
         BuildPlayerPresetUi();
-        CreateTextField(playerMediaPathField, true);
+        UIDynamicTextField runtimeSummaryDynamic = CreateTextField(playerRuntimeSummaryField, false);
+        ConfigurePlayerRuntimeSummaryUi(runtimeSummaryDynamic);
         CreateSlider(playerScrubNormalizedField, false);
         CreateSlider(playerVolumeNormalizedField, false);
         if (ShouldExposePlayerAspectControls())
@@ -897,6 +905,62 @@ public partial class FASyncRuntime : MVRScript
         field.isStorable = false;
         field.isRestorable = false;
         field.hidden = hidden;
+    }
+
+    private void ConfigurePlayerRuntimeSummaryUi(UIDynamicTextField field)
+    {
+        if (field == null)
+            return;
+
+        try
+        {
+            field.backgroundColor = new Color(1f, 1f, 1f, 0.075f);
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            LayoutElement layout = field.gameObject.GetComponent<LayoutElement>();
+            if (layout == null)
+                layout = field.gameObject.AddComponent<LayoutElement>();
+
+            layout.minHeight = Mathf.Max(layout.minHeight, 260f);
+            layout.preferredHeight = Mathf.Max(layout.preferredHeight, 260f);
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            RectTransform rect = field.gameObject.GetComponent<RectTransform>();
+            if (rect != null && rect.sizeDelta.y < 260f)
+                rect.sizeDelta = new Vector2(rect.sizeDelta.x, 260f);
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            InputField input = field.gameObject.GetComponentInChildren<InputField>();
+            if (input != null)
+            {
+                input.readOnly = true;
+                input.lineType = InputField.LineType.MultiLineNewline;
+                if (input.textComponent != null)
+                {
+                    input.textComponent.alignment = TextAnchor.UpperLeft;
+                    input.textComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    input.textComponent.verticalOverflow = VerticalWrapMode.Overflow;
+                }
+            }
+        }
+        catch
+        {
+        }
     }
 
     private void ExecuteBrokerAction()

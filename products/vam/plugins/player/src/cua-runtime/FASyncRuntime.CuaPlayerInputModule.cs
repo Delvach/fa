@@ -165,7 +165,6 @@ public partial class FASyncRuntime : MVRScript
 
     private void BuildCuaPlayerInputUi()
     {
-        CreateTextField(playerInputStateField, false);
         CreateToggle(playerDisableNavigationCaptureField, false);
     }
 

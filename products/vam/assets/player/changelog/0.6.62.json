@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.62",
+  "title": "Consolidate the visible plugin readout into one multiline player summary",
+  "summary": "0.6.62 adds one operator-facing player summary field in the plugin UI, removes the noisy visible CUA status text from the panel, and keeps the underlying playback, demo3, and transport seams unchanged.",
+  "changes": [
+    "The plugin UI now shows one multiline FrameAngel Player Summary field with playback or slideshow status, loop, shuffle, media kind, concise format info, progress, total, remaining, folder, and file.",
+    "The visible CUA status text row is removed from the plugin panel, while the underlying transient plumbing remains intact.",
+    "The summary uses reliable runtime facts already available in the player lane: current media path, loop and random state, timeline, playlist counts, dimensions, and video frame rate when available."
+  ],
+  "reasoning": "The plugin panel had useful state spread across transient internal readback fields and an old CUA status string that reads more like debug output than operator value. A single summary block is more useful and less noisy, and the current runtime already exposes enough data to build it without reopening transport or scene bindings.",
+  "operatorVisibleOutcomes": [
+    "The plugin shows one consolidated player summary instead of the old visible CUA status text.",
+    "Video summaries show concise type and format information plus progress, total, remaining, folder, and file.",
+    "Image summaries show slideshow status, counts for progress, total, remaining, and the current folder and file."
+  ],
+  "knownIssues": [
+    "This slice does not change movie transport, image transport, sync cadence, shuffle policy, demo3 text bindings, slideshow, right-stick volume, or deferred gaze work.",
+    "The summary format line intentionally stays conservative and only shows reliable extension, dimensions, and video frame rate when available."
+  ],
+  "verification": [
+    "BuildUi now creates a single visible playerRuntimeSummaryField in FASyncRuntime.cs.",
+    "BuildCuaPlayerInputUi no longer creates the visible playerInputStateField row in FASyncRuntime.CuaPlayerInputModule.cs.",
+    "RefreshVisiblePlayerDebugFields now builds and assigns one multiline runtime summary in FASyncRuntime.Player.cs."
+  ]
+}

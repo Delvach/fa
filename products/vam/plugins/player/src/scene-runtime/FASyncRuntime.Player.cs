@@ -10087,6 +10087,7 @@ public partial class FASyncRuntime : MVRScript
         if (playerRuntimeTargetField == null
             && playerRuntimeMediaField == null
             && playerRuntimeStateField == null
+            && playerRuntimeSummaryField == null
             && playerRuntimeParityField == null
             && playerRuntimeTimelineField == null
             && playerRuntimePlaylistField == null
@@ -10107,6 +10108,8 @@ public partial class FASyncRuntime : MVRScript
                 AssignVisiblePlayerStringField(playerRuntimeMediaField, playerPendingMediaSummary);
             if (playerRuntimeStateField != null)
                 AssignVisiblePlayerStringField(playerRuntimeStateField, playerPendingStateSummary);
+            if (playerRuntimeSummaryField != null)
+                AssignVisiblePlayerStringField(playerRuntimeSummaryField, playerPendingRuntimeSummary);
             if (playerRuntimeParityField != null)
                 AssignVisiblePlayerStringField(playerRuntimeParityField, playerPendingParitySummary);
             if (playerRuntimeTimelineField != null)
@@ -10163,6 +10166,15 @@ public partial class FASyncRuntime : MVRScript
         int renderTextureWidth = 0;
         int renderTextureHeight = 0;
         TryResolveTextureDimensions(record.renderTexture, out renderTextureWidth, out renderTextureHeight);
+        int formatWidth = renderTextureWidth;
+        int formatHeight = renderTextureHeight;
+        if (!record.mediaIsStillImage && record.videoPlayer != null && (formatWidth <= 0 || formatHeight <= 0))
+            TryResolvePreparedVideoDimensions(record.videoPlayer, out formatWidth, out formatHeight);
+        if (record.mediaIsStillImage && (formatWidth <= 0 || formatHeight <= 0))
+        {
+            formatWidth = record.textureWidth;
+            formatHeight = record.textureHeight;
+        }
         float displayWidthMeters = 0f;
         float displayHeightMeters = 0f;
         FAInnerPiecePlaneData plane;
@@ -10222,6 +10234,14 @@ public partial class FASyncRuntime : MVRScript
         if (!string.IsNullOrEmpty(effectiveLastError))
             stateSummary += " err=" + effectiveLastError;
         string paritySummary = BuildStandalonePlayerParitySummary(debugJson, record.aspectMode);
+        string runtimeSummary = BuildStandalonePlayerRuntimeSummary(
+            record,
+            isPlaying,
+            currentTimeSeconds,
+            currentDurationSeconds,
+            effectiveLastError,
+            formatWidth,
+            formatHeight);
         string timelineSummary = "time="
             + currentTimeSeconds.ToString("0.###", CultureInfo.InvariantCulture)
             + "/"
@@ -10252,6 +10272,7 @@ public partial class FASyncRuntime : MVRScript
         playerPendingTargetSummary = targetSummary;
         playerPendingMediaSummary = mediaSummary;
         playerPendingStateSummary = stateSummary;
+        playerPendingRuntimeSummary = runtimeSummary;
         playerPendingParitySummary = paritySummary;
         playerPendingTimelineSummary = timelineSummary;
         playerPendingPlaylistSummary = playlistSummary;
@@ -10262,6 +10283,8 @@ public partial class FASyncRuntime : MVRScript
             AssignVisiblePlayerStringField(playerRuntimeMediaField, mediaSummary);
         if (playerRuntimeStateField != null)
             AssignVisiblePlayerStringField(playerRuntimeStateField, stateSummary);
+        if (playerRuntimeSummaryField != null)
+            AssignVisiblePlayerStringField(playerRuntimeSummaryField, runtimeSummary);
         if (playerRuntimeParityField != null)
             AssignVisiblePlayerStringField(playerRuntimeParityField, paritySummary);
         if (playerRuntimeTimelineField != null)
@@ -10689,6 +10712,31 @@ public partial class FASyncRuntime : MVRScript
             span.Seconds);
     }
 
+    private string NormalizeStandalonePlayerDisplayPath(string rawPath)
+    {
+        string value = string.IsNullOrEmpty(rawPath) ? "" : rawPath.Trim();
+        if (string.IsNullOrEmpty(value))
+            return "";
+
+        value = value.Replace('/', '\\');
+
+        int customIndex = value.IndexOf("\\Custom\\", StringComparison.OrdinalIgnoreCase);
+        if (customIndex >= 0)
+            return value.Substring(customIndex);
+
+        if (value.StartsWith("Custom\\", StringComparison.OrdinalIgnoreCase))
+            return "\\" + value;
+
+        int addonIndex = value.IndexOf("\\AddonPackages\\", StringComparison.OrdinalIgnoreCase);
+        if (addonIndex >= 0)
+            return value.Substring(addonIndex);
+
+        if (value.StartsWith("AddonPackages\\", StringComparison.OrdinalIgnoreCase))
+            return "\\" + value;
+
+        return value;
+    }
+
     private bool TryResolveAttachedHostedStandalonePlayerRecord(out StandalonePlayerRecord record, out Atom hostAtom)
     {
         record = null;
@@ -10707,7 +10755,7 @@ public partial class FASyncRuntime : MVRScript
 
     private string TryGetPathLeafName(string rawPath)
     {
-        string value = string.IsNullOrEmpty(rawPath) ? "" : rawPath.Trim();
+        string value = NormalizeStandalonePlayerDisplayPath(rawPath);
         if (string.IsNullOrEmpty(value))
             return "";
 
@@ -10726,6 +10774,8 @@ public partial class FASyncRuntime : MVRScript
             playerPendingMediaSummary = BuildPendingPlayerMediaSummary();
         if (string.IsNullOrEmpty(playerPendingStateSummary))
             playerPendingStateSummary = "state=no_record";
+        if (string.IsNullOrEmpty(playerPendingRuntimeSummary))
+            playerPendingRuntimeSummary = BuildPendingPlayerRuntimeSummary();
         if (string.IsNullOrEmpty(playerPendingParitySummary))
             playerPendingParitySummary = BuildPendingPlayerParitySummary();
         if (string.IsNullOrEmpty(playerPendingTimelineSummary))
@@ -10775,9 +10825,32 @@ public partial class FASyncRuntime : MVRScript
         return "playlist=selected dir=" + directoryName + " loop=playlist random=off";
     }
 
+    private string BuildPendingPlayerRuntimeSummary()
+    {
+        string selectedPath = NormalizeStandalonePlayerDisplayPath(playerMediaPath);
+        string fileName = TryGetPathLeafName(selectedPath);
+        string folderPath = TryGetPathParentDisplayPath(selectedPath);
+
+        if (string.IsNullOrEmpty(fileName))
+            fileName = "(none)";
+        if (string.IsNullOrEmpty(folderPath))
+            folderPath = "(none)";
+
+        return "Playback status: Idle\n"
+            + "Loop: Playlist\n"
+            + "Shuffle: Off\n"
+            + "Media: None\n"
+            + "Format: Unknown\n"
+            + "Progress: 00:00:00\n"
+            + "Total: 00:00:00\n"
+            + "Remaining: 00:00:00\n"
+            + "Folder: " + folderPath + "\n"
+            + "File: " + fileName;
+    }
+
     private string TryGetPathParentLeafName(string rawPath)
     {
-        string value = string.IsNullOrEmpty(rawPath) ? "" : rawPath.Trim();
+        string value = NormalizeStandalonePlayerDisplayPath(rawPath);
         if (string.IsNullOrEmpty(value))
             return "";
 
@@ -10791,6 +10864,152 @@ public partial class FASyncRuntime : MVRScript
             return parentPath;
 
         return parentPath.Substring(parentSlashIndex + 1);
+    }
+
+    private string TryGetPathParentDisplayPath(string rawPath)
+    {
+        string value = NormalizeStandalonePlayerDisplayPath(rawPath);
+        if (string.IsNullOrEmpty(value))
+            return "";
+
+        int slashIndex = Math.Max(value.LastIndexOf('/'), value.LastIndexOf('\\'));
+        if (slashIndex <= 0)
+            return "";
+
+        return value.Substring(0, slashIndex);
+    }
+
+    private string TryGetPathExtensionUpper(string rawPath)
+    {
+        string leaf = TryGetPathLeafName(rawPath);
+        if (string.IsNullOrEmpty(leaf))
+            return "";
+
+        int dotIndex = leaf.LastIndexOf('.');
+        if (dotIndex < 0 || dotIndex >= leaf.Length - 1)
+            return "";
+
+        return leaf.Substring(dotIndex + 1).ToUpperInvariant();
+    }
+
+    private string FormatStandalonePlayerLoopModeLabel(string loopMode)
+    {
+        string normalized = NormalizeStandalonePlayerLoopMode(loopMode);
+        if (string.Equals(normalized, PlayerLoopModeSingle, StringComparison.OrdinalIgnoreCase))
+            return "Single";
+        if (string.Equals(normalized, PlayerLoopModePlaylist, StringComparison.OrdinalIgnoreCase))
+            return "Playlist";
+        return "Off";
+    }
+
+    private string FormatStandalonePlayerFormatSummary(
+        StandalonePlayerRecord record,
+        string mediaPath,
+        int width,
+        int height)
+    {
+        string extension = TryGetPathExtensionUpper(mediaPath);
+        if (string.IsNullOrEmpty(extension))
+            extension = "Unknown";
+
+        StringBuilder sb = new StringBuilder(64);
+        sb.Append(extension);
+        if (width > 0 && height > 0)
+            sb.Append(' ').Append(width.ToString(CultureInfo.InvariantCulture)).Append('x').Append(height.ToString(CultureInfo.InvariantCulture));
+
+        if (record != null && !record.mediaIsStillImage && record.videoPlayer != null)
+        {
+            try
+            {
+                float frameRate = record.videoPlayer.frameRate;
+                if (frameRate > 0.1f)
+                {
+                    double rounded = Math.Round(frameRate);
+                    sb.Append(' ');
+                    if (Math.Abs(frameRate - rounded) <= 0.02f)
+                        sb.Append(((int)rounded).ToString(CultureInfo.InvariantCulture));
+                    else
+                        sb.Append(frameRate.ToString("0.##", CultureInfo.InvariantCulture));
+                    sb.Append("fps");
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        return sb.ToString();
+    }
+
+    private string BuildStandalonePlayerRuntimeSummary(
+        StandalonePlayerRecord record,
+        bool isPlaying,
+        double currentTimeSeconds,
+        double currentDurationSeconds,
+        string effectiveLastError,
+        int formatWidth,
+        int formatHeight)
+    {
+        string mediaPath = GetStandalonePlayerCurrentPlaylistPath(record);
+        if (string.IsNullOrEmpty(mediaPath))
+            mediaPath = record != null ? record.mediaPath : "";
+        if (string.IsNullOrEmpty(mediaPath))
+            mediaPath = playerMediaPath;
+        if (string.IsNullOrEmpty(mediaPath))
+            mediaPath = record != null ? record.resolvedMediaPath : "";
+
+        string normalizedMediaPath = NormalizeStandalonePlayerDisplayPath(mediaPath);
+        string fileName = TryGetPathLeafName(normalizedMediaPath);
+        string folderPath = TryGetPathParentDisplayPath(normalizedMediaPath);
+        if (string.IsNullOrEmpty(fileName))
+            fileName = "(none)";
+        if (string.IsNullOrEmpty(folderPath))
+            folderPath = "(none)";
+
+        bool isImage = record != null && record.mediaIsStillImage;
+        string statusLabel = isImage ? "Slideshow status" : "Playback status";
+        string statusValue;
+        if (!string.IsNullOrEmpty(effectiveLastError))
+            statusValue = "Error";
+        else if (record != null && record.preparePending)
+            statusValue = "Loading";
+        else if (record != null && (isPlaying || record.desiredPlaying))
+            statusValue = "Playing";
+        else
+            statusValue = "Paused";
+
+        string progressValue;
+        string totalValue;
+        string remainingValue;
+        if (isImage)
+        {
+            int currentIndex = record != null && record.currentIndex >= 0 ? (record.currentIndex + 1) : 0;
+            int totalCount = record != null && record.playlistPaths != null ? record.playlistPaths.Count : 0;
+            int remainingCount = Math.Max(0, totalCount - currentIndex);
+            progressValue = currentIndex.ToString(CultureInfo.InvariantCulture);
+            totalValue = totalCount.ToString(CultureInfo.InvariantCulture);
+            remainingValue = remainingCount.ToString(CultureInfo.InvariantCulture);
+        }
+        else
+        {
+            double safeCurrent = Math.Max(0d, currentTimeSeconds);
+            double safeDuration = Math.Max(0d, currentDurationSeconds);
+            double safeRemaining = Math.Max(0d, safeDuration - safeCurrent);
+            progressValue = FormatStandalonePlayerCompactClock(safeCurrent);
+            totalValue = FormatStandalonePlayerCompactClock(safeDuration);
+            remainingValue = FormatStandalonePlayerCompactClock(safeRemaining);
+        }
+
+        return statusLabel + ": " + statusValue + "\n"
+            + "Loop: " + FormatStandalonePlayerLoopModeLabel(record != null ? record.loopMode : PlayerLoopModePlaylist) + "\n"
+            + "Shuffle: " + ((record != null && record.randomEnabled) ? "On" : "Off") + "\n"
+            + "Media: " + (isImage ? "Image" : "Video") + "\n"
+            + "Format: " + FormatStandalonePlayerFormatSummary(record, normalizedMediaPath, formatWidth, formatHeight) + "\n"
+            + "Progress: " + progressValue + "\n"
+            + "Total: " + totalValue + "\n"
+            + "Remaining: " + remainingValue + "\n"
+            + "Folder: " + folderPath + "\n"
+            + "File: " + fileName;
     }
 
     private string BuildStandalonePlayerParitySummary(string debugJson, string aspectMode)
