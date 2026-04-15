@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.61",
+  "title": "Expose a dev checkbox for the direct CUA disableNavigation capture bit",
+  "summary": "0.6.61 keeps the current thumbstick-click grab-navigation override seam and adds a narrow development checkbox that gates only the direct SuperController.disableNavigation capture bit while the player owns CUA focus.",
+  "changes": [
+    "The current CUA grab-navigation override remains thumbstick-click only; the later Unity joystick button 5 fallback stays out.",
+    "The player plugin UI now exposes a FrameAngel Player Disable Navigation checkbox in the CUA input section.",
+    "That checkbox gates only the direct disableNavigation bit while capture is active; the rest of the focus and input-capture seam stays unchanged."
+  ],
+  "reasoning": "The live CUA input seam already has a single direct navigation-disable bit in the snapshot path, but it was not operator-controllable. Exposing only that bit as a temporary development control is the narrowest safe way to avoid getting caught by navigation disable behavior without reopening the broader grab-nav and focus model.",
+  "operatorVisibleOutcomes": [
+    "The old Unity button 5 fallback remains backed out; live override behavior still comes from thumbstick-click only.",
+    "The plugin now shows a FrameAngel Player Disable Navigation checkbox for development use.",
+    "Turning that checkbox off should stop the player from forcing SuperController.disableNavigation while capture is active, without changing the rest of the CUA focus path."
+  ],
+  "knownIssues": [
+    "This slice does not change movie transport, image transport, shuffle policy, slideshow, right-stick volume, or deferred gaze work.",
+    "This slice does not claim to fully solve the remaining grab-nav paradigm."
+  ],
+  "verification": [
+    "ReadCuaPlayerGrabNavigateOverrideActive still only checks OVR thumbstick buttons in FASyncRuntime.CuaPlayerInputModule.cs.",
+    "The new FrameAngel Player Disable Navigation JSONStorableBool is built, registered, and added to the CUA input UI in FASyncRuntime.CuaPlayerInputModule.cs.",
+    "SetCuaPlayerInputCaptureState now gates only desired.disableNavigation through that checkbox."
+  ]
+}

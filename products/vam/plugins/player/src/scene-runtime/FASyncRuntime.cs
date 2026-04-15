@@ -116,6 +116,7 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerRuntimePlaylistField;
     private JSONStorableString playerInputStateField;
     private JSONStorableBool playerFocusActiveField;
+    private JSONStorableBool playerDisableNavigationCaptureField;
     private JSONStorableString playerVisibleScreenField;
     private JSONStorableFloat playerScrubNormalizedField;
     private JSONStorableFloat playerVolumeNormalizedField;

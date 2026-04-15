@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.60",
-    "notes":  "0.6.60 tightens periodic AV sync to catch smaller drift and makes the demo3 shuffle checkbox use a real toggle transition so it can turn random playback off as well as on.",
-    "branch":  "release/0.6.60-sync-tighten-shuffle-toggle",
+    "version":  "0.6.61",
+    "notes":  "0.6.61 keeps the current CUA thumbstick-click override seam, exposes a development checkbox for the direct disableNavigation capture bit, and leaves the rest of the focus and capture path intact.",
+    "branch":  "release/0.6.61-cua-navigation-disable-toggle",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.60.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.61.json"
 }

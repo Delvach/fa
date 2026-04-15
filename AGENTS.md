@@ -69,10 +69,10 @@ As of this update:
    - `0.6.41` fixed demo3 text repaint and rotated the side control groups around the owning screen yaw
 4. the modular product-system canon and Packet `1.5` Meta toolkit canon are already in this repo
 5. the current immediate queue is:
-   - `0.6.60` is the active raw operator seam, tightening periodic AV sync to intervene at `0.05s` drift while keeping the `1s` cadence, and wiring the demo3 shuffle checkbox through a true toggle transition so it can disable random playback as well as enable it
-   - `0.6.61`: slideshow
-   - `0.6.62`: right-stick up/down volume without trigger
-   - `0.6.63`: deferred gaze-enable polish for unloaded or cleared screens
+   - `0.6.61` is the active raw operator seam, keeping the current thumbstick-click grab-nav override, exposing a manual dev checkbox for the direct `disableNavigation` capture bit, and leaving the rest of the CUA focus and capture path intact
+   - `0.6.62`: slideshow
+   - `0.6.63`: right-stick up/down volume without trigger
+   - `0.6.64`: deferred gaze-enable polish for unloaded or cleared screens
    - deferred gaze polish:
      - disable gaze for a screen until media has actually started playing or showing
       - investigate feasibility of limiting gaze to visible image content instead of the full transparent screen area
@@ -97,13 +97,13 @@ Primary current docs:
 The current live core-player raw `dev_deploy` seam is:
 
 1. direct-player raw asset:
-   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.60.alpha.assetbundle`
+   `F:\sim\vam\Custom\Assets\FrameAngel\Player\asset_dev_player.0.6.61.alpha.assetbundle`
 2. raw plugin:
-   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.60.alpha.dll`
+   `F:\sim\vam\Custom\Plugins\plugin_player_dev.0.6.61.alpha.dll`
 3. deterministic live scene:
-   `F:\sim\vam\Saves\scene\scene_dev_player.0.6.60.alpha.json`
+   `F:\sim\vam\Saves\scene\scene_dev_player.0.6.61.alpha.json`
 4. release validation receipt:
-   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.60\foundation_release_validation.json`
+   `C:\projects\fa\products\vam\assets\player\build\releases\0.6.61\foundation_release_validation.json`
 
 The current `modern_tv` hosted proof remains a witness seam, not the default
 operator test seam for this recovery slice:
@@ -131,7 +131,7 @@ Important:
     - `assets/fa/ps18/modern_tv/main.prefab`
     - `assets/fa/player/main.prefab`
 11. the current one-second sync seam remains active for this lane, but its correction authority is fully video-time-owned: `AudioSource.time` is no longer consulted, while `prepareCompleted`, `started`, `seekCompleted`, and `clockResyncOccurred` refresh the player-owned timeline
-12. the current mixed-media policy is still explicit: mixed directories are valid playlists, image slider navigation is an intentional transport extension, discovered numbered media follow natural sequence when shuffle is off, `0.6.59` restores shuffle defaults to off, and `0.6.60` keeps shuffle toggle control parity aligned with that policy while tightening small AV drift correction
+12. the current mixed-media policy is still explicit: mixed directories are valid playlists, image slider navigation is an intentional transport extension, discovered numbered media follow natural sequence when shuffle is off, `0.6.59` restores shuffle defaults to off, `0.6.60` keeps shuffle toggle control parity aligned with that policy while tightening small AV drift correction, and `0.6.61` adds a manual dev checkbox for the direct CUA `disableNavigation` capture bit without restoring the later button-5 fallback seam
 13. canonical raw `dev_deploy` filenames for the core player are:
     - `asset_dev_player.<semver>.<iteration>.assetbundle`
     - `plugin_player_dev.<semver>.<iteration>.dll`

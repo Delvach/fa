@@ -144,6 +144,11 @@ public partial class FASyncRuntime : MVRScript
             false);
         ConfigureTransientField(playerFocusActiveField, true);
 
+        playerDisableNavigationCaptureField = new JSONStorableBool(
+            "FrameAngel Player Disable Navigation",
+            true);
+        ConfigureTransientField(playerDisableNavigationCaptureField, false);
+
         playerVisibleScreenField = new JSONStorableString(
             "FrameAngel Player Active Screen",
             "screen=none");
@@ -154,12 +159,14 @@ public partial class FASyncRuntime : MVRScript
     {
         RegisterString(playerInputStateField);
         RegisterBool(playerFocusActiveField);
+        RegisterBool(playerDisableNavigationCaptureField);
         RegisterString(playerVisibleScreenField);
     }
 
     private void BuildCuaPlayerInputUi()
     {
         CreateTextField(playerInputStateField, false);
+        CreateToggle(playerDisableNavigationCaptureField, false);
     }
 
     private void TickCuaPlayerInput()
@@ -328,7 +335,9 @@ public partial class FASyncRuntime : MVRScript
             }
 
             CuaPlayerNavigationSnapshot desired = cuaPlayerNavigationSnapshot;
-            desired.disableNavigation = true;
+            desired.disableNavigation = playerDisableNavigationCaptureField != null
+                ? playerDisableNavigationCaptureField.val
+                : true;
             desired.disableInternalKeyBindings = true;
             desired.disableInternalNavigationKeyBindings = true;
             desired.disableAllNavigationToggle = desired.hasDisableAllNavigationToggle;

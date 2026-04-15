@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.61",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.61 is a narrow CUA development-control slice: confirm that the later Unity button 5 fallback remains backed out, expose a manual checkbox for the direct disableNavigation capture bit, and leave the rest of the focus and input-capture path intact.",
+  "repoAnchors": {
+    "branch": "release/0.6.61-cua-navigation-disable-toggle",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.61.json"
+  },
+  "operatorSignals": [
+    "The operator wanted to confirm that the old button 5 nav override work had actually been backed out.",
+    "The operator wanted to know whether there was a single direct flag controlling navigation disable behavior.",
+    "The operator wanted a manual checkbox for that behavior so development can continue without getting trapped by it."
+  ],
+  "actionsTaken": [
+    "Confirmed that the live override path still uses thumbstick-click only and does not reintroduce the later Unity button 5 fallback.",
+    "Confirmed that the direct disableNavigation bit exists in the CUA navigation snapshot path.",
+    "Exposed a manual FrameAngel Player Disable Navigation checkbox that gates only that direct bit while CUA capture is active."
+  ],
+  "nonGoals": [
+    "No movie transport, image transport, sync, or shuffle changes in this slice.",
+    "No new grab-nav model or broader focus-behavior changes in this slice."
+  ]
+}
