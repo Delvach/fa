@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.53",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.53 backs out the broken 0.6.52 discrete-step movie joystick rewrite and restores the original CUA scrub-session behavior from the last safe rung.",
+  "repoAnchors": {
+    "branch": "release/0.6.53-cua-movie-scrub-session-restore",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.53.json"
+  },
+  "operatorSignals": [
+    "Live `0.6.52` testing showed the attempted discrete-step replacement broke established joystick behavior instead of fixing scrub magnitude.",
+    "Trigger plus joystick behavior is an established product seam and must be preserved while debugging scrub movement."
+  ],
+  "actionsTaken": [
+    "Compared `0.6.51` and `0.6.52` directly to isolate the exact code-level break in `FASyncRuntime.CuaPlayerInputModule`.",
+    "Restored the original movie scrub session fields, begin or end helpers, and analog target accumulation path from the last safe rung.",
+    "Stamped a fresh version boundary so the restored behavior can be tested without reusing the broken `0.6.52` authority seam."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice.",
+    "No new scrub-model redesign in this slice."
+  ]
+}

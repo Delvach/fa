@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.52",
-    "notes":  "0.6.52 restores movie joystick scrub to discrete 15-second skip behavior by reusing the existing skip transport instead of analog-rate accumulation.",
-    "branch":  "release/0.6.52-cua-movie-scrub-step-restore",
+    "version":  "0.6.53",
+    "notes":  "0.6.53 backs out the broken 0.6.52 discrete-step replacement and restores the original movie joystick scrub session behavior from the last safe rung.",
+    "branch":  "release/0.6.53-cua-movie-scrub-session-restore",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.52.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.53.json"
 }

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.53",
+  "title": "Restore the original movie joystick scrub session behavior",
+  "summary": "0.6.53 backs out the broken 0.6.52 discrete-step replacement and restores the original CUA movie joystick scrub session path so trigger plus joystick and movie scrub semantics return to the last safe behavior.",
+  "changes": [
+    "Restored the analog, session-based movie joystick scrub path in `FASyncRuntime.CuaPlayerInputModule`.",
+    "Restored the scrub-session pause, finalize-seek, and optional resume behavior that `0.6.52` removed.",
+    "Removed the `0.6.52` discrete skip-action replacement from the non-trigger movie joystick path."
+  ],
+  "reasoning": [
+    "Live testing showed `0.6.52` changed the established joystick movie scrub model instead of fixing scrub magnitude inside that model.",
+    "The safest fix is to restore the exact `0.6.51` scrub-session behavior on a fresh version boundary before any narrower scrub-magnitude investigation continues."
+  ],
+  "operatorVisibleOutcomes": [
+    "Movie joystick scrub returns to the original session-based behavior from the last safe rung.",
+    "Trigger plus joystick behavior is restored instead of being reinterpreted through discrete skip transport.",
+    "No slideshow, volume, gaze, or scene-builder work rides along with this slice."
+  ],
+  "knownIssues": [
+    "This slice restores the last safe joystick movie scrub behavior but does not yet isolate the smaller scrub-magnitude seam reported before `0.6.52` drifted.",
+    "The parked Unity shell dirt remains intentionally outside this version."
+  ]
+}

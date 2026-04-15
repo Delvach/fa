@@ -64,6 +64,7 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerNavigationSourceActiveThreshold = 0.02f;
     private const float CuaPlayerNavigationStickContinuitySeconds = 0.30f;
     private const float CuaPlayerTriggerModifierThreshold = 0.50f;
+    private const float CuaPlayerVideoScrubSecondsPerSecond = StandalonePlayerDefaultSkipSeconds;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
@@ -116,6 +117,11 @@ public partial class FASyncRuntime : MVRScript
     private float cuaPlayerNextImageStepTime = 0f;
     private int cuaPlayerImageStepDirection = 0;
     private CuaPlayerNavigationAxisLock cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
+    private bool cuaPlayerVideoScrubTargetKnown = false;
+    private float cuaPlayerVideoScrubTargetNormalized = 0f;
+    private bool cuaPlayerVideoScrubSessionActive = false;
+    private bool cuaPlayerVideoScrubResumeAfterRelease = false;
+    private string cuaPlayerVideoScrubPlaybackKey = "";
     private bool cuaPlayerTriggerTapArmed = false;
     private bool cuaPlayerTriggerTapUsedWithNavigation = false;
     private bool cuaPlayerLastTriggerTapActive = false;
@@ -262,9 +268,10 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.mediaIsStillImage)
         {
+            EndCuaPlayerVideoScrubSession(false);
             if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
                 horizontal = 0f;
-            ResetCuaPlayerStepRepeatState();
+            cuaPlayerVideoScrubTargetKnown = false;
             TickCuaPlayerImageStepInput(record, horizontal, triggerModifierActive);
             UpdateCuaPlayerInputState(
                 true,
@@ -357,6 +364,7 @@ public partial class FASyncRuntime : MVRScript
     private void ReleaseCuaPlayerInputFocus(string reason)
     {
         bool wasOwner = ReferenceEquals(cuaPlayerInputOwner, this);
+        EndCuaPlayerVideoScrubSession(true);
         ResetCuaPlayerTriggerTapState();
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
@@ -961,13 +969,14 @@ public partial class FASyncRuntime : MVRScript
     {
         if (record == null || record.mediaIsStillImage)
         {
+            EndCuaPlayerVideoScrubSession(false);
             ResetCuaPlayerStepRepeatState();
             return;
         }
 
         if (triggerModifierActive)
         {
-            ResetCuaPlayerStepRepeatState();
+            EndCuaPlayerVideoScrubSession(true);
             TickCuaPlayerStepInput(
                 record,
                 horizontal,
@@ -979,13 +988,96 @@ public partial class FASyncRuntime : MVRScript
         }
 
         ResetCuaPlayerStepRepeatState();
-        TickCuaPlayerStepInput(
-            record,
-            horizontal,
-            CuaPlayerImageStepInitialRepeatSeconds,
-            CuaPlayerImageStepRepeatSeconds,
-            PlayerActionSkipForwardId,
-            PlayerActionSkipBackwardId);
+
+        if (Mathf.Abs(horizontal) <= 0f)
+        {
+            EndCuaPlayerVideoScrubSession(true);
+            return;
+        }
+
+        double currentTimeSeconds;
+        double durationSeconds;
+        string errorMessage;
+        if (!TryReadStandalonePlayerTimeline(record, out currentTimeSeconds, out durationSeconds, out errorMessage))
+            return;
+
+        if (durationSeconds <= 0.0001d)
+            return;
+
+        if (!cuaPlayerVideoScrubTargetKnown)
+        {
+            cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01((float)(currentTimeSeconds / durationSeconds));
+            cuaPlayerVideoScrubTargetKnown = true;
+        }
+
+        BeginCuaPlayerVideoScrubSession(record);
+
+        float normalizedDeltaPerSecond = CuaPlayerVideoScrubSecondsPerSecond / (float)durationSeconds;
+        cuaPlayerVideoScrubTargetNormalized = Mathf.Clamp01(
+            cuaPlayerVideoScrubTargetNormalized
+            + (horizontal * normalizedDeltaPerSecond * Time.unscaledDeltaTime));
+    }
+
+    private void BeginCuaPlayerVideoScrubSession(StandalonePlayerRecord record)
+    {
+        if (record == null || record.mediaIsStillImage || string.IsNullOrEmpty(record.playbackKey))
+            return;
+
+        if (cuaPlayerVideoScrubSessionActive
+            && string.Equals(cuaPlayerVideoScrubPlaybackKey, record.playbackKey, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        EndCuaPlayerVideoScrubSession(false);
+        cuaPlayerVideoScrubSessionActive = true;
+        cuaPlayerVideoScrubPlaybackKey = record.playbackKey;
+        cuaPlayerVideoScrubResumeAfterRelease = record.desiredPlaying;
+        if (!cuaPlayerVideoScrubResumeAfterRelease)
+            return;
+
+        string argsJson = "{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}";
+        string ignoredResult;
+        string errorMessage;
+        if (!TryPauseStandalonePlayer("Player.InputScrubBegin", argsJson, out ignoredResult, out errorMessage))
+            cuaPlayerVideoScrubResumeAfterRelease = false;
+    }
+
+    private void EndCuaPlayerVideoScrubSession(bool resumePlayback)
+    {
+        string playbackKey = cuaPlayerVideoScrubPlaybackKey;
+        bool targetKnown = cuaPlayerVideoScrubTargetKnown;
+        float targetNormalized = cuaPlayerVideoScrubTargetNormalized;
+        bool shouldResumePlayback = resumePlayback && cuaPlayerVideoScrubResumeAfterRelease;
+
+        cuaPlayerVideoScrubSessionActive = false;
+        cuaPlayerVideoScrubResumeAfterRelease = false;
+        cuaPlayerVideoScrubPlaybackKey = "";
+        cuaPlayerVideoScrubTargetKnown = false;
+        cuaPlayerVideoScrubTargetNormalized = 0f;
+
+        if (string.IsNullOrEmpty(playbackKey))
+            return;
+
+        if (targetKnown)
+        {
+            string seekArgsJson = "{\"playbackKey\":\""
+                + EscapeJsonString(playbackKey)
+                + "\",\"normalized\":"
+                + FormatFloat(targetNormalized)
+                + "}";
+            string ignoredSeekResult;
+            string seekErrorMessage;
+            TrySeekStandalonePlayerNormalized("Player.InputScrubFinalize", seekArgsJson, out ignoredSeekResult, out seekErrorMessage);
+        }
+
+        if (!shouldResumePlayback)
+            return;
+
+        string playArgsJson = "{\"playbackKey\":\"" + EscapeJsonString(playbackKey) + "\"}";
+        string ignoredPlayResult;
+        string playErrorMessage;
+        TryPlayStandalonePlayer("Player.InputScrubResume", playArgsJson, out ignoredPlayResult, out playErrorMessage);
     }
 
     private void TickCuaPlayerImageStepInput(StandalonePlayerRecord record, float horizontal, bool triggerModifierActive)
