@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.60",
+  "title": "Tighten small AV drift correction and fix demo3 shuffle toggle parity",
+  "summary": "0.6.60 keeps the existing one-second periodic AV sync cadence, lowers the correction threshold to 0.05 seconds, arms an immediate first post-seek sync check, and switches the demo3 shuffle checkbox over to a true toggle transition so it can disable random playback as well as enable it.",
+  "changes": [
+    "Periodic AV sync still checks at one-second cadence, but now intervenes when drift reaches 0.05 seconds instead of 0.20 seconds.",
+    "The VideoPlayer seek-completed hook now arms the next AV sync check immediately instead of waiting a full second after scrub or skip resume.",
+    "The demo3 shuffle checkbox now fires a single Player Random Toggle action on state transition instead of separate on and off edge actions."
+  ],
+  "reasoning": "The remaining sync issue was small enough to slip under the previous 0.20 second correction threshold, especially right after seek or skip resume. Separately, the shuffle checkbox bug was a scene control parity issue: the player default and natural ordering were already right, but the demo scene toggle could enable random playback without reliably disabling it again.",
+  "operatorVisibleOutcomes": [
+    "Small audio/video drift should correct sooner without changing the one-second sync cadence.",
+    "Skip or scrub resume should not leave a lingering 100-200ms offset before the first correction opportunity.",
+    "The demo3 shuffle checkbox should now toggle random playback off as well as on."
+  ],
+  "knownIssues": [
+    "This slice does not change image scrub transport, movie joystick transport, or slideshow behavior.",
+    "This slice does not change right-stick volume or deferred gaze work."
+  ],
+  "verification": [
+    "StandalonePlayerPeriodicAvSyncIntervalSeconds remains 1.0f in FASyncRuntime.Player.cs.",
+    "StandalonePlayerPeriodicAvSyncThresholdSeconds is reduced to 0.05d in FASyncRuntime.Player.cs.",
+    "The seekCompleted handler now arms nextAudioVideoSyncCheckTime to Time.unscaledTime in FASyncRuntime.Player.cs.",
+    "Build-PlayerDemoScene.ps1 now wires checkbox_shuffle through a single Player Random Toggle transition action."
+  ]
+}

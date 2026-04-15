@@ -67,7 +67,7 @@ public partial class FASyncRuntime : MVRScript
     private const int StandalonePlayerPlaceholderHeight = 144;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
     private const double StandalonePlayerPlaybackEndThresholdSeconds = 0.05d;
-    private const double StandalonePlayerPeriodicAvSyncThresholdSeconds = 0.20d;
+    private const double StandalonePlayerPeriodicAvSyncThresholdSeconds = 0.05d;
     private const double StandalonePlayerPeriodicAvSyncMaximumCorrectionSeconds = 3.0d;
     private const double StandalonePlayerAbLoopMinimumSpanSeconds = 0.05d;
     private const float PlayerControlSurfaceRelativeLayoutCheckIntervalSeconds = 0.25f;
@@ -8908,7 +8908,7 @@ public partial class FASyncRuntime : MVRScript
                     record.seekResumeRequestedAt = 0f;
                     SetStandalonePlayerMasterTimeline(record, record.seekResumeTargetSeconds, record.desiredPlaying && !record.mediaIsStillImage);
                     record.nextPlaybackStateApplyTime = Time.unscaledTime + StandalonePlayerPlaybackRetryIntervalSeconds;
-                    record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+                    record.nextAudioVideoSyncCheckTime = Time.unscaledTime;
                 }
             };
             record.runtimeSeekCompletedHooked = true;

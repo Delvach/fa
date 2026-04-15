@@ -94,6 +94,17 @@ public partial class FASyncRuntime
             successStatus);
     }
 
+    private void RunAttachedPlayerToggleRandomAction(string successStatus)
+    {
+        StandalonePlayerRecord record;
+        Atom hostAtom;
+        bool enabled = true;
+        if (TryResolveAttachedHostedStandalonePlayerRecord(out record, out hostAtom) && record != null)
+            enabled = !record.randomEnabled;
+
+        RunAttachedPlayerSetRandomAction(enabled, successStatus);
+    }
+
     private void RunAttachedPlayerSetAbLoopStartAction(string successStatus)
     {
         RunAttachedPlayerDirectAction(

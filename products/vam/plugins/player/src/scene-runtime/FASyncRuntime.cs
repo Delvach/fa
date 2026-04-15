@@ -136,6 +136,7 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableAction playerLoopOffAction;
     private JSONStorableAction playerLoopSingleAction;
     private JSONStorableAction playerLoopPlaylistAction;
+    private JSONStorableAction playerRandomToggleAction;
     private JSONStorableAction playerRandomOffAction;
     private JSONStorableAction playerRandomOnAction;
     private JSONStorableAction playerAbLoopStartAction;
@@ -501,6 +502,12 @@ public partial class FASyncRuntime : MVRScript
             {
                 RunAttachedPlayerSetLoopModeAction(PlayerLoopModePlaylist, "Player loop set to playlist");
             });
+        playerRandomToggleAction = new JSONStorableAction(
+            "Player Random Toggle",
+            delegate
+            {
+                RunAttachedPlayerToggleRandomAction("Player random toggled");
+            });
         playerRandomOffAction = new JSONStorableAction(
             "Player Random Off",
             delegate
@@ -669,6 +676,7 @@ public partial class FASyncRuntime : MVRScript
         RegisterAction(playerLoopOffAction);
         RegisterAction(playerLoopSingleAction);
         RegisterAction(playerLoopPlaylistAction);
+        RegisterAction(playerRandomToggleAction);
         RegisterAction(playerRandomOffAction);
         RegisterAction(playerRandomOnAction);
         RegisterAction(playerAbLoopStartAction);

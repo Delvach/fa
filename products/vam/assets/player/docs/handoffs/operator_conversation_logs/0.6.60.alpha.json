@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.60",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.60 is a narrow recovery slice: keep periodic AV sync at the existing one-second cadence, tighten the drift threshold so small offsets can be corrected, arm the first post-seek check immediately, and fix the demo3 shuffle checkbox so it can toggle random playback off as well as on.",
+  "repoAnchors": {
+    "branch": "release/0.6.60-sync-tighten-shuffle-toggle",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.60.json"
+  },
+  "operatorSignals": [
+    "0.6.59 was better overall and image behavior was good, but a tiny 100-200ms audio/video drift was still noticeable.",
+    "The operator wanted sync to stay on a one-second cadence and not widen into more loops.",
+    "The demo3 shuffle checkbox could enable random playback but not reliably disable it again, even though plugin-side random control worked."
+  ],
+  "actionsTaken": [
+    "Kept the existing one-second periodic AV sync cadence.",
+    "Lowered the periodic AV correction threshold from 0.20 seconds to 0.05 seconds.",
+    "Changed the VideoPlayer seek-completed hook to arm the next periodic sync check immediately.",
+    "Added an attached-player Player Random Toggle action and rewired the demo3 shuffle checkbox to fire it on transition."
+  ],
+  "nonGoals": [
+    "No image scrub transport changes in this slice.",
+    "No movie joystick transport changes in this slice.",
+    "No slideshow, right-stick volume, or deferred gaze work in this slice."
+  ]
+}

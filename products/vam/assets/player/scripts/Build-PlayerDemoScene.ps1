@@ -1103,13 +1103,11 @@ function New-PlayerDemoThreeScreenTriggerStorable {
                 value = "false"
                 trigger = [ordered]@{
                     displayName = "A_Player Random Toggle"
-                    startActions = @(
-                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random On")
+                    startActions = @()
+                    transitionActions = @(
+                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random Toggle")
                     )
-                    transitionActions = @()
-                    endActions = @(
-                        (New-PlayerDemoPluginActionEntry -ScreenAtomId $ScreenAtomId -ActionName "Player Random Off")
-                    )
+                    endActions = @()
                 }
             }
         }

@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.59",
-    "notes":  "0.6.59 restores shuffle defaults to off for new player and preset records so image directories load in the existing natural sequence when shuffle is not enabled.",
-    "branch":  "release/0.6.59-shuffle-default-off",
+    "version":  "0.6.60",
+    "notes":  "0.6.60 tightens periodic AV sync to catch smaller drift and makes the demo3 shuffle checkbox use a real toggle transition so it can turn random playback off as well as on.",
+    "branch":  "release/0.6.60-sync-tighten-shuffle-toggle",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.59.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.60.json"
 }
