@@ -78,6 +78,14 @@ public partial class FASyncRuntime
             successStatus);
     }
 
+    private void RunAttachedPlayerSetSkipSecondsAction(float seconds, string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetSkipSecondsId,
+            "\"seconds\":" + FormatFloat(NormalizeStandalonePlayerConfiguredSkipSeconds(seconds)),
+            successStatus);
+    }
+
     private void RunAttachedPlayerSetLoopModeAction(string loopMode, string successStatus)
     {
         RunAttachedPlayerDirectAction(
@@ -91,6 +99,22 @@ public partial class FASyncRuntime
         RunAttachedPlayerDirectAction(
             PlayerActionSetRandomId,
             "\"random\":" + (enabled ? "true" : "false"),
+            successStatus);
+    }
+
+    private void RunAttachedPlayerSetSlideshowEnabledAction(bool enabled, string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetSlideshowEnabledId,
+            "\"enabled\":" + (enabled ? "true" : "false"),
+            successStatus);
+    }
+
+    private void RunAttachedPlayerSetSlideshowIntervalAction(float seconds, string successStatus)
+    {
+        RunAttachedPlayerDirectAction(
+            PlayerActionSetSlideshowIntervalId,
+            "\"seconds\":" + FormatFloat(NormalizeStandalonePlayerSlideshowIntervalSeconds(seconds)),
             successStatus);
     }
 

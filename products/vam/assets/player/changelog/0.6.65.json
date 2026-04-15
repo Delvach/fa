@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.65",
+  "title": "Add slideshow timing and jump dropdowns",
+  "summary": "0.6.65 adds a narrow image-only slideshow timer plus plugin dropdowns for video scrub jump and image slideshow interval, all wired through the existing player state without touching movie transport or image scrub behavior.",
+  "changes": [
+    "Still-image playback records now carry slideshow enabled state, slideshow interval seconds, next slideshow advance time, and configurable default scrub-jump seconds.",
+    "The slideshow timer runs only inside the still-image runtime tick and reuses the existing next-image playlist stepping semantics.",
+    "The plugin panel now exposes a Slideshow toggle on the runtime side, plus right-column dropdowns for Video Scrub and Image Slideshow timing."
+  ],
+  "reasoning": "Image navigation and mixed-media behavior are already in a good place, so slideshow should be a timer layered onto that existing image path instead of a new transport system. This slice keeps the image scrub model, natural ordering, shuffle, and movie sync lanes intact.",
+  "operatorVisibleOutcomes": [
+    "Still images can auto-advance on a configurable interval from the plugin panel.",
+    "Skip Forward and Skip Backward now use the player's configured Video Scrub jump distance instead of only the fixed 15-second default.",
+    "Image summary status now reads as Playing when slideshow is active and Paused when it is not."
+  ],
+  "knownIssues": [
+    "This slice does not change movie transport, movie sync, right-stick volume, deferred gaze, or favorites.",
+    "If a mixed playlist would advance from an image onto a video, slideshow disarms instead of inventing auto-video behavior."
+  ],
+  "verification": [
+    "FASyncRuntime.Player.cs now runs slideshow timing only in the still-image branch of TickStandalonePlayerRuntime().",
+    "FASyncRuntime.cs and FASyncRuntime.PlayerPluginSurface.cs now expose slideshow state plus dropdown-backed timing controls through the existing attached-player control path."
+  ]
+}

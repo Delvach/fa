@@ -23,10 +23,13 @@ public partial class FASyncRuntime : MVRScript
     private const string PlayerActionPreviousId = "Player.Previous";
     private const string PlayerActionSkipForwardId = "Player.SkipForward";
     private const string PlayerActionSkipBackwardId = "Player.SkipBackward";
+    private const string PlayerActionSetSkipSecondsId = "Player.SetSkipSeconds";
     private const string PlayerActionSetVolumeId = "Player.SetVolume";
     private const string PlayerActionSetMuteId = "Player.SetMute";
     private const string PlayerActionSetLoopModeId = "Player.SetLoopMode";
     private const string PlayerActionSetRandomId = "Player.SetRandom";
+    private const string PlayerActionSetSlideshowEnabledId = "Player.SetSlideshowEnabled";
+    private const string PlayerActionSetSlideshowIntervalId = "Player.SetSlideshowInterval";
     private const string PlayerActionSetAbLoopStartId = "Player.SetABLoopStart";
     private const string PlayerActionSetAbLoopEndId = "Player.SetABLoopEnd";
     private const string PlayerActionSetAbLoopEnabledId = "Player.SetABLoopEnabled";
@@ -63,6 +66,15 @@ public partial class FASyncRuntime : MVRScript
     private const float StandalonePlayerScrubCommitDebounceSeconds = 0.18f;
     private const float StandalonePlayerTransitionFadeDurationSeconds = 0.25f;
     private const float StandalonePlayerVolumeCurveExponent = 2f;
+    private static readonly float[] StandalonePlayerConfiguredSkipChoicesSeconds = { 15f, 30f, 60f, 120f, 300f, 600f };
+    private static readonly string[] StandalonePlayerConfiguredSkipChoiceValues = { "15s", "30s", "1m", "2m", "5m", "10m" };
+    private static readonly string[] StandalonePlayerConfiguredSkipChoiceLabels = { "15 sec", "30 sec", "1 min", "2 min", "5 min", "10 min" };
+    private static readonly float[] StandalonePlayerSlideshowChoicesSeconds = { 0.25f, 0.50f, 0.75f, 1f, 2f, 5f, 10f };
+    private static readonly string[] StandalonePlayerSlideshowChoiceValues = { "250ms", "500ms", "750ms", "1s", "2s", "5s", "10s" };
+    private static readonly string[] StandalonePlayerSlideshowChoiceLabels = { "250 ms", "500 ms", "750 ms", "1 sec", "2 sec", "5 sec", "10 sec" };
+    private const float StandalonePlayerDefaultSlideshowIntervalSeconds = 5f;
+    private const float StandalonePlayerMinimumSlideshowIntervalSeconds = 0.25f;
+    private const float StandalonePlayerMaximumSlideshowIntervalSeconds = 10f;
     private const int StandalonePlayerPlaceholderWidth = 256;
     private const int StandalonePlayerPlaceholderHeight = 144;
     private const double StandalonePlayerPlaybackMotionEpsilonSeconds = 0.01d;
@@ -160,6 +172,10 @@ public partial class FASyncRuntime : MVRScript
         public int currentIndex = -1;
         public string loopMode = PlayerLoopModePlaylist;
         public bool randomEnabled = false;
+        public float skipSeconds = StandalonePlayerDefaultSkipSeconds;
+        public bool slideshowEnabled = false;
+        public float slideshowIntervalSeconds = StandalonePlayerDefaultSlideshowIntervalSeconds;
+        public float nextSlideshowAdvanceAt = 0f;
         public bool looping = false;
         public bool prepared = false;
         public bool preparePending = false;
@@ -397,6 +413,8 @@ public partial class FASyncRuntime : MVRScript
             case "Player.SkipMinus":
             case "Player.SkipBackward":
                 return TrySkipBackwardStandalonePlayer(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetSkipSeconds":
+                return TrySetStandalonePlayerSkipSeconds(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetPlaylist":
                 return TrySetStandalonePlayerPlaylist(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetVolume":
@@ -407,6 +425,10 @@ public partial class FASyncRuntime : MVRScript
                 return TrySetStandalonePlayerLoopMode(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetRandom":
                 return TrySetStandalonePlayerRandom(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetSlideshowEnabled":
+                return TrySetStandalonePlayerSlideshowEnabled(actionId, argsJson, out resultJson, out errorMessage);
+            case "Player.SetSlideshowInterval":
+                return TrySetStandalonePlayerSlideshowInterval(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetABLoopStart":
                 return TrySetStandalonePlayerAbLoopStart(actionId, argsJson, out resultJson, out errorMessage);
             case "Player.SetABLoopEnd":
@@ -6237,6 +6259,125 @@ public partial class FASyncRuntime : MVRScript
         return true;
     }
 
+    private bool TrySetStandalonePlayerSlideshowEnabled(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage))
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        bool enabled;
+        if (!TryReadBoolArg(argsJson, out enabled, "enabled", "slideshowEnabled", "value"))
+        {
+            errorMessage = "enabled is required";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.slideshowEnabled = enabled;
+        ResetStandalonePlayerSlideshowTimer(record);
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_slideshow_enabled ok", payload);
+        EmitRuntimeEvent(
+            "player_slideshow_enabled",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
+    private bool TrySetStandalonePlayerSkipSeconds(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage))
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        float skipSeconds;
+        if (!TryReadStandalonePlayerSkipSeconds(argsJson, out skipSeconds))
+        {
+            errorMessage = "skip seconds is required";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.skipSeconds = NormalizeStandalonePlayerConfiguredSkipSeconds(skipSeconds);
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_skip_seconds ok", payload);
+        EmitRuntimeEvent(
+            "player_skip_seconds",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
+    private bool TrySetStandalonePlayerSlideshowInterval(string actionId, string argsJson, out string resultJson, out string errorMessage)
+    {
+        resultJson = "{}";
+        errorMessage = "";
+
+        StandalonePlayerRecord record;
+        if (!TryResolveStandalonePlayerRecord(argsJson, out record, out errorMessage))
+        {
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        float intervalSeconds;
+        if (!TryReadStandalonePlayerSlideshowIntervalSeconds(argsJson, out intervalSeconds))
+        {
+            errorMessage = "slideshow interval is required";
+            resultJson = BuildBrokerResult(false, errorMessage, "{}");
+            return false;
+        }
+
+        record.slideshowIntervalSeconds = NormalizeStandalonePlayerSlideshowIntervalSeconds(intervalSeconds);
+        ResetStandalonePlayerSlideshowTimer(record);
+        record.lastError = "";
+
+        string payload = BuildStandalonePlayerSelectedStateJson("{\"playbackKey\":\"" + EscapeJsonString(record.playbackKey) + "\"}");
+        resultJson = BuildBrokerResult(true, "player_slideshow_interval ok", payload);
+        EmitRuntimeEvent(
+            "player_slideshow_interval",
+            actionId,
+            "ok",
+            "",
+            record.playbackKey,
+            record.instanceId,
+            ExtractJsonArgString(argsJson, "correlationId"),
+            ExtractJsonArgString(argsJson, "messageId"),
+            record.displayId,
+            payload);
+        return true;
+    }
+
     private bool TrySetStandalonePlayerAbLoopStart(string actionId, string argsJson, out string resultJson, out string errorMessage)
     {
         resultJson = "{}";
@@ -6606,7 +6747,7 @@ public partial class FASyncRuntime : MVRScript
             return false;
         }
 
-        float deltaSeconds = defaultDeltaSeconds;
+        float deltaSeconds;
         float parsedDeltaSeconds;
         if (TryReadStandalonePlayerSkipSeconds(argsJson, out parsedDeltaSeconds))
         {
@@ -6619,6 +6760,10 @@ public partial class FASyncRuntime : MVRScript
             errorMessage = "seconds is required";
             resultJson = BuildBrokerResult(false, errorMessage, "{}");
             return false;
+        }
+        else
+        {
+            deltaSeconds = Mathf.Sign(defaultDeltaSeconds == 0f ? 1f : defaultDeltaSeconds) * ResolveStandalonePlayerConfiguredSkipSeconds(record);
         }
 
         if (!TrySkipStandalonePlayerRecord(record, deltaSeconds, out errorMessage))
@@ -7165,6 +7310,7 @@ public partial class FASyncRuntime : MVRScript
         record.seekResumeTargetSeconds = 0d;
         record.seekResumeRequestedAt = 0f;
         record.nextAudioVideoSyncCheckTime = Time.unscaledTime + StandalonePlayerPeriodicAvSyncIntervalSeconds;
+        record.nextSlideshowAdvanceAt = 0f;
         record.textureWidth = 0;
         record.textureHeight = 0;
         record.needsScreenRefresh = false;
@@ -7561,6 +7707,200 @@ public partial class FASyncRuntime : MVRScript
         return 0d;
     }
 
+    private float NormalizeStandalonePlayerConfiguredSkipSeconds(float value)
+    {
+        if (float.IsNaN(value) || float.IsInfinity(value) || value <= 0.0001f)
+            return StandalonePlayerDefaultSkipSeconds;
+
+        return ResolveNearestStandalonePlayerConfiguredChoiceSeconds(
+            value,
+            StandalonePlayerConfiguredSkipChoicesSeconds,
+            StandalonePlayerDefaultSkipSeconds);
+    }
+
+    private float ResolveStandalonePlayerConfiguredSkipSeconds(StandalonePlayerRecord record)
+    {
+        if (record == null)
+            return StandalonePlayerDefaultSkipSeconds;
+
+        return NormalizeStandalonePlayerConfiguredSkipSeconds(record.skipSeconds);
+    }
+
+    private float NormalizeStandalonePlayerSlideshowIntervalSeconds(float value)
+    {
+        if (float.IsNaN(value) || float.IsInfinity(value))
+            value = StandalonePlayerDefaultSlideshowIntervalSeconds;
+
+        return ResolveNearestStandalonePlayerConfiguredChoiceSeconds(
+            Mathf.Clamp(value, StandalonePlayerMinimumSlideshowIntervalSeconds, StandalonePlayerMaximumSlideshowIntervalSeconds),
+            StandalonePlayerSlideshowChoicesSeconds,
+            StandalonePlayerDefaultSlideshowIntervalSeconds);
+    }
+
+    private float ResolveNearestStandalonePlayerConfiguredChoiceSeconds(float value, float[] options, float defaultValue)
+    {
+        if (options == null || options.Length <= 0)
+            return defaultValue;
+
+        float bestValue = options[0];
+        float bestDistance = Mathf.Abs(value - bestValue);
+        for (int index = 1; index < options.Length; index++)
+        {
+            float candidate = options[index];
+            float distance = Mathf.Abs(value - candidate);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                bestValue = candidate;
+            }
+        }
+
+        return bestValue;
+    }
+
+    private string ResolveStandalonePlayerConfiguredSkipChoiceValue(float seconds)
+    {
+        float normalizedSeconds = NormalizeStandalonePlayerConfiguredSkipSeconds(seconds);
+        for (int index = 0; index < StandalonePlayerConfiguredSkipChoicesSeconds.Length; index++)
+        {
+            if (Mathf.Abs(StandalonePlayerConfiguredSkipChoicesSeconds[index] - normalizedSeconds) <= 0.0005f)
+                return StandalonePlayerConfiguredSkipChoiceValues[index];
+        }
+
+        return StandalonePlayerConfiguredSkipChoiceValues[0];
+    }
+
+    private float ResolveStandalonePlayerConfiguredSkipChoiceSeconds(string choiceValue)
+    {
+        if (string.IsNullOrEmpty(choiceValue))
+            return StandalonePlayerDefaultSkipSeconds;
+
+        for (int index = 0; index < StandalonePlayerConfiguredSkipChoiceValues.Length; index++)
+        {
+            if (string.Equals(StandalonePlayerConfiguredSkipChoiceValues[index], choiceValue, StringComparison.OrdinalIgnoreCase))
+                return StandalonePlayerConfiguredSkipChoicesSeconds[index];
+        }
+
+        return StandalonePlayerDefaultSkipSeconds;
+    }
+
+    private string ResolveStandalonePlayerSlideshowChoiceValue(float seconds)
+    {
+        float normalizedSeconds = NormalizeStandalonePlayerSlideshowIntervalSeconds(seconds);
+        for (int index = 0; index < StandalonePlayerSlideshowChoicesSeconds.Length; index++)
+        {
+            if (Mathf.Abs(StandalonePlayerSlideshowChoicesSeconds[index] - normalizedSeconds) <= 0.0005f)
+                return StandalonePlayerSlideshowChoiceValues[index];
+        }
+
+        return StandalonePlayerSlideshowChoiceValues[0];
+    }
+
+    private float ResolveStandalonePlayerSlideshowChoiceSeconds(string choiceValue)
+    {
+        if (string.IsNullOrEmpty(choiceValue))
+            return StandalonePlayerDefaultSlideshowIntervalSeconds;
+
+        for (int index = 0; index < StandalonePlayerSlideshowChoiceValues.Length; index++)
+        {
+            if (string.Equals(StandalonePlayerSlideshowChoiceValues[index], choiceValue, StringComparison.OrdinalIgnoreCase))
+                return StandalonePlayerSlideshowChoicesSeconds[index];
+        }
+
+        return StandalonePlayerDefaultSlideshowIntervalSeconds;
+    }
+
+    private bool TryReadStandalonePlayerSlideshowIntervalSeconds(string argsJson, out float value)
+    {
+        if (TryExtractJsonFloatField(argsJson, "seconds", out value)
+            || TryExtractJsonFloatField(argsJson, "intervalSeconds", out value)
+            || TryExtractJsonFloatField(argsJson, "slideshowIntervalSeconds", out value)
+            || TryExtractJsonFloatField(argsJson, "value", out value))
+        {
+            return true;
+        }
+
+        value = 0f;
+        return false;
+    }
+
+    private void ResetStandalonePlayerSlideshowTimer(StandalonePlayerRecord record)
+    {
+        if (record == null)
+            return;
+
+        if (!record.slideshowEnabled
+            || !record.mediaIsStillImage
+            || record.playlistPaths == null
+            || record.playlistPaths.Count <= 1)
+        {
+            record.nextSlideshowAdvanceAt = 0f;
+            return;
+        }
+
+        record.nextSlideshowAdvanceAt = Time.unscaledTime + NormalizeStandalonePlayerSlideshowIntervalSeconds(record.slideshowIntervalSeconds);
+    }
+
+    private void TryAdvanceStandalonePlayerSlideshow(StandalonePlayerRecord record)
+    {
+        if (record == null || !record.mediaIsStillImage || !record.slideshowEnabled)
+            return;
+
+        if (record.nextSlideshowAdvanceAt <= 0f)
+        {
+            ResetStandalonePlayerSlideshowTimer(record);
+            return;
+        }
+
+        if (Time.unscaledTime < record.nextSlideshowAdvanceAt)
+            return;
+
+        int targetIndex;
+        bool changed = TryResolveStandalonePlayerStepIndex(record, true, out targetIndex);
+        if (!changed || targetIndex < 0 || targetIndex >= record.playlistPaths.Count)
+        {
+            record.slideshowEnabled = false;
+            record.nextSlideshowAdvanceAt = 0f;
+            return;
+        }
+
+        string targetPath = record.playlistPaths[targetIndex];
+        if (!FrameAngelPlayerMediaParity.IsSupportedImagePath(targetPath))
+        {
+            record.slideshowEnabled = false;
+            record.nextSlideshowAdvanceAt = 0f;
+            return;
+        }
+
+        record.currentIndex = targetIndex;
+        ClearStandalonePlayerAbLoopStateForPlaylistNavigation(record, targetPath);
+
+        string errorMessage = "";
+        if (IsHostedPlayerInstanceId(record.instanceId))
+        {
+            string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
+            if (string.IsNullOrEmpty(hostAtomUid)
+                || !TryLoadHostedStandalonePlayerRecordPath(record, hostAtomUid, record.playlistPaths, targetPath, out errorMessage))
+            {
+                record.lastError = string.IsNullOrEmpty(errorMessage) ? "hosted player host atom uid not resolved" : errorMessage;
+                record.nextSlideshowAdvanceAt = Time.unscaledTime + NormalizeStandalonePlayerSlideshowIntervalSeconds(record.slideshowIntervalSeconds);
+                return;
+            }
+        }
+        else
+        {
+            InnerPieceInstanceRecord instance;
+            InnerPieceScreenSlotRuntimeRecord slot;
+            if (!TryResolveInnerPieceScreenSlot(record.instanceId, record.slotId, out instance, out slot, out errorMessage)
+                || !TryLoadStandalonePlayerRecordPath(record, instance, slot, targetPath, out errorMessage))
+            {
+                record.lastError = string.IsNullOrEmpty(errorMessage) ? "player screen slot not resolved" : errorMessage;
+                record.nextSlideshowAdvanceAt = Time.unscaledTime + NormalizeStandalonePlayerSlideshowIntervalSeconds(record.slideshowIntervalSeconds);
+                return;
+            }
+        }
+    }
+
     private string GetStandalonePlayerCurrentPlaylistPath(StandalonePlayerRecord record)
     {
         if (record == null || record.playlistPaths.Count <= 0)
@@ -7649,6 +7989,8 @@ public partial class FASyncRuntime : MVRScript
                     else
                         record.lastError = "";
                 }
+
+                TryAdvanceStandalonePlayerSlideshow(record);
 
                 continue;
             }
@@ -9118,6 +9460,7 @@ public partial class FASyncRuntime : MVRScript
             record.lastError = "";
             record.needsScreenRefresh = true;
             TryResolveTextureDimensions(loadedTexture, out record.textureWidth, out record.textureHeight);
+            ResetStandalonePlayerSlideshowTimer(record);
             return true;
         }
         catch (Exception ex)
@@ -10091,6 +10434,9 @@ public partial class FASyncRuntime : MVRScript
             && playerRuntimeParityField == null
             && playerRuntimeTimelineField == null
             && playerRuntimePlaylistField == null
+            && playerSlideshowToggleField == null
+            && playerVideoScrubChoiceField == null
+            && playerImageSlideshowChoiceField == null
             && playerShuffleToggleField == null
             && playerLoopPlaylistToggleField == null
             && playerLoopSingleToggleField == null
@@ -10120,6 +10466,7 @@ public partial class FASyncRuntime : MVRScript
                 AssignVisiblePlayerStringField(playerRuntimeTimelineField, playerPendingTimelineSummary);
             if (playerRuntimePlaylistField != null)
                 AssignVisiblePlayerStringField(playerRuntimePlaylistField, playerPendingPlaylistSummary);
+            UpdateStandalonePlayerTimingFields(false, StandalonePlayerDefaultSkipSeconds, StandalonePlayerDefaultSlideshowIntervalSeconds);
             UpdateStandalonePlayerStateToggleFields(false, PlayerLoopModePlaylist);
             UpdateStandalonePlayerSliderFields(0f, 1f);
             return;
@@ -10296,6 +10643,7 @@ public partial class FASyncRuntime : MVRScript
             AssignVisiblePlayerStringField(playerRuntimeTimelineField, timelineSummary);
         if (playerRuntimePlaylistField != null)
             AssignVisiblePlayerStringField(playerRuntimePlaylistField, playlistSummary);
+        UpdateStandalonePlayerTimingFields(record.slideshowEnabled, record.skipSeconds, record.slideshowIntervalSeconds);
         UpdateStandalonePlayerStateToggleFields(record.randomEnabled, record.loopMode);
         UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
         RefreshAttachedDemoSceneUiState(record, hostAtom, currentTimeSeconds, currentDurationSeconds, currentTimeNormalized);
@@ -10340,6 +10688,48 @@ public partial class FASyncRuntime : MVRScript
         {
             suppressPlayerStateToggleCallbacks = false;
         }
+    }
+
+    private void UpdateStandalonePlayerTimingFields(bool slideshowEnabled, float skipSeconds, float slideshowIntervalSeconds)
+    {
+        if (playerSlideshowToggleField == null
+            && playerVideoScrubChoiceField == null
+            && playerImageSlideshowChoiceField == null)
+            return;
+
+        suppressPlayerSlideshowFieldCallbacks = true;
+        try
+        {
+            AssignVisiblePlayerBoolField(playerSlideshowToggleField, slideshowEnabled);
+            AssignVisiblePlayerChoiceField(
+                playerVideoScrubChoiceField,
+                ResolveStandalonePlayerConfiguredSkipChoiceValue(skipSeconds),
+                ref lastPlayerVideoScrubChoiceValue);
+            AssignVisiblePlayerChoiceField(
+                playerImageSlideshowChoiceField,
+                ResolveStandalonePlayerSlideshowChoiceValue(slideshowIntervalSeconds),
+                ref lastPlayerImageSlideshowChoiceValue);
+        }
+        finally
+        {
+            suppressPlayerSlideshowFieldCallbacks = false;
+        }
+    }
+
+    private void AssignVisiblePlayerChoiceField(JSONStorableStringChooser field, string value, ref string lastValue)
+    {
+        if (field == null)
+            return;
+
+        string normalizedValue = value ?? "";
+        if (string.Equals(lastValue, normalizedValue, StringComparison.Ordinal)
+            && string.Equals(field.val, normalizedValue, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        field.valNoCallback = normalizedValue;
+        lastValue = normalizedValue;
     }
 
     private void AssignVisiblePlayerBoolField(JSONStorableBool field, bool value)
@@ -11019,6 +11409,8 @@ public partial class FASyncRuntime : MVRScript
             statusValue = "Error";
         else if (record != null && record.preparePending)
             statusValue = "Loading";
+        else if (isImage && record != null && record.slideshowEnabled)
+            statusValue = "Playing";
         else if (record != null && (isPlaying || record.desiredPlaying))
             statusValue = "Playing";
         else
@@ -11247,6 +11639,9 @@ public partial class FASyncRuntime : MVRScript
         sb.Append("\"aspectMode\":\"").Append(EscapeJsonString(record.aspectMode)).Append("\",");
         sb.Append("\"loopMode\":\"").Append(EscapeJsonString(record.loopMode)).Append("\",");
         sb.Append("\"randomEnabled\":").Append(record.randomEnabled ? "true" : "false").Append(',');
+        sb.Append("\"skipSeconds\":").Append(FormatFloat(ResolveStandalonePlayerConfiguredSkipSeconds(record))).Append(',');
+        sb.Append("\"slideshowEnabled\":").Append(record.slideshowEnabled ? "true" : "false").Append(',');
+        sb.Append("\"slideshowIntervalSeconds\":").Append(FormatFloat(record.slideshowIntervalSeconds)).Append(',');
         sb.Append("\"abLoopEnabled\":").Append(record.abLoopEnabled ? "true" : "false").Append(',');
         sb.Append("\"hasAbLoopStart\":").Append(record.hasAbLoopStart ? "true" : "false").Append(',');
         sb.Append("\"abLoopStartSeconds\":").Append(record.abLoopStartSeconds.ToString("0.######", CultureInfo.InvariantCulture)).Append(',');

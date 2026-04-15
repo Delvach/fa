@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.65",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.65 is a narrow image-slideshow slice: add a slideshow toggle, a Video Scrub dropdown, and an Image Slideshow dropdown, then advance still images on a timer through the existing image playlist/index path without changing movie transport or image scrub behavior.",
+  "repoAnchors": {
+    "branch": "release/0.6.65-image-slideshow",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.65.json"
+  },
+  "operatorSignals": [
+    "0.6.64 restored confidence in the plugin UI and default-preset seam, so slideshow became a safe next slice.",
+    "The requested shape stayed explicitly minimal: timer-only slideshow for still images, plus dropdown-based timing controls, not a new playlist system and not a transport rewrite."
+  ],
+  "actionsTaken": [
+    "Added slideshow enabled state, interval seconds, next-advance timing, and configurable skip seconds to player records.",
+    "Inserted slideshow timing only into the still-image runtime tick and reused existing image next-step semantics.",
+    "Exposed a Slideshow toggle plus Video Scrub and Image Slideshow dropdowns in the plugin UI."
+  ],
+  "nonGoals": [
+    "No movie transport, sync, image scrub, or mixed-media ordering changes in this slice.",
+    "No slideshow persistence in presets yet."
+  ]
+}

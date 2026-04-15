@@ -122,6 +122,9 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerVisibleScreenField;
     private JSONStorableFloat playerScrubNormalizedField;
     private JSONStorableFloat playerVolumeNormalizedField;
+    private JSONStorableBool playerSlideshowToggleField;
+    private JSONStorableStringChooser playerVideoScrubChoiceField;
+    private JSONStorableStringChooser playerImageSlideshowChoiceField;
     private JSONStorableBool playerShuffleToggleField;
     private JSONStorableBool playerLoopPlaylistToggleField;
     private JSONStorableBool playerLoopSingleToggleField;
@@ -180,7 +183,10 @@ public partial class FASyncRuntime : MVRScript
     private string playerPendingPlaylistSummary = "";
     private float lastPlayerScrubNormalizedValue = -1f;
     private float lastPlayerVolumeNormalizedValue = -1f;
+    private string lastPlayerVideoScrubChoiceValue = "";
+    private string lastPlayerImageSlideshowChoiceValue = "";
     private bool suppressPlayerStateToggleCallbacks = false;
+    private bool suppressPlayerSlideshowFieldCallbacks = false;
     private string pendingPlayerMediaBrowserSuccessStatus = "";
     private bool pendingPlayerMediaBrowserTargetsMetaProof = false;
     private bool playerMediaBrowserOpen = false;
@@ -399,6 +405,52 @@ public partial class FASyncRuntime : MVRScript
             1f,
             true);
         ConfigureTransientField(playerVolumeNormalizedField, false);
+
+        playerSlideshowToggleField = new JSONStorableBool(
+            "Slideshow",
+            false,
+            delegate(bool value)
+            {
+                if (suppressPlayerSlideshowFieldCallbacks)
+                    return;
+
+                RunAttachedPlayerSetSlideshowEnabledAction(value, value ? "Slideshow enabled" : "Slideshow disabled");
+            });
+        ConfigureTransientField(playerSlideshowToggleField, false);
+
+        playerVideoScrubChoiceField = new JSONStorableStringChooser(
+            "Video Scrub",
+            new List<string>(StandalonePlayerConfiguredSkipChoiceValues),
+            ResolveStandalonePlayerConfiguredSkipChoiceValue(StandalonePlayerDefaultSkipSeconds),
+            "Video Scrub");
+        playerVideoScrubChoiceField.displayChoices = new List<string>(StandalonePlayerConfiguredSkipChoiceLabels);
+        playerVideoScrubChoiceField.setCallbackFunction = delegate(string value)
+        {
+            if (suppressPlayerSlideshowFieldCallbacks)
+                return;
+
+            RunAttachedPlayerSetSkipSecondsAction(
+                ResolveStandalonePlayerConfiguredSkipChoiceSeconds(value),
+                "Player scrub jump set");
+        };
+        ConfigureTransientField(playerVideoScrubChoiceField, false);
+
+        playerImageSlideshowChoiceField = new JSONStorableStringChooser(
+            "Image Slideshow",
+            new List<string>(StandalonePlayerSlideshowChoiceValues),
+            ResolveStandalonePlayerSlideshowChoiceValue(StandalonePlayerDefaultSlideshowIntervalSeconds),
+            "Image Slideshow");
+        playerImageSlideshowChoiceField.displayChoices = new List<string>(StandalonePlayerSlideshowChoiceLabels);
+        playerImageSlideshowChoiceField.setCallbackFunction = delegate(string value)
+        {
+            if (suppressPlayerSlideshowFieldCallbacks)
+                return;
+
+            RunAttachedPlayerSetSlideshowIntervalAction(
+                ResolveStandalonePlayerSlideshowChoiceSeconds(value),
+                "Slideshow interval set");
+        };
+        ConfigureTransientField(playerImageSlideshowChoiceField, false);
 
         playerShuffleToggleField = new JSONStorableBool(
             "Shuffle",
@@ -735,6 +787,9 @@ public partial class FASyncRuntime : MVRScript
 #endif
         RegisterFloat(playerScrubNormalizedField);
         RegisterFloat(playerVolumeNormalizedField);
+        RegisterBool(playerSlideshowToggleField);
+        RegisterStringChooser(playerVideoScrubChoiceField);
+        RegisterStringChooser(playerImageSlideshowChoiceField);
         RegisterBool(playerShuffleToggleField);
         RegisterBool(playerLoopPlaylistToggleField);
         RegisterBool(playerLoopSingleToggleField);
@@ -891,9 +946,12 @@ public partial class FASyncRuntime : MVRScript
         );
         CreateToggle(playerPresetStoreTimeToggle, true);
 
-        CreateToggle(playerShuffleToggleField, false);
+        CreateToggle(playerSlideshowToggleField, false);
         CreateToggle(playerPresetStoreLoopToggle, true);
+        CreateToggle(playerShuffleToggleField, false);
+        CreatePopup(playerVideoScrubChoiceField, true);
         CreateToggle(playerLoopPlaylistToggleField, false);
+        CreatePopup(playerImageSlideshowChoiceField, true);
         CreateToggle(playerLoopSingleToggleField, false);
         CreateToggle(playerLoopOffToggleField, false);
 
