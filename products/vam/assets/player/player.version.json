@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.56",
-    "notes":  "0.6.56 stops experimenting with analog movie scrub rate laws and routes non-trigger movie joystick input through the exact existing 15-second skip transport, while leaving image stepping and trigger-modified video behavior intact.",
-    "branch":  "release/0.6.56-cua-movie-skip-align",
+    "version":  "0.6.57",
+    "notes":  "0.6.57 keeps non-trigger movie joystick inside the original scrub-session choreography and changes it to one 15-second target step per stick excursion, so joystick distance matches the transport expectation without repeated live skip seeks disturbing sync.",
+    "branch":  "release/0.6.57-cua-movie-scrub-step-session",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.56.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.57.json"
 }

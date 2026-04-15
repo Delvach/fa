@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.57",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.57 keeps non-trigger movie joystick inside the original scrub-session choreography while moving its target by one discrete 15-second step per stick excursion, so the operator gets larger video joystick movement without the repeated live skip seeks that disrupted sync in 0.6.56.",
+  "repoAnchors": {
+    "branch": "release/0.6.57-cua-movie-scrub-step-session",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.57.json"
+  },
+  "operatorSignals": [
+    "0.6.56 made movie joystick distance feel right but audio sync drifted again.",
+    "The lane wants the larger transport distance without changing the sync-preserving seek choreography recovered from the imagepanel investigation."
+  ],
+  "actionsTaken": [
+    "Removed repeated live skip seeks from the non-trigger movie joystick branch.",
+    "Restored the original paused scrub-session control flow for non-trigger movie joystick input.",
+    "Changed the scrub-session target movement to one 15-second step per stick excursion."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice.",
+    "No change to image stepping behavior in this slice."
+  ]
+}

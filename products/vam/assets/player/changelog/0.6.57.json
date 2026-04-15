@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.57",
+  "title": "Move movie scrub targets in 15-second steps inside the original scrub session",
+  "summary": "0.6.57 keeps non-trigger movie joystick inside the original paused scrub-session choreography but moves its target by one discrete 15-second step per stick excursion, so joystick video distance improves without the repeated live skip seeks that disturbed sync in 0.6.56.",
+  "changes": [
+    "Non-trigger movie joystick input now advances the paused scrub-session target by one discrete 15-second step per stick excursion.",
+    "The scrub session still pauses once, accumulates target changes while held, seeks once on release, and resumes once.",
+    "Image stepping and trigger-modified video next and previous behavior remain unchanged."
+  ],
+  "reasoning": "0.6.56 proved that repeated live skip seeks gave the desired distance but disturbed sync because they changed the seek cadence and playback-state choreography. This slice keeps the original scrub-session model and changes it to one 15-second target step per stick excursion inside the same controlled finalize-on-release path.",
+  "operatorVisibleOutcomes": [
+    "Each non-trigger movie joystick nudge should produce one 15-second transport step again.",
+    "Audio and video sync should stay closer because the gesture returns to one paused scrub session with one finalize seek.",
+    "Image stepping stays smooth and incremental."
+  ],
+  "knownIssues": [
+    "This slice does not change slideshow, right-stick volume, or deferred gaze work.",
+    "This slice does not change trigger-modified video next and previous behavior."
+  ],
+  "verification": [
+    "The non-trigger movie joystick branch in FASyncRuntime.CuaPlayerInputModule.cs keeps BeginCuaPlayerVideoScrubSession and EndCuaPlayerVideoScrubSession while moving the target in StandalonePlayerDefaultSkipSeconds-sized steps.",
+    "No repeated Player.SkipForward or Player.SkipBackward calls remain in the non-trigger movie joystick branch."
+  ]
+}
