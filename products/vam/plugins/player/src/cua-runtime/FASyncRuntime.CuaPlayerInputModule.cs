@@ -66,6 +66,7 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerTriggerModifierThreshold = 0.50f;
     private const float CuaPlayerImageStepInitialRepeatSeconds = 0.35f;
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
+    private const float CuaPlayerVolumeBumpNormalized = 0.10f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
     private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
 
@@ -112,6 +113,7 @@ public partial class FASyncRuntime : MVRScript
     private float cuaPlayerNextImageStepTime = 0f;
     private int cuaPlayerImageStepDirection = 0;
     private int cuaPlayerVideoSkipDirection = 0;
+    private int cuaPlayerVolumeBumpDirection = 0;
     private CuaPlayerNavigationAxisLock cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
     private bool cuaPlayerVideoScrubTargetKnown = false;
     private float cuaPlayerVideoScrubTargetNormalized = 0f;
@@ -200,6 +202,7 @@ public partial class FASyncRuntime : MVRScript
         if (grabNavigateOverrideActive)
         {
             ResetCuaPlayerTriggerTapState();
+            cuaPlayerVolumeBumpDirection = 0;
             if (ReferenceEquals(cuaPlayerInputOwner, this) || cuaPlayerNavigationCaptureActive || cuaPlayerFocusActive)
                 ReleaseCuaPlayerInputFocus("grab_nav_override");
 
@@ -246,6 +249,7 @@ public partial class FASyncRuntime : MVRScript
         if (!ownsFocus)
         {
             ResetCuaPlayerTriggerTapState();
+            cuaPlayerVolumeBumpDirection = 0;
             UpdateCuaPlayerInputState(
                 cuaPlayerFocusActive,
                 gazeActive,
@@ -273,14 +277,22 @@ public partial class FASyncRuntime : MVRScript
             cuaPlayerVideoSkipDirection = 0;
             if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
                 horizontal = 0f;
+            if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Vertical)
+                vertical = 0f;
+            bool rightStickVolumeActive = Mathf.Abs(vertical) > 0f
+                && !triggerModifierActive
+                && string.Equals(cuaPlayerLastNavigationStick, "right", StringComparison.Ordinal);
             cuaPlayerVideoScrubTargetKnown = false;
             TickCuaPlayerImageStepInput(record, horizontal, triggerModifierActive);
+            TickCuaPlayerVolumeBumpInput(record, vertical, triggerModifierActive);
             UpdateCuaPlayerInputState(
                 true,
                 gazeActive,
                 Mathf.Abs(horizontal) > 0f
                     ? (triggerModifierActive ? "image_step_fast" : "image_step")
-                    : "focused",
+                    : (rightStickVolumeActive
+                        ? "volume_bump"
+                        : "focused"),
                 navigation,
                 gazeReason);
             return;
@@ -288,14 +300,22 @@ public partial class FASyncRuntime : MVRScript
 
         if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Horizontal)
             horizontal = 0f;
+        if (cuaPlayerNavigationAxisLock != CuaPlayerNavigationAxisLock.Vertical)
+            vertical = 0f;
+        bool rightStickVideoVolumeActive = Mathf.Abs(vertical) > 0f
+            && !triggerModifierActive
+            && string.Equals(cuaPlayerLastNavigationStick, "right", StringComparison.Ordinal);
 
         TickCuaPlayerVideoScrubInput(record, horizontal, triggerModifierActive);
+        TickCuaPlayerVolumeBumpInput(record, vertical, triggerModifierActive);
         UpdateCuaPlayerInputState(
             true,
             gazeActive,
             Mathf.Abs(horizontal) > 0f
                 ? (triggerModifierActive ? "video_step" : "video_scrub")
-                : "focused",
+                : (rightStickVideoVolumeActive
+                    ? "volume_bump"
+                    : "focused"),
             navigation,
             gazeReason);
     }
@@ -373,6 +393,7 @@ public partial class FASyncRuntime : MVRScript
         cuaPlayerFocusActive = false;
         cuaPlayerImageStepDirection = 0;
         cuaPlayerVideoSkipDirection = 0;
+        cuaPlayerVolumeBumpDirection = 0;
         cuaPlayerNextImageStepTime = 0f;
         cuaPlayerNavigationAxisLock = CuaPlayerNavigationAxisLock.None;
         if (wasOwner || cuaPlayerNavigationCaptureActive)
@@ -1085,6 +1106,51 @@ public partial class FASyncRuntime : MVRScript
             repeatSeconds,
             "Player.InputImageNext",
             "Player.InputImagePrevious");
+    }
+
+    private void TickCuaPlayerVolumeBumpInput(StandalonePlayerRecord record, float vertical, bool triggerModifierActive)
+    {
+        if (record == null)
+        {
+            cuaPlayerVolumeBumpDirection = 0;
+            return;
+        }
+
+        if (!string.Equals(cuaPlayerLastNavigationStick, "right", StringComparison.Ordinal)
+            || triggerModifierActive
+            || Mathf.Abs(vertical) < CuaPlayerNavigationDeadzone)
+        {
+            cuaPlayerVolumeBumpDirection = 0;
+            return;
+        }
+
+        int desiredDirection = vertical >= CuaPlayerNavigationDeadzone ? 1 : -1;
+        if (desiredDirection == cuaPlayerVolumeBumpDirection)
+            return;
+
+        float currentVolume = Mathf.Clamp01(record.storedVolume);
+        float targetVolume = Mathf.Clamp01(currentVolume + (desiredDirection * CuaPlayerVolumeBumpNormalized));
+        cuaPlayerVolumeBumpDirection = desiredDirection;
+        if (Mathf.Abs(targetVolume - currentVolume) <= 0.0005f)
+            return;
+
+        string argsJson = "{\"playbackKey\":\""
+            + EscapeJsonString(record.playbackKey)
+            + "\",\"volume\":"
+            + FormatFloat(targetVolume)
+            + "}";
+        string ignoredResult;
+        string errorMessage;
+        if (!TrySetStandalonePlayerVolume(
+            desiredDirection > 0 ? "Player.InputVolumeUp" : "Player.InputVolumeDown",
+            argsJson,
+            out ignoredResult,
+            out errorMessage))
+        {
+            return;
+        }
+
+        RefreshVisiblePlayerDebugFields();
     }
 
     private void TickCuaPlayerStepInput(

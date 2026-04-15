@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.66",
+  "title": "Add right-stick volume bumps",
+  "summary": "0.6.66 adds one-step right-stick up/down volume bumps in the CUA input lane while leaving the current horizontal image/video transport behavior alone.",
+  "changes": [
+    "The CUA input module now treats right-stick vertical excursions as one-shot volume bumps when trigger is not held.",
+    "Volume bumps reuse the existing absolute player volume setter instead of adding a new transport or plugin action surface.",
+    "Horizontal image stepping, horizontal video skip/scrub, slideshow timing, and sync behavior are unchanged in this slice."
+  ],
+  "reasoning": "The vertical right-stick lane was currently unused once player focus was captured, which makes it a safe place to add volume control. This slice stays inside the CUA input module and preserves the existing axis-lock split so horizontal transport and vertical volume remain separate.",
+  "operatorVisibleOutcomes": [
+    "In CUA focus mode, nudging the right stick up raises volume and nudging it down lowers volume.",
+    "Each vertical excursion applies a single bump and then waits for recenter or direction change before firing again."
+  ],
+  "knownIssues": [
+    "This slice does not revisit the default-preset autoload seam.",
+    "This slice does not change movie transport, image slideshow behavior, sync cadence, or trigger-modified input behavior."
+  ],
+  "verification": [
+    "FASyncRuntime.CuaPlayerInputModule.cs now handles right-stick vertical excursions through the existing player volume setter.",
+    "No scene-runtime transport or sync files changed for this slice."
+  ]
+}

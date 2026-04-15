@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.65",
-    "notes":  "0.6.65 adds a minimal image-only slideshow timer on top of the existing still-image playlist/index path, plus plugin dropdowns for video scrub jump and image slideshow interval, while leaving movie transport and image scrub semantics alone.",
-    "branch":  "release/0.6.65-image-slideshow",
+    "version":  "0.6.66",
+    "notes":  "0.6.66 maps right-stick vertical bumps to player volume in CUA focus mode, one step per excursion, without changing the current image/video horizontal transport behavior.",
+    "branch":  "release/0.6.66-cua-right-stick-volume-bump",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.65.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.66.json"
 }

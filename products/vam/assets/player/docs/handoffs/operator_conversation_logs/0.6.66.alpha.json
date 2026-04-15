@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.66",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.66 is a narrow CUA input slice: add right-stick up/down volume bumps as one-shot excursions while leaving the current horizontal image/video transport behavior alone.",
+  "repoAnchors": {
+    "branch": "release/0.6.66-cua-right-stick-volume-bump",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.66.json"
+  },
+  "operatorSignals": [
+    "0.6.65 was confirmed good on slideshow timing and scrub-jump dropdowns.",
+    "The next requested seam was specifically joystick volume bumps, with no appetite for widening back into transport experiments."
+  ],
+  "actionsTaken": [
+    "Added a tiny right-stick vertical volume-bump latch in the CUA input module.",
+    "Reused the existing absolute player volume setter instead of adding a new transport primitive.",
+    "Left horizontal image/video controls, slideshow timing, and sync logic untouched."
+  ],
+  "nonGoals": [
+    "No default-preset autoload fix in this slice.",
+    "No movie transport, image slideshow, sync, or plugin UI redesign changes."
+  ]
+}
