@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.7.0",
+  "title": "Promote the current player milestone to 0.7.0",
+  "summary": "0.7.0 promotes the current tested player milestone as the new baseline. The line now carries image slideshow support, the reorganized plugin UI, sane 75 percent startup volume defaults, right-stick volume bumps, and hosted-root spatial audio.",
+  "changes": [
+    "Promote the currently tested 0.6.x recovery and polish line to the 0.7.0 milestone boundary without adding new runtime behavior beyond the already-tested seam.",
+    "Keep slideshow timing, plugin UI reorganization, startup volume defaults, right-stick volume bumps, and hosted-root spatial audio in the new baseline.",
+    "Leave Favorites as the next 0.7.x capability lane built on top of this milestone instead of folding it into older transport recovery work."
+  ],
+  "reasoning": "The current player line has crossed the threshold from incremental 0.6.x recovery slices into a real new milestone. The right move is to freeze the tested seam under a new version boundary so the next work, especially Favorites, builds from a stable baseline instead of from a long tail of tiny transport fixes.",
+  "operatorVisibleOutcomes": [
+    "The live raw player seam is now versioned as 0.7.0 alpha.",
+    "The tested quality-of-life and audio improvements from the latest 0.6.x slices are now treated as the baseline player, not as provisional follow-ups."
+  ],
+  "knownIssues": [
+    "Favorites is not part of this milestone and remains the next capability lane.",
+    "This promotion does not itself add new runtime behavior beyond the already-tested seam it names."
+  ],
+  "verification": [
+    "Stamp 0.7.0 into player.version.json and BuildRuntimeInfo.cs.",
+    "Build and deploy the raw dev_deploy seam as asset_dev_player.0.7.0.alpha.assetbundle, plugin_player_dev.0.7.0.alpha.dll, and scene_dev_player.0.7.0.alpha.json.",
+    "Keep the matching operator conversation log and validation receipt under the 0.7.0 release shelf."
+  ]
+}

@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.69",
-    "notes":  "0.6.69 adds minimal single-source spatial audio by anchoring the player AudioSource at the hosted CUA root while keeping the existing playback runtime and transport model intact.",
-    "branch":  "release/0.6.69-spatial-audio-cua-root",
+    "version":  "0.7.0",
+    "notes":  "0.7.0 promotes the current tested player milestone as the new baseline: slideshow, improved plugin UI, startup volume defaults, right-stick volume bumps, and hosted-root spatial audio are all in the line.",
+    "branch":  "release/0.7.0-player-milestone",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.69.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.7.0.json"
 }
