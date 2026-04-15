@@ -13,8 +13,12 @@ public partial class FASyncRuntime : MVRScript
 {
     private const string PlayerPresetSchemaVersion = "frameangel_player_preset_v1";
     private const string PlayerPresetRootPath = "Custom\\PluginData\\FrameAngel\\Player\\presets";
+    private const string PlayerPresetPreferencesRootPath = "Custom\\PluginData\\FrameAngel\\Player";
+    private const string PlayerPresetPreferencesPath = "Custom\\PluginData\\FrameAngel\\Player\\preset_preferences.json";
+    private const string PlayerPresetPreferencesSchemaVersion = "frameangel_player_preset_preferences_v1";
     private const string PlayerPresetNoneChoice = "none";
     private const float PlayerPresetDeferredSeekTimeoutSeconds = 10f;
+    private const float PlayerPresetStartupLoadPollIntervalSeconds = 0.25f;
     private const float PlayerPresetPopupLabelWidth = 80f;
     private const float PlayerPresetPopupPanelHeight = 260f;
 
@@ -83,6 +87,10 @@ public partial class FASyncRuntime : MVRScript
 
         playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", true);
         playerPresetLoadDefaultAtStartToggle = new JSONStorableBool("Load Default at Start", false);
+        playerPresetLoadDefaultAtStartToggle.setCallbackFunction = delegate(bool value)
+        {
+            WritePlayerPresetPreferences();
+        };
 
         playerPresetDefaultIdField = new JSONStorableString(
             "FrameAngel Player Default Preset Id",
@@ -90,6 +98,7 @@ public partial class FASyncRuntime : MVRScript
             delegate(string value)
             {
                 playerDefaultPresetId = string.IsNullOrEmpty(value) ? "" : value.Trim();
+                WritePlayerPresetPreferences();
                 SyncPlayerPresetActionButtons();
             });
 
@@ -143,6 +152,7 @@ public partial class FASyncRuntime : MVRScript
                 RunPlayerLoadSelectedPreset();
             });
 
+        LoadPlayerPresetPreferences();
         RefreshPlayerPresetCatalog(false, "", true);
     }
 
@@ -402,6 +412,7 @@ public partial class FASyncRuntime : MVRScript
 
         bool selectionChanged = !string.Equals(resolvedSelection, playerSelectedPresetId, StringComparison.OrdinalIgnoreCase);
         SelectPlayerPresetId(resolvedSelection, forceEditorSync || selectionChanged);
+        bool defaultPresetChanged = false;
         string storedDefaultPresetId = playerPresetDefaultIdField != null
             ? playerPresetDefaultIdField.val
             : playerDefaultPresetId;
@@ -410,7 +421,10 @@ public partial class FASyncRuntime : MVRScript
             && !string.Equals(playerPresetDefaultIdField.val, playerDefaultPresetId ?? "", StringComparison.Ordinal))
         {
             playerPresetDefaultIdField.valNoCallback = playerDefaultPresetId ?? "";
+            defaultPresetChanged = true;
         }
+        if (defaultPresetChanged)
+            WritePlayerPresetPreferences();
         UpdatePlayerPresetStatusField("");
     }
 
@@ -515,12 +529,86 @@ public partial class FASyncRuntime : MVRScript
         return NormalizeStandalonePlayerPath(PlayerPresetRootPath);
     }
 
+    private string ResolvePlayerPresetPreferencesRootPath()
+    {
+        return NormalizeStandalonePlayerPath(PlayerPresetPreferencesRootPath);
+    }
+
+    private string ResolvePlayerPresetPreferencesPath()
+    {
+        return NormalizeStandalonePlayerPath(PlayerPresetPreferencesPath);
+    }
+
     private string ResolvePlayerPresetPath(string presetId)
     {
         if (string.IsNullOrEmpty(presetId))
             return "";
 
         return CombineStandalonePlayerPath(ResolvePlayerPresetRootPath(), presetId + ".json");
+    }
+
+    private void LoadPlayerPresetPreferences()
+    {
+        string preferencesPath = ResolvePlayerPresetPreferencesPath();
+        if (string.IsNullOrEmpty(preferencesPath) || !FileManagerSecure.FileExists(preferencesPath, false))
+            return;
+
+        string preferencesJson;
+        try
+        {
+            preferencesJson = FileManagerSecure.ReadAllText(preferencesPath);
+        }
+        catch
+        {
+            return;
+        }
+
+        string schemaVersion = ExtractJsonArgString(preferencesJson, "schemaVersion");
+        if (!string.IsNullOrEmpty(schemaVersion)
+            && !string.Equals(schemaVersion, PlayerPresetPreferencesSchemaVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        if (playerPresetLoadDefaultAtStartToggle != null
+            && TryReadBoolArg(preferencesJson, out bool loadDefaultAtStart, "loadDefaultAtStart"))
+        {
+            playerPresetLoadDefaultAtStartToggle.valNoCallback = loadDefaultAtStart;
+        }
+
+        string defaultPresetId = ExtractJsonArgString(preferencesJson, "defaultPresetId");
+        playerDefaultPresetId = string.IsNullOrEmpty(defaultPresetId) ? "" : defaultPresetId.Trim();
+        if (playerPresetDefaultIdField != null)
+            playerPresetDefaultIdField.valNoCallback = playerDefaultPresetId;
+    }
+
+    private void WritePlayerPresetPreferences()
+    {
+        string rootPath = ResolvePlayerPresetPreferencesRootPath();
+        string preferencesPath = ResolvePlayerPresetPreferencesPath();
+        if (string.IsNullOrEmpty(rootPath) || string.IsNullOrEmpty(preferencesPath))
+            return;
+
+        StringBuilder sb = new StringBuilder(192);
+        sb.Append('{');
+        sb.Append("\"schemaVersion\":\"").Append(EscapeJsonString(PlayerPresetPreferencesSchemaVersion)).Append("\",");
+        sb.Append("\"loadDefaultAtStart\":")
+            .Append(playerPresetLoadDefaultAtStartToggle != null && playerPresetLoadDefaultAtStartToggle.val ? "true" : "false")
+            .Append(',');
+        sb.Append("\"defaultPresetId\":\"")
+            .Append(EscapeJsonString(ResolveDefaultPlayerPresetId()))
+            .Append("\"");
+        sb.Append('}');
+
+        try
+        {
+            if (!FileManagerSecure.DirectoryExists(rootPath, false))
+                FileManagerSecure.CreateDirectory(rootPath);
+            FileManagerSecure.WriteAllText(preferencesPath, sb.ToString());
+        }
+        catch
+        {
+        }
     }
 
     private bool TryReadPlayerPresetFile(string presetPath, out PlayerPresetRecord preset, out string errorMessage)
@@ -911,6 +999,7 @@ public partial class FASyncRuntime : MVRScript
         playerDefaultPresetId = presetId;
         if (playerPresetDefaultIdField != null)
             playerPresetDefaultIdField.valNoCallback = presetId;
+        WritePlayerPresetPreferences();
 
         SetLastError("");
         SetLastReceipt(BuildBrokerResult(
@@ -1755,11 +1844,11 @@ public partial class FASyncRuntime : MVRScript
 
     private IEnumerator RunPlayerPresetStartupLoadProbeCoroutine()
     {
-        float deadline = Time.unscaledTime + 5f;
         yield return null;
         yield return null;
+        LoadPlayerPresetPreferences();
 
-        while (Time.unscaledTime < deadline)
+        while (true)
         {
             if (playerPresetLoadDefaultAtStartToggle != null
                 && playerPresetLoadDefaultAtStartToggle.val)
@@ -1778,10 +1867,8 @@ public partial class FASyncRuntime : MVRScript
                 }
             }
 
-            yield return null;
+            yield return new WaitForSecondsRealtime(PlayerPresetStartupLoadPollIntervalSeconds);
         }
-
-        playerPresetStartupLoadCoroutine = null;
     }
 
     private static string GetPlayerPresetFileNameWithoutExtension(string path)

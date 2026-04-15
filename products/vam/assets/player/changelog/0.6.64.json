@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.64",
+  "title": "Make default preset startup persistent and host-ready",
+  "summary": "0.6.64 keeps the 0.6.63 plugin UI intact, but moves the default-preset startup state into plugin data and leaves the startup load probe armed until the attached player is actually ready.",
+  "changes": [
+    "The chosen default preset id and Load Default at Start flag now persist through plugin data under Custom\\\\PluginData\\\\FrameAngel\\\\Player instead of only relying on scene-storable state.",
+    "The default-preset startup probe now keeps polling at a low cadence until the attached player selector is actually ready, instead of expiring after an early fixed timeout.",
+    "The visible plugin UI and player transport behavior stay unchanged from 0.6.63."
+  ],
+  "reasoning": "The default-preset seam was close, but it depended on an early startup window and scene-local restore timing. This slice keeps the surface the same while making the startup behavior survive generated scenes and delayed host readiness.",
+  "operatorVisibleOutcomes": [
+    "Set Default Preset and Load Default at Start now survive across regenerated dev scenes.",
+    "A checked Load Default at Start toggle no longer silently misses just because the hosted player came up after the old probe window."
+  ],
+  "knownIssues": [
+    "This slice does not change slideshow, sync cadence, right-stick volume, deferred gaze, or the current transport model.",
+    "The old internal shortcut actions remain registered for scene and control-surface compatibility."
+  ],
+  "verification": [
+    "FASyncRuntime.PlayerPresets.cs now reads and writes preset startup preferences in Custom\\\\PluginData\\\\FrameAngel\\\\Player.",
+    "The startup default-preset probe in FASyncRuntime.PlayerPresets.cs no longer expires before hosted player readiness is available."
+  ]
+}

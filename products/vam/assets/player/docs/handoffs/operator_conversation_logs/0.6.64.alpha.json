@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.64",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.64 is a narrow fix for the new default-preset startup seam: keep the 0.6.63 plugin UI, but persist the default-preset startup state in plugin data and stop the startup probe from expiring before the attached player is ready.",
+  "repoAnchors": {
+    "branch": "release/0.6.64-default-preset-startup-prefs",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.64.json"
+  },
+  "operatorSignals": [
+    "0.6.63 looked good overall, but Load Default at Start did not actually apply reliably.",
+    "The operator explicitly suspected plugin-pref persistence because generated dev scenes should not be the only storage seam for a default preset.",
+    "The requested change was narrow and should not reopen the transport or panel layout work."
+  ],
+  "actionsTaken": [
+    "Added a tiny plugin-data preference seam for the default preset id and Load Default at Start flag.",
+    "Changed the startup probe so it stays armed until the attached player is truly ready instead of expiring after an early fixed timeout.",
+    "Left the 0.6.63 plugin UI, transport, and demo3 behavior untouched."
+  ],
+  "nonGoals": [
+    "No slideshow, sync, right-stick volume, gaze, or transport changes in this slice.",
+    "No further plugin UI redesign beyond the already-shipped 0.6.63 layout."
+  ]
+}

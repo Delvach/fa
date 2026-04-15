@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.63",
-    "notes":  "0.6.63 reorganizes the plugin UI into runtime-left and preset-right controls, removes the visible Player prefixes from panel labels, adds stateful loop and shuffle controls, and adds a stored default preset with optional load-at-start behavior.",
-    "branch":  "release/0.6.63-plugin-ui-layout-default-preset",
+    "version":  "0.6.64",
+    "notes":  "0.6.64 makes the default preset startup seam persist through plugin data and keeps the startup load armed until the attached player is actually ready, instead of expiring early.",
+    "branch":  "release/0.6.64-default-preset-startup-prefs",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.63.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.64.json"
 }
