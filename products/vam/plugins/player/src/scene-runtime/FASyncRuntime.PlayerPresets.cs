@@ -45,7 +45,9 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableStringChooser playerPresetChooser;
     private JSONStorableStringChooser playerFavoritePresetChooser;
     private JSONStorableBool playerPresetLoadOnSelectToggle;
+    private JSONStorableBool playerPresetLoadDefaultAtStartToggle;
     private JSONStorableString playerPresetNameField;
+    private JSONStorableString playerPresetDefaultIdField;
     private JSONStorableBool playerPresetFavoriteToggle;
     private JSONStorableBool playerPresetStoreMediaToggle;
     private JSONStorableBool playerPresetStoreTimeToggle;
@@ -55,15 +57,18 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerPresetStatusField;
     private JSONStorableAction playerPresetSaveAction;
     private JSONStorableAction playerPresetLoadAction;
-    private UIDynamicPopup playerFavoritePresetChooserPopup;
+    private UIDynamicPopup playerPresetChooserPopup;
     private UIDynamicButton playerPresetBrowseButtonDynamic;
     private UIDynamicButton playerPresetSaveButtonDynamic;
     private UIDynamicButton playerPresetLoadButtonDynamic;
+    private UIDynamicButton playerPresetSetDefaultButtonDynamic;
     private UIDynamicTextField playerPresetStatusDynamic;
+    private string playerDefaultPresetId = "";
     private string playerSelectedPresetId = "";
     private string playerSelectedFavoritePresetId = "";
     private bool playerPresetUiSyncGuard = false;
     private Coroutine playerPresetDeferredSeekCoroutine;
+    private Coroutine playerPresetStartupLoadCoroutine;
     private readonly Dictionary<string, PlayerPresetRecord> playerPresetsById =
         new Dictionary<string, PlayerPresetRecord>(StringComparer.OrdinalIgnoreCase);
     private readonly List<string> playerPresetChoiceIds = new List<string>();
@@ -77,6 +82,16 @@ public partial class FASyncRuntime : MVRScript
         ConfigureTransientField(playerPresetStatusField, false);
 
         playerPresetLoadOnSelectToggle = new JSONStorableBool("Load Preset On Select", true);
+        playerPresetLoadDefaultAtStartToggle = new JSONStorableBool("Load Default at Start", false);
+
+        playerPresetDefaultIdField = new JSONStorableString(
+            "FrameAngel Player Default Preset Id",
+            "",
+            delegate(string value)
+            {
+                playerDefaultPresetId = string.IsNullOrEmpty(value) ? "" : value.Trim();
+                SyncPlayerPresetActionButtons();
+            });
 
         playerPresetChooser = new JSONStorableStringChooser(
             "Select Existing...",
@@ -135,6 +150,8 @@ public partial class FASyncRuntime : MVRScript
     {
         RegisterString(playerPresetStatusField);
         RegisterBool(playerPresetLoadOnSelectToggle);
+        RegisterBool(playerPresetLoadDefaultAtStartToggle);
+        RegisterString(playerPresetDefaultIdField);
         RegisterStringChooser(playerFavoritePresetChooser);
         RegisterStringChooser(playerPresetChooser);
         RegisterString(playerPresetNameField);
@@ -150,45 +167,73 @@ public partial class FASyncRuntime : MVRScript
 
     private void BuildPlayerPresetUi()
     {
-        playerPresetBrowseButtonDynamic = CreateButton("Select Existing...", false);
-        playerPresetBrowseButtonDynamic.button.onClick.AddListener(
-            delegate
-            {
-                OpenPlayerPresetSelectionDialog();
-            });
+        CreatePlayerPresetBrowseButtonUi(false);
         CreateSpacer(true);
-
         CreateToggle(playerPresetLoadOnSelectToggle, false);
-        playerFavoritePresetChooserPopup = CreateFilterablePopup(playerFavoritePresetChooser, true);
-        ConfigurePlayerPresetPopup(playerFavoritePresetChooserPopup);
-
-        if (!TryCreatePlayerPresetNameInputUi())
-            CreateTextField(playerPresetNameField, false);
+        CreatePlayerPresetChooserPopupUi(true);
+        CreatePlayerPresetNameFieldUi(false);
         CreateToggle(playerPresetFavoriteToggle, true);
-
-        playerPresetSaveButtonDynamic = CreateButton("Create New Preset", false);
-        playerPresetSaveButtonDynamic.button.onClick.AddListener(
-            delegate
-            {
-                RunPlayerSavePreset();
-            });
-        playerPresetLoadButtonDynamic = CreateButton("Load", true);
-        playerPresetLoadButtonDynamic.button.onClick.AddListener(
-            delegate
-            {
-                RunPlayerLoadSelectedPreset();
-            });
+        CreatePlayerPresetSaveButtonUi(false);
+        CreatePlayerPresetLoadButtonUi(true);
         playerPresetStatusDynamic = CreateTextField(playerPresetStatusField, false);
-        CreateSpacer(true);
-
         CreateToggle(playerPresetStoreMediaToggle, false);
         CreateToggle(playerPresetStoreTimeToggle, true);
         CreateToggle(playerPresetStoreScaleToggle, false);
         CreateToggle(playerPresetStoreLoopToggle, true);
         CreateToggle(playerPresetStoreRandomToggle, false);
-        CreateSpacer(true);
-
         SyncPlayerPresetActionButtons();
+    }
+
+    private void CreatePlayerPresetBrowseButtonUi(bool rightSide)
+    {
+        playerPresetBrowseButtonDynamic = CreateButton("Select Existing...", rightSide);
+        playerPresetBrowseButtonDynamic.button.onClick.AddListener(
+            delegate
+            {
+                OpenPlayerPresetSelectionDialog();
+            });
+    }
+
+    private void CreatePlayerPresetChooserPopupUi(bool rightSide)
+    {
+        playerPresetChooserPopup = CreateFilterablePopup(playerPresetChooser, rightSide);
+        ConfigurePlayerPresetPopup(playerPresetChooserPopup);
+    }
+
+    private void CreatePlayerPresetNameFieldUi(bool rightSide)
+    {
+        if (!TryCreatePlayerPresetNameInputUi(rightSide))
+            CreateTextField(playerPresetNameField, rightSide);
+    }
+
+    private void CreatePlayerPresetSaveButtonUi(bool rightSide)
+    {
+        playerPresetSaveButtonDynamic = CreateButton("Create New Preset", rightSide);
+        playerPresetSaveButtonDynamic.button.onClick.AddListener(
+            delegate
+            {
+                RunPlayerSavePreset();
+            });
+    }
+
+    private void CreatePlayerPresetLoadButtonUi(bool rightSide)
+    {
+        playerPresetLoadButtonDynamic = CreateButton("Load", rightSide);
+        playerPresetLoadButtonDynamic.button.onClick.AddListener(
+            delegate
+            {
+                RunPlayerLoadSelectedPreset();
+            });
+    }
+
+    private void CreatePlayerPresetSetDefaultButtonUi(bool rightSide)
+    {
+        playerPresetSetDefaultButtonDynamic = CreateButton("Set Default Preset", rightSide);
+        playerPresetSetDefaultButtonDynamic.button.onClick.AddListener(
+            delegate
+            {
+                RunPlayerSetDefaultPreset();
+            });
     }
 
     private void OnPlayerPresetDestroy()
@@ -197,6 +242,12 @@ public partial class FASyncRuntime : MVRScript
         {
             StopCoroutine(playerPresetDeferredSeekCoroutine);
             playerPresetDeferredSeekCoroutine = null;
+        }
+
+        if (playerPresetStartupLoadCoroutine != null)
+        {
+            StopCoroutine(playerPresetStartupLoadCoroutine);
+            playerPresetStartupLoadCoroutine = null;
         }
     }
 
@@ -351,6 +402,15 @@ public partial class FASyncRuntime : MVRScript
 
         bool selectionChanged = !string.Equals(resolvedSelection, playerSelectedPresetId, StringComparison.OrdinalIgnoreCase);
         SelectPlayerPresetId(resolvedSelection, forceEditorSync || selectionChanged);
+        string storedDefaultPresetId = playerPresetDefaultIdField != null
+            ? playerPresetDefaultIdField.val
+            : playerDefaultPresetId;
+        playerDefaultPresetId = NormalizePlayerPresetChoiceId(storedDefaultPresetId);
+        if (playerPresetDefaultIdField != null
+            && !string.Equals(playerPresetDefaultIdField.val, playerDefaultPresetId ?? "", StringComparison.Ordinal))
+        {
+            playerPresetDefaultIdField.valNoCallback = playerDefaultPresetId ?? "";
+        }
         UpdatePlayerPresetStatusField("");
     }
 
@@ -416,6 +476,20 @@ public partial class FASyncRuntime : MVRScript
             && playerPresetsById.ContainsKey(playerSelectedFavoritePresetId))
         {
             return playerSelectedFavoritePresetId;
+        }
+
+        return "";
+    }
+
+    private string ResolveDefaultPlayerPresetId()
+    {
+        if (string.IsNullOrEmpty(playerDefaultPresetId) && playerPresetDefaultIdField != null)
+            playerDefaultPresetId = string.IsNullOrEmpty(playerPresetDefaultIdField.val) ? "" : playerPresetDefaultIdField.val.Trim();
+
+        if (!string.IsNullOrEmpty(playerDefaultPresetId)
+            && playerPresetsById.ContainsKey(playerDefaultPresetId))
+        {
+            return playerDefaultPresetId;
         }
 
         return "";
@@ -822,6 +896,30 @@ public partial class FASyncRuntime : MVRScript
         ApplyPlayerPresetById(presetId);
     }
 
+    private void RunPlayerSetDefaultPreset()
+    {
+        string presetId = ResolveSelectedPlayerPresetId();
+        if (string.IsNullOrEmpty(presetId))
+        {
+            string errorMessage = "player preset is not selected";
+            SetLastError(errorMessage);
+            SetLastReceipt(BuildBrokerResult(false, errorMessage, "{}"));
+            UpdatePlayerPresetStatusField("error");
+            return;
+        }
+
+        playerDefaultPresetId = presetId;
+        if (playerPresetDefaultIdField != null)
+            playerPresetDefaultIdField.valNoCallback = presetId;
+
+        SetLastError("");
+        SetLastReceipt(BuildBrokerResult(
+            true,
+            "player_default_preset_set",
+            "{\"presetId\":\"" + EscapeJsonString(presetId) + "\"}"));
+        UpdatePlayerPresetStatusField("default_set");
+    }
+
     private void ApplyPlayerPresetById(string presetId)
     {
         if (string.IsNullOrEmpty(presetId)
@@ -1223,6 +1321,11 @@ public partial class FASyncRuntime : MVRScript
         string message;
         switch ((state ?? "").Trim().ToLowerInvariant())
         {
+            case "default_set":
+                message = string.IsNullOrEmpty(selectedPresetName)
+                    ? "Default preset set"
+                    : "Default preset set to " + selectedPresetName;
+                break;
             case "saved":
                 message = string.IsNullOrEmpty(selectedPresetName)
                     ? "Preset saved"
@@ -1248,8 +1351,10 @@ public partial class FASyncRuntime : MVRScript
                         : "Preset action failed for " + selectedPresetName);
                 break;
             default:
+                bool selectedIsDefault = !string.IsNullOrEmpty(selectedPresetId)
+                    && string.Equals(selectedPresetId, ResolveDefaultPlayerPresetId(), StringComparison.OrdinalIgnoreCase);
                 if (!string.IsNullOrEmpty(selectedPresetName))
-                    message = "Selected preset " + selectedPresetName;
+                    message = selectedIsDefault ? ("Selected preset " + selectedPresetName + " (default)") : ("Selected preset " + selectedPresetName);
                 else if (playerPresetsById.Count <= 0)
                     message = "No presets saved yet";
                 else
@@ -1300,7 +1405,7 @@ public partial class FASyncRuntime : MVRScript
         fileBrowser.SetTextEntry(allowTextEntry);
     }
 
-    private bool TryCreatePlayerPresetNameInputUi()
+    private bool TryCreatePlayerPresetNameInputUi(bool rightSide)
     {
         InputField template = FindVanillaPlayerPresetNameInputTemplate();
         if (template == null)
@@ -1310,7 +1415,7 @@ public partial class FASyncRuntime : MVRScript
         if (templateRoot == null)
             templateRoot = template.transform;
 
-        Transform clone = CreateUIElement(templateRoot, false);
+        Transform clone = CreateUIElement(templateRoot, rightSide);
         if (clone == null)
             return false;
 
@@ -1595,6 +1700,7 @@ public partial class FASyncRuntime : MVRScript
         string rawPresetName = ResolveSuggestedPlayerPresetName();
 
         string selectedPresetId = ResolveSelectedPlayerPresetId();
+        string defaultPresetId = ResolveDefaultPlayerPresetId();
         string targetPresetId = "";
         if (!string.IsNullOrEmpty(rawPresetName))
             targetPresetId = SanitizeStandalonePlayerName(rawPresetName);
@@ -1622,8 +1728,60 @@ public partial class FASyncRuntime : MVRScript
                 playerPresetLoadButtonDynamic.button.interactable = canLoad;
         }
 
+        if (playerPresetSetDefaultButtonDynamic != null)
+        {
+            bool canSetDefault = !string.IsNullOrEmpty(selectedPresetId);
+            bool selectedIsDefault = canSetDefault
+                && string.Equals(selectedPresetId, defaultPresetId, StringComparison.OrdinalIgnoreCase);
+            playerPresetSetDefaultButtonDynamic.label = "Set Default Preset";
+            playerPresetSetDefaultButtonDynamic.buttonColor = !canSetDefault
+                ? Color.gray
+                : (selectedIsDefault ? new Color(0.70f, 0.90f, 0.70f) : Color.white);
+            if (playerPresetSetDefaultButtonDynamic.button != null)
+                playerPresetSetDefaultButtonDynamic.button.interactable = canSetDefault;
+        }
+
         if (playerPresetStatusDynamic != null)
             playerPresetStatusDynamic.backgroundColor = new Color(1f, 1f, 1f, 0.075f);
+    }
+
+    private void BeginPlayerPresetStartupLoadProbe()
+    {
+        if (playerPresetStartupLoadCoroutine != null)
+            return;
+
+        playerPresetStartupLoadCoroutine = StartCoroutine(RunPlayerPresetStartupLoadProbeCoroutine());
+    }
+
+    private IEnumerator RunPlayerPresetStartupLoadProbeCoroutine()
+    {
+        float deadline = Time.unscaledTime + 5f;
+        yield return null;
+        yield return null;
+
+        while (Time.unscaledTime < deadline)
+        {
+            if (playerPresetLoadDefaultAtStartToggle != null
+                && playerPresetLoadDefaultAtStartToggle.val)
+            {
+                string defaultPresetId = ResolveDefaultPlayerPresetId();
+                if (!string.IsNullOrEmpty(defaultPresetId))
+                {
+                    string selectorJson;
+                    string selectorError;
+                    if (TryBuildAttachedPlayerSelectorJson(out selectorJson, out selectorError))
+                    {
+                        ApplyPlayerPresetById(defaultPresetId);
+                        playerPresetStartupLoadCoroutine = null;
+                        yield break;
+                    }
+                }
+            }
+
+            yield return null;
+        }
+
+        playerPresetStartupLoadCoroutine = null;
     }
 
     private static string GetPlayerPresetFileNameWithoutExtension(string path)

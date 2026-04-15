@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.63",
+  "title": "Reorganize the plugin UI and add a stored default preset seam",
+  "summary": "0.6.63 reshapes the plugin panel around runtime-left and preset-right controls, removes visible Player prefixes from panel labels, replaces old loop and shuffle action buttons with stateful controls, and adds a stored default preset with optional load-at-start behavior.",
+  "changes": [
+    "The plugin panel now presents runtime controls on the left and preset controls on the right, matching the current two-column VaM helper layout more deliberately.",
+    "Visible loop and shuffle controls are now stateful checkboxes instead of one-off action buttons, while the underlying transport and action seams stay intact.",
+    "The preset lane now stores one default preset id plus a Load Default at Start toggle so a development scene can auto-apply a chosen preset on startup."
+  ],
+  "reasoning": "The panel had accumulated shortcut buttons and duplicated labels that were useful during transport recovery but no longer fit the operator workflow. This slice keeps the underlying player capability intact while tightening the visible plugin surface around the actual stateful controls and preset tasks that matter day to day.",
+  "operatorVisibleOutcomes": [
+    "Visible plugin button labels no longer carry the Player prefix.",
+    "Loop and shuffle now read as current state in the plugin panel instead of only exposing action-style buttons.",
+    "A selected preset can be marked as the default and optionally loaded at startup without inventing a separate default-playlist subsystem."
+  ],
+  "knownIssues": [
+    "This slice does not change movie transport, image transport, sync cadence, slideshow behavior, right-stick volume, or deferred gaze work.",
+    "Old shortcut actions remain registered internally for scene or control-surface compatibility until their remaining external references are migrated."
+  ],
+  "verification": [
+    "BuildUi in FASyncRuntime.cs now lays out the plugin panel around runtime-left and preset-right rows instead of the older stacked action list.",
+    "FASyncRuntime.Player.cs now keeps visible shuffle and loop toggles synchronized with the attached player state.",
+    "FASyncRuntime.PlayerPresets.cs now stores a default preset id, exposes a Load Default at Start toggle, and probes startup long enough to apply the stored default when the attached player becomes available."
+  ]
+}

@@ -10091,6 +10091,10 @@ public partial class FASyncRuntime : MVRScript
             && playerRuntimeParityField == null
             && playerRuntimeTimelineField == null
             && playerRuntimePlaylistField == null
+            && playerShuffleToggleField == null
+            && playerLoopPlaylistToggleField == null
+            && playerLoopSingleToggleField == null
+            && playerLoopOffToggleField == null
             && playerScrubNormalizedField == null
             && playerVolumeNormalizedField == null)
         {
@@ -10116,6 +10120,7 @@ public partial class FASyncRuntime : MVRScript
                 AssignVisiblePlayerStringField(playerRuntimeTimelineField, playerPendingTimelineSummary);
             if (playerRuntimePlaylistField != null)
                 AssignVisiblePlayerStringField(playerRuntimePlaylistField, playerPendingPlaylistSummary);
+            UpdateStandalonePlayerStateToggleFields(false, PlayerLoopModePlaylist);
             UpdateStandalonePlayerSliderFields(0f, 1f);
             return;
         }
@@ -10291,6 +10296,7 @@ public partial class FASyncRuntime : MVRScript
             AssignVisiblePlayerStringField(playerRuntimeTimelineField, timelineSummary);
         if (playerRuntimePlaylistField != null)
             AssignVisiblePlayerStringField(playerRuntimePlaylistField, playlistSummary);
+        UpdateStandalonePlayerStateToggleFields(record.randomEnabled, record.loopMode);
         UpdateStandalonePlayerSliderFields((float)currentTimeNormalized, record.volume);
         RefreshAttachedDemoSceneUiState(record, hostAtom, currentTimeSeconds, currentDurationSeconds, currentTimeNormalized);
     }
@@ -10305,6 +10311,46 @@ public partial class FASyncRuntime : MVRScript
             return;
 
         field.valNoCallback = normalized;
+    }
+
+    private void UpdateStandalonePlayerStateToggleFields(bool randomEnabled, string loopMode)
+    {
+        if (playerShuffleToggleField == null
+            && playerLoopPlaylistToggleField == null
+            && playerLoopSingleToggleField == null
+            && playerLoopOffToggleField == null)
+        {
+            return;
+        }
+
+        string normalizedLoopMode = NormalizeStandalonePlayerLoopMode(loopMode);
+        bool playlistEnabled = string.Equals(normalizedLoopMode, PlayerLoopModePlaylist, StringComparison.OrdinalIgnoreCase);
+        bool singleEnabled = string.Equals(normalizedLoopMode, PlayerLoopModeSingle, StringComparison.OrdinalIgnoreCase);
+        bool offEnabled = !playlistEnabled && !singleEnabled;
+
+        suppressPlayerStateToggleCallbacks = true;
+        try
+        {
+            AssignVisiblePlayerBoolField(playerShuffleToggleField, randomEnabled);
+            AssignVisiblePlayerBoolField(playerLoopPlaylistToggleField, playlistEnabled);
+            AssignVisiblePlayerBoolField(playerLoopSingleToggleField, singleEnabled);
+            AssignVisiblePlayerBoolField(playerLoopOffToggleField, offEnabled);
+        }
+        finally
+        {
+            suppressPlayerStateToggleCallbacks = false;
+        }
+    }
+
+    private void AssignVisiblePlayerBoolField(JSONStorableBool field, bool value)
+    {
+        if (field == null)
+            return;
+
+        if (field.val == value)
+            return;
+
+        field.valNoCallback = value;
     }
 
     private void UpdateStandalonePlayerSliderFields(float scrubNormalized, float volumeNormalized)

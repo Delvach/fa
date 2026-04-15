@@ -122,6 +122,10 @@ public partial class FASyncRuntime : MVRScript
     private JSONStorableString playerVisibleScreenField;
     private JSONStorableFloat playerScrubNormalizedField;
     private JSONStorableFloat playerVolumeNormalizedField;
+    private JSONStorableBool playerShuffleToggleField;
+    private JSONStorableBool playerLoopPlaylistToggleField;
+    private JSONStorableBool playerLoopSingleToggleField;
+    private JSONStorableBool playerLoopOffToggleField;
     private JSONStorableAction playerAspectFitAction;
     private JSONStorableAction playerAspectFullWidthAction;
     private JSONStorableAction playerAspectCropAction;
@@ -176,6 +180,7 @@ public partial class FASyncRuntime : MVRScript
     private string playerPendingPlaylistSummary = "";
     private float lastPlayerScrubNormalizedValue = -1f;
     private float lastPlayerVolumeNormalizedValue = -1f;
+    private bool suppressPlayerStateToggleCallbacks = false;
     private string pendingPlayerMediaBrowserSuccessStatus = "";
     private bool pendingPlayerMediaBrowserTargetsMetaProof = false;
     private bool playerMediaBrowserOpen = false;
@@ -394,6 +399,72 @@ public partial class FASyncRuntime : MVRScript
             1f,
             true);
         ConfigureTransientField(playerVolumeNormalizedField, false);
+
+        playerShuffleToggleField = new JSONStorableBool(
+            "Shuffle",
+            false,
+            delegate(bool value)
+            {
+                if (suppressPlayerStateToggleCallbacks)
+                    return;
+
+                RunAttachedPlayerSetRandomAction(value, value ? "Player random enabled" : "Player random disabled");
+            });
+        ConfigureTransientField(playerShuffleToggleField, false);
+
+        playerLoopPlaylistToggleField = new JSONStorableBool(
+            "Loop Playlist",
+            true,
+            delegate(bool value)
+            {
+                if (suppressPlayerStateToggleCallbacks)
+                    return;
+
+                if (!value)
+                {
+                    RefreshVisiblePlayerDebugFields();
+                    return;
+                }
+
+                RunAttachedPlayerSetLoopModeAction(PlayerLoopModePlaylist, "Player loop set to playlist");
+            });
+        ConfigureTransientField(playerLoopPlaylistToggleField, false);
+
+        playerLoopSingleToggleField = new JSONStorableBool(
+            "Loop Single",
+            false,
+            delegate(bool value)
+            {
+                if (suppressPlayerStateToggleCallbacks)
+                    return;
+
+                if (!value)
+                {
+                    RefreshVisiblePlayerDebugFields();
+                    return;
+                }
+
+                RunAttachedPlayerSetLoopModeAction(PlayerLoopModeSingle, "Player loop set to single");
+            });
+        ConfigureTransientField(playerLoopSingleToggleField, false);
+
+        playerLoopOffToggleField = new JSONStorableBool(
+            "Loop Off",
+            false,
+            delegate(bool value)
+            {
+                if (suppressPlayerStateToggleCallbacks)
+                    return;
+
+                if (!value)
+                {
+                    RefreshVisiblePlayerDebugFields();
+                    return;
+                }
+
+                RunAttachedPlayerSetLoopModeAction(PlayerLoopModeNone, "Player loop set to none");
+            });
+        ConfigureTransientField(playerLoopOffToggleField, false);
 
         playerAspectFitAction = new JSONStorableAction(
             "Player Aspect Fit",
@@ -664,6 +735,10 @@ public partial class FASyncRuntime : MVRScript
 #endif
         RegisterFloat(playerScrubNormalizedField);
         RegisterFloat(playerVolumeNormalizedField);
+        RegisterBool(playerShuffleToggleField);
+        RegisterBool(playerLoopPlaylistToggleField);
+        RegisterBool(playerLoopSingleToggleField);
+        RegisterBool(playerLoopOffToggleField);
         if (ShouldExposePlayerAspectControls())
         {
             RegisterAction(playerAspectFitAction);
@@ -720,164 +795,109 @@ public partial class FASyncRuntime : MVRScript
 
     private void BuildUi()
     {
-        BuildPlayerPresetUi();
         UIDynamicTextField runtimeSummaryDynamic = CreateTextField(playerRuntimeSummaryField, false);
         ConfigurePlayerRuntimeSummaryUi(runtimeSummaryDynamic);
-        CreateSlider(playerScrubNormalizedField, false);
-        CreateSlider(playerVolumeNormalizedField, false);
-        if (ShouldExposePlayerAspectControls())
-        {
-            CreateButton("Player Aspect Fit").button.onClick.AddListener(
-                delegate
-                {
-                    RunAttachedPlayerAspectModeAction(GhostScreenAspectModeFit, "Player aspect set to fit");
-                }
-            );
-            CreateButton("Player Aspect Full Width").button.onClick.AddListener(
-                delegate
-                {
-                    RunAttachedPlayerAspectModeAction(GhostScreenAspectModeFullWidth, "Player aspect set to full_width");
-                }
-            );
-            CreateButton("Player Aspect Crop").button.onClick.AddListener(
-                delegate
-                {
-                    RunAttachedPlayerAspectModeAction(GhostScreenAspectModeCrop, "Player aspect set to crop");
-                }
-            );
-            CreateButton("Player Aspect Cycle").button.onClick.AddListener(
-                delegate
-                {
-                    RunAttachedPlayerAspectCycleAction();
-                }
-            );
-        }
-        CreateButton("Player Load Media").button.onClick.AddListener(
+        CreatePlayerPresetBrowseButtonUi(true);
+
+        CreateButton("Load Media", false).button.onClick.AddListener(
             delegate
             {
                 RunPlayerLoadMedia();
             }
         );
-        CreateButton("Player Previous").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerDirectAction(PlayerActionPreviousId, "", "Player moved to previous item");
-            }
-        );
-        CreateButton("Player Play Pause").button.onClick.AddListener(
+        CreatePlayerPresetNameFieldUi(true);
+
+        CreateButton("Play Pause", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerPlayPauseAction();
             }
         );
-        CreateButton("Player Next").button.onClick.AddListener(
+        CreatePlayerPresetSaveButtonUi(true);
+
+        CreateButton("Next", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerDirectAction(PlayerActionNextId, "", "Player moved to next item");
             }
         );
-        CreateButton("Player Seek Start").button.onClick.AddListener(
+        CreatePlayerPresetChooserPopupUi(true);
+
+        CreateButton("Previous", false).button.onClick.AddListener(
+            delegate
+            {
+                RunAttachedPlayerDirectAction(PlayerActionPreviousId, "", "Player moved to previous item");
+            }
+        );
+        CreateToggle(playerPresetLoadOnSelectToggle, true);
+
+        CreateButton("Skip Forward", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerDirectAction(
-                    PlayerActionSeekNormalizedId,
-                    "\"normalized\":0",
-                    "Player seeked to start");
+                    PlayerActionSkipForwardId,
+                    "",
+                    "Player skipped forward");
             }
         );
-        CreateButton("Player Seek Reference").button.onClick.AddListener(
+        CreateToggle(playerPresetFavoriteToggle, true);
+
+        CreateButton("Skip Backward", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerDirectAction(
-                    PlayerActionSeekNormalizedId,
-                    "\"normalized\":" + FormatFloat(PlayerSeekReferenceNormalized),
-                    "Player seeked to reference frame");
+                    PlayerActionSkipBackwardId,
+                    "",
+                    "Player skipped backward");
             }
         );
-        CreateButton("Player Skip Backward").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerDirectAction(PlayerActionSkipBackwardId, "", "Player skipped backward");
-            }
-        );
-        CreateButton("Player Skip Forward").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerDirectAction(PlayerActionSkipForwardId, "", "Player skipped forward");
-            }
-        );
-        CreateButton("Player Volume 25").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerDirectAction(
-                    PlayerActionSetVolumeId,
-                    "\"volume\":" + FormatFloat(PlayerVolumeLowNormalized),
-                    "Player volume set to 25%");
-            }
-        );
-        CreateButton("Player Volume 75").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerDirectAction(
-                    PlayerActionSetVolumeId,
-                    "\"volume\":" + FormatFloat(PlayerVolumeHighNormalized),
-                    "Player volume set to 75%");
-            }
-        );
-        CreateButton("Player Loop Off").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerSetLoopModeAction(PlayerLoopModeNone, "Player loop set to none");
-            }
-        );
-        CreateButton("Player Loop Single").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerSetLoopModeAction(PlayerLoopModeSingle, "Player loop set to single");
-            }
-        );
-        CreateButton("Player Loop Playlist").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerSetLoopModeAction(PlayerLoopModePlaylist, "Player loop set to playlist");
-            }
-        );
-        CreateButton("Player Random Off").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerSetRandomAction(false, "Player random disabled");
-            }
-        );
-        CreateButton("Player Random On").button.onClick.AddListener(
-            delegate
-            {
-                RunAttachedPlayerSetRandomAction(true, "Player random enabled");
-            }
-        );
-        CreateButton("Player A-B Set Start").button.onClick.AddListener(
+        CreatePlayerPresetLoadButtonUi(true);
+
+        CreateSlider(playerScrubNormalizedField, false);
+        CreatePlayerPresetSetDefaultButtonUi(true);
+
+        CreateSlider(playerVolumeNormalizedField, false);
+        CreateToggle(playerPresetLoadDefaultAtStartToggle, true);
+
+        CreateButton("A-B Set Start", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerSetAbLoopStartAction("Player A-B start set");
             }
         );
-        CreateButton("Player A-B Set End").button.onClick.AddListener(
+        CreateToggle(playerPresetStoreMediaToggle, true);
+
+        CreateButton("A-B Set End", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerSetAbLoopEndAction("Player A-B end set");
             }
         );
-        CreateButton("Player A-B Enable").button.onClick.AddListener(
+        CreateToggle(playerPresetStoreScaleToggle, true);
+
+        CreateButton("A-B Enable", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerSetAbLoopEnabledAction(true, "Player A-B loop enabled");
             }
         );
-        CreateButton("Player A-B Clear").button.onClick.AddListener(
+        CreateToggle(playerPresetStoreRandomToggle, true);
+
+        CreateButton("A-B Clear", false).button.onClick.AddListener(
             delegate
             {
                 RunAttachedPlayerClearAbLoopAction("Player A-B loop cleared");
             }
         );
+        CreateToggle(playerPresetStoreTimeToggle, true);
+
+        CreateToggle(playerShuffleToggleField, false);
+        CreateToggle(playerPresetStoreLoopToggle, true);
+        CreateToggle(playerLoopPlaylistToggleField, false);
+        CreateToggle(playerLoopSingleToggleField, false);
+        CreateToggle(playerLoopOffToggleField, false);
+
+        BeginPlayerPresetStartupLoadProbe();
 #if FRAMEANGEL_TEST_SURFACES
         CreateToggle(syncDevModeToggle);
         CreateToggle(syncInputCaptureToggle);
@@ -926,8 +946,8 @@ public partial class FASyncRuntime : MVRScript
             if (layout == null)
                 layout = field.gameObject.AddComponent<LayoutElement>();
 
-            layout.minHeight = Mathf.Max(layout.minHeight, 260f);
-            layout.preferredHeight = Mathf.Max(layout.preferredHeight, 260f);
+            layout.minHeight = Mathf.Max(layout.minHeight, 210f);
+            layout.preferredHeight = Mathf.Max(layout.preferredHeight, 210f);
         }
         catch
         {
@@ -936,8 +956,8 @@ public partial class FASyncRuntime : MVRScript
         try
         {
             RectTransform rect = field.gameObject.GetComponent<RectTransform>();
-            if (rect != null && rect.sizeDelta.y < 260f)
-                rect.sizeDelta = new Vector2(rect.sizeDelta.x, 260f);
+            if (rect != null && rect.sizeDelta.y < 210f)
+                rect.sizeDelta = new Vector2(rect.sizeDelta.x, 210f);
         }
         catch
         {

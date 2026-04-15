@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.63",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.63 is a plugin-UI and preset-surface slice: reorganize the visible panel, remove the Player prefix from visible labels, add stateful loop and shuffle controls, and add one stored default preset with optional load-at-start behavior.",
+  "repoAnchors": {
+    "branch": "release/0.6.63-plugin-ui-layout-default-preset",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.63.json"
+  },
+  "operatorSignals": [
+    "The next requested slice was plugin UI revision rather than slideshow.",
+    "The operator wanted one panel organized around runtime controls on the left and preset work on the right.",
+    "The operator wanted visible Player prefixes removed and loop treated as state rather than action buttons."
+  ],
+  "actionsTaken": [
+    "Reorganized the plugin panel rows to reflect the new sketch within the current VaM two-column helper layout.",
+    "Replaced visible loop and shuffle action buttons with visible state controls synchronized from attached player state.",
+    "Added a stored default preset id plus a Load Default at Start toggle on the existing preset seam."
+  ],
+  "nonGoals": [
+    "No transport, slideshow, sync, right-stick volume, or deferred gaze changes in this slice.",
+    "No removal of old internal shortcut actions that are still referenced by demo3 or other external surfaces."
+  ]
+}

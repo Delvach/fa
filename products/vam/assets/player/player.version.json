@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.62",
-    "notes":  "0.6.62 consolidates the visible player readout into one multiline summary field, hides the noisy CUA status text from the panel, and leaves the playback and demo3 transport seams unchanged.",
-    "branch":  "release/0.6.62-plugin-ui-status-summary",
+    "version":  "0.6.63",
+    "notes":  "0.6.63 reorganizes the plugin UI into runtime-left and preset-right controls, removes the visible Player prefixes from panel labels, adds stateful loop and shuffle controls, and adds a stored default preset with optional load-at-start behavior.",
+    "branch":  "release/0.6.63-plugin-ui-layout-default-preset",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.62.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.63.json"
 }
