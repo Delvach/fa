@@ -1124,15 +1124,19 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        int desiredDirection = vertical >= CuaPlayerNavigationDeadzone ? 1 : -1;
+        int desiredDirection = vertical >= CuaPlayerNavigationDeadzone ? -1 : 1;
         if (desiredDirection == cuaPlayerVolumeBumpDirection)
             return;
 
         float currentVolume = Mathf.Clamp01(record.storedVolume);
         float targetVolume = Mathf.Clamp01(currentVolume + (desiredDirection * CuaPlayerVolumeBumpNormalized));
-        cuaPlayerVolumeBumpDirection = desiredDirection;
         if (Mathf.Abs(targetVolume - currentVolume) <= 0.0005f)
+        {
+            cuaPlayerVolumeBumpDirection = 0;
             return;
+        }
+
+        cuaPlayerVolumeBumpDirection = desiredDirection;
 
         string argsJson = "{\"playbackKey\":\""
             + EscapeJsonString(record.playbackKey)

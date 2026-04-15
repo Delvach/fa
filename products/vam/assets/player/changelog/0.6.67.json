@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.67",
+  "title": "Invert right-stick volume bump direction",
+  "summary": "0.6.67 keeps the right-stick volume bump seam from 0.6.66, but flips the vertical direction and avoids latching a no-op edge bump.",
+  "changes": [
+    "Positive right-stick vertical input now maps to the opposite volume bump direction from 0.6.66.",
+    "The one-bump latch no longer arms itself when the target volume is already clamped at the current edge.",
+    "Horizontal image stepping, horizontal video transport, slideshow timing, sync, and plugin UI behavior are unchanged in this slice."
+  ],
+  "reasoning": "The 0.6.66 seam was already the right minimal place for joystick-driven volume bumps, but the direction felt inverted in live use and the edge-clamped no-op path could leave the latch feeling dead. This slice keeps the same helper and only corrects those two tiny behaviors.",
+  "operatorVisibleOutcomes": [
+    "Right-stick up/down volume bumps now move in the expected direction.",
+    "Hitting min or max volume no longer leaves the same-direction bump latch armed on a no-op edge push."
+  ],
+  "knownIssues": [
+    "This slice does not revisit the default-preset autoload seam.",
+    "This slice does not change movie transport, image slideshow behavior, sync cadence, or trigger-modified input behavior."
+  ],
+  "verification": [
+    "FASyncRuntime.CuaPlayerInputModule.cs keeps the same one-bump helper and only changes direction sign and no-op edge latch handling.",
+    "No scene-runtime transport, slideshow, sync, or plugin UI files changed for this slice."
+  ]
+}

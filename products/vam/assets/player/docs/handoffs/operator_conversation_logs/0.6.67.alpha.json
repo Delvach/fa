@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.67",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.67 is a tiny follow-up to the 0.6.66 right-stick volume seam: invert the vertical direction and stop latching a clamped no-op edge bump.",
+  "repoAnchors": {
+    "branch": "release/0.6.67-cua-volume-bump-invert",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.67.json"
+  },
+  "operatorSignals": [
+    "0.6.66 volume bumps worked, but the live direction felt inverted.",
+    "The seam could also feel stuck after an edge push because the same-direction latch armed on a no-op clamp."
+  ],
+  "actionsTaken": [
+    "Flipped the desired vertical volume-bump direction in the existing CUA helper.",
+    "Kept the one-bump-per-excursion model but stopped arming the latch when the target volume is already clamped at the edge.",
+    "Left all horizontal transport, slideshow, sync, and default-preset seams untouched."
+  ],
+  "nonGoals": [
+    "No default-preset autoload fix in this slice.",
+    "No movie transport, image slideshow, sync, or plugin UI changes."
+  ]
+}

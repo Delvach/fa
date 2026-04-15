@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.66",
-    "notes":  "0.6.66 maps right-stick vertical bumps to player volume in CUA focus mode, one step per excursion, without changing the current image/video horizontal transport behavior.",
-    "branch":  "release/0.6.66-cua-right-stick-volume-bump",
+    "version":  "0.6.67",
+    "notes":  "0.6.67 inverts the right-stick vertical volume bump direction and avoids latching a no-op edge bump, without changing the current image/video horizontal transport behavior.",
+    "branch":  "release/0.6.67-cua-volume-bump-invert",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.66.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.67.json"
 }
