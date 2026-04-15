@@ -220,6 +220,7 @@ public partial class FASyncRuntime : MVRScript
         public bool runtimeSeekCompletedHooked = false;
         public bool runtimeClockResyncHooked = false;
         public GameObject runtimeObject;
+        public GameObject audioAnchorObject;
         public AudioSource audioSource;
         public VideoPlayer videoPlayer;
         public RenderTexture renderTexture;
@@ -9092,6 +9093,9 @@ public partial class FASyncRuntime : MVRScript
             record.runtimeObject = runtimeObject;
         }
 
+        if (!TryEnsureStandalonePlayerAudioAnchor(record, out errorMessage))
+            return false;
+
         if (record.videoPlayer == null)
         {
             record.videoPlayer = record.runtimeObject.GetComponent<VideoPlayer>();
@@ -9103,11 +9107,31 @@ public partial class FASyncRuntime : MVRScript
 
         if (record.audioSource == null)
         {
-            record.audioSource = record.runtimeObject.GetComponent<AudioSource>();
+            record.audioSource = record.audioAnchorObject != null
+                ? record.audioAnchorObject.GetComponent<AudioSource>()
+                : null;
             if (record.audioSource == null)
             {
-                record.audioSource = record.runtimeObject.AddComponent<AudioSource>();
+                GameObject audioOwner = record.audioAnchorObject != null
+                    ? record.audioAnchorObject
+                    : record.runtimeObject;
+                record.audioSource = audioOwner.AddComponent<AudioSource>();
             }
+        }
+        else if (record.audioAnchorObject != null
+            && !ReferenceEquals(record.audioSource.gameObject, record.audioAnchorObject))
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(record.audioSource);
+            }
+            catch
+            {
+            }
+
+            record.audioSource = record.audioAnchorObject.GetComponent<AudioSource>();
+            if (record.audioSource == null)
+                record.audioSource = record.audioAnchorObject.AddComponent<AudioSource>();
         }
 
         if (record.videoPlayer == null)
@@ -9124,8 +9148,7 @@ public partial class FASyncRuntime : MVRScript
 
         record.audioSource.playOnAwake = false;
         record.audioSource.loop = false;
-        record.audioSource.spatialBlend = 0f;
-        record.audioSource.dopplerLevel = 0f;
+        ApplyStandalonePlayerSpatialAudioSettings(record.audioSource);
         record.audioSource.volume = record.muted ? 0f : MapStandalonePlayerNormalizedVolumeToAudioGain(record.storedVolume);
         record.audioSource.mute = record.muted;
 
@@ -9299,6 +9322,68 @@ public partial class FASyncRuntime : MVRScript
         }
 
         return true;
+    }
+
+    private bool TryEnsureStandalonePlayerAudioAnchor(StandalonePlayerRecord record, out string errorMessage)
+    {
+        errorMessage = "";
+        if (record == null)
+        {
+            errorMessage = "player record missing";
+            return false;
+        }
+
+        Transform anchorParent = ResolveStandalonePlayerAudioAnchorParent(record);
+        if (anchorParent == null)
+        {
+            errorMessage = "player audio anchor parent missing";
+            return false;
+        }
+
+        if (record.audioAnchorObject == null)
+            record.audioAnchorObject = new GameObject("FAStandalonePlayerAudio_" + SanitizeStandalonePlayerName(record.playbackKey));
+
+        Transform anchorTransform = record.audioAnchorObject.transform;
+        if (!ReferenceEquals(anchorTransform.parent, anchorParent))
+            anchorTransform.SetParent(anchorParent, false);
+
+        anchorTransform.localPosition = Vector3.zero;
+        anchorTransform.localRotation = Quaternion.identity;
+        anchorTransform.localScale = Vector3.one;
+        return true;
+    }
+
+    private Transform ResolveStandalonePlayerAudioAnchorParent(StandalonePlayerRecord record)
+    {
+        if (record != null)
+        {
+            string hostAtomUid = ResolveHostedPlayerHostAtomUid(record);
+            if (!string.IsNullOrEmpty(hostAtomUid))
+            {
+                Atom hostAtom;
+                if (TryResolveHostedPlayerAtom(hostAtomUid, out hostAtom) && hostAtom != null)
+                {
+                    Transform hostRoot = ResolveHostedPlayerHostRootTransform(hostAtom);
+                    if (hostRoot != null)
+                        return hostRoot;
+                }
+            }
+        }
+
+        EnsureRuntimeRoot();
+        return runtimeRoot != null ? runtimeRoot.transform : null;
+    }
+
+    private static void ApplyStandalonePlayerSpatialAudioSettings(AudioSource audioSource)
+    {
+        if (audioSource == null)
+            return;
+
+        audioSource.spatialBlend = 1f;
+        audioSource.dopplerLevel = 0f;
+        audioSource.rolloffMode = AudioRolloffMode.Logarithmic;
+        audioSource.minDistance = 1f;
+        audioSource.maxDistance = 15f;
     }
 
     private void DestroyStandalonePlayerImageTexture(StandalonePlayerRecord record)
@@ -9619,6 +9704,7 @@ public partial class FASyncRuntime : MVRScript
 
         try
         {
+            ApplyStandalonePlayerSpatialAudioSettings(record.audioSource);
             record.audioSource.mute = record.muted;
             record.audioSource.volume = record.muted ? 0f : MapStandalonePlayerNormalizedVolumeToAudioGain(record.storedVolume);
             record.videoPlayer.audioOutputMode = VideoAudioOutputMode.AudioSource;
@@ -10385,6 +10471,19 @@ public partial class FASyncRuntime : MVRScript
             }
 
             record.runtimeObject = null;
+        }
+
+        if (record.audioAnchorObject != null)
+        {
+            try
+            {
+                UnityEngine.Object.Destroy(record.audioAnchorObject);
+            }
+            catch
+            {
+            }
+
+            record.audioAnchorObject = null;
         }
 
         record.videoPlayer = null;

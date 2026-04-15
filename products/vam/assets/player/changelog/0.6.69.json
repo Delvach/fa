@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.69",
+  "title": "Add minimal spatial audio at the hosted CUA root",
+  "summary": "0.6.69 adds minimal single-source spatial audio by routing the player AudioSource through a dedicated anchor at the hosted CUA root while keeping the existing playback runtime and transport model intact.",
+  "changes": [
+    "Hosted player records now create a dedicated audio anchor at the hosted CUA root and route VideoPlayer audio into an AudioSource on that anchor instead of the private runtime sandbox object.",
+    "The player audio source now uses spatial settings with doppler still disabled, conservative logarithmic falloff, and a small near-field distance.",
+    "The render/runtime object, video path, transport, sync, slideshow, and plugin UI remain unchanged in this slice."
+  ],
+  "reasoning": "The repo already carries a single AudioSource output path, so the smallest spatial-audio seam is to keep that path but move only the audio anchor to the hosted CUA root. That avoids widening into speaker/profile architecture or moving the whole playback sandbox while still proving spatial behavior in the live hosted-player seam.",
+  "operatorVisibleOutcomes": [
+    "Hosted player audio now comes from the hosted CUA root instead of behaving as flat 2D sound.",
+    "Playback controls, sync, slideshow, image navigation, and the current runtime object behavior stay the same."
+  ],
+  "knownIssues": [
+    "This slice does not add a spatial-audio UI control or profile system.",
+    "This slice does not change multi-speaker architecture, transport behavior, or default-preset autoload."
+  ],
+  "verification": [
+    "FASyncRuntime.Player.cs now keeps runtimeObject under runtimeRoot but creates a dedicated audio anchor for the AudioSource at the hosted CUA root.",
+    "The AudioSource is configured for spatial output while VideoPlayer continues targeting that source through the existing audio routing seam."
+  ]
+}
