@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.54",
+  "title": "Roll button-5 grab-navigation override back to the 0.6.28 input contract",
+  "summary": "0.6.54 removes the later button-5 grab-navigation override fallback and hard-disable behavior, restoring the narrower 0.6.28 CUA input contract while keeping the restored movie scrub session and current image stepping intact, and it restores canonical raw dev_deploy filenames without deleting older versioned comparison artifacts.",
+  "changes": [
+    "Removed the Unity joystick button 5 fallback path from the grab-navigation override seam.",
+    "Restored the 0.6.28 grab-navigation override flow so override handling happens after gaze and navigation reads instead of pre-empting the whole input tick.",
+    "Restored the original CUA capture snapshot policy that keeps VaM navigation disabled while player capture is active.",
+    "Restored canonical raw dev_deploy filenames for the core player as asset_dev_player.<version>.alpha.assetbundle, plugin_player_dev.<version>.alpha.dll, and scene_dev_player.<version>.alpha.json.",
+    "Stopped pruning older versioned raw asset_dev_player and plugin_player_dev artifacts so comparison witnesses remain on disk."
+  ],
+  "reasoning": "Repo logs say 0.6.28 was almost perfect and identify the button-5 override series as the first named input imperfection. This slice stays inside the CUA input seam and removes the likely regression source without touching the restored movie scrub session or image stepping behavior. The repo's deployment canon already defines versioned dev_deploy filenames with iteration tokens, so the raw core-player build now follows that written canon again and keeps older versioned artifacts available for comparison.",
+  "operatorVisibleOutcomes": [
+    "The player no longer uses the later Unity button 5 fallback or hard-disable path while the operator tests joystick behavior.",
+    "Movie joystick scrub remains on the restored scrub-session model from 0.6.53.",
+    "Image stepping stays on the current incremental transport path.",
+    "Raw core-player builds land under the canonical dev_deploy filenames again, and older versioned raw comparison files are no longer deleted on each build."
+  ],
+  "knownIssues": [
+    "This slice does not yet change slideshow, right-stick volume, or deferred gaze work.",
+    "This slice does not by itself redesign movie joystick scrub magnitude; it only removes the likely button-5 override regression source."
+  ],
+  "verification": [
+    "Build-PlayerScreenCoreFoundation.ps1 produces asset_dev_player.0.6.54.alpha.assetbundle and plugin_player_dev.0.6.54.alpha.dll for the raw dev_deploy seam.",
+    "The raw foundation build no longer prunes older versioned asset_dev_player or plugin_player_dev comparison artifacts."
+  ]
+}

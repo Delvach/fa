@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.53",
-    "notes":  "0.6.53 backs out the broken 0.6.52 discrete-step replacement and restores the original movie joystick scrub session behavior from the last safe rung.",
-    "branch":  "release/0.6.53-cua-movie-scrub-session-restore",
+    "version":  "0.6.54",
+    "notes":  "0.6.54 rolls the button-5 grab-navigation override back to the near-perfect 0.6.28 input contract, keeps the restored movie scrub session behavior intact, and restores canonical raw dev_deploy filenames without pruning older versioned comparison artifacts.",
+    "branch":  "release/0.6.54-cua-button5-rollback",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.53.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.54.json"
 }

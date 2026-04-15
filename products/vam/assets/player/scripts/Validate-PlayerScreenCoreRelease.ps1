@@ -1,6 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$Version = "",
+    [string]$DeployIteration = "",
     [string]$ReleaseRoot = "",
     [string]$RepoAssetPath = "",
     [string]$RepoPluginPath = "",
@@ -27,6 +28,29 @@ function Ensure-Directory {
     if (-not (Test-Path -LiteralPath $PathValue)) {
         New-Item -ItemType Directory -Path $PathValue -Force | Out-Null
     }
+}
+
+function Resolve-DeployIterationToken {
+    param([string]$RequestedIteration)
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        "alpha"
+    }
+    else {
+        $RequestedIteration.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
 }
 
 function Write-JsonFile {
@@ -96,17 +120,18 @@ $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
 else {
     $Version.Trim()
 }
+$deployIterationToken = Resolve-DeployIterationToken -RequestedIteration $DeployIteration
 
 if ([string]::IsNullOrWhiteSpace($ReleaseRoot)) {
     $ReleaseRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "releases" $resolvedVersion)
 }
 
 if ([string]::IsNullOrWhiteSpace($RepoAssetPath)) {
-    $RepoAssetPath = Join-Path $ReleaseRoot ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+    $RepoAssetPath = Join-Path $ReleaseRoot ("asset_dev_player.{0}.{1}.assetbundle" -f $resolvedVersion, $deployIterationToken)
 }
 
 if ([string]::IsNullOrWhiteSpace($RepoPluginPath)) {
-    $RepoPluginPath = Join-Path $ReleaseRoot ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+    $RepoPluginPath = Join-Path $ReleaseRoot ("plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $deployIterationToken)
 }
 
 if ([string]::IsNullOrWhiteSpace($ChangelogSourcePath)) {
@@ -127,11 +152,11 @@ if ([string]::IsNullOrWhiteSpace($ChangelogMarkdownPath)) {
 }
 
 if ([string]::IsNullOrWhiteSpace($LiveAssetPath)) {
-    $LiveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
+    $LiveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("asset_dev_player.{0}.{1}.assetbundle" -f $resolvedVersion, $deployIterationToken)
 }
 
 if ([string]::IsNullOrWhiteSpace($LivePluginPath)) {
-    $LivePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+    $LivePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $deployIterationToken)
 }
 
 if ([string]::IsNullOrWhiteSpace($ReceiptPath)) {
@@ -274,7 +299,7 @@ if (-not $SkipLiveDeployChecks.IsPresent) {
     }
 }
 
-$warnings.Add("This validator now treats raw CustomUnityAsset loading plus one manual dev_plugin_player attach as the authority seam for the screen-core lane.") | Out-Null
+$warnings.Add("This validator now treats raw CustomUnityAsset loading plus one manual plugin_player_dev attach as the authority seam for the screen-core lane.") | Out-Null
 $warnings.Add("Phase 1 authority is the authored screen plus VaM controls that call exposed player methods directly; Meta UI components are not first-release proof.") | Out-Null
 $warnings.Add("Visual correctness still requires live VaM closure and Volodeck comparator proof; this validator only keeps the release shape deterministic.") | Out-Null
 $warnings.Add("If a future slice intentionally reintroduces asset.assetDllUrl or preset bootstrap, it should ship as a separate seam instead of silently mutating this one.") | Out-Null
@@ -305,10 +330,10 @@ $receipt = [ordered]@{
     legacyLivePluginAliasMatches = $livePluginAliasMatches
     mirroredVamRules = @(
         "Load the raw versioned assetbundle directly in the CustomUnityAsset atom.",
-        "Attach the matching dev_plugin_player.<version>.dll manually from Custom/Plugins.",
+        "Attach the matching plugin_player_dev.<version>.<iteration>.dll manually from Custom/Plugins.",
         "Do not treat a same-version preset as part of the authority seam for this lane.",
         "Do not treat an asset-side DLL copy as part of the authority seam for this lane.",
-        "The canonical player runtime DLL name stays dev_plugin_player.<version>.dll."
+        "The canonical player runtime DLL name stays plugin_player_dev.<version>.<iteration>.dll."
     )
     checks = $checks.ToArray()
     warnings = $warnings.ToArray()

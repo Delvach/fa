@@ -22,14 +22,22 @@ Meta/UI product strategy on its own.
 
 ## Current lane truth
 
-1. the current active player feature line beyond the stable baseline is `0.6.20`
+1. the current active player version and live raw authority seam are defined by
+   the repo-root canon in `C:\projects\fa\AGENTS.md`
 2. the active live proof seam for current hosted interaction work is raw
    `dev_deploy`, not packaged prerelease authority
-3. built `.var` outputs under `build/var_packages` are build artifacts unless
+3. canonical raw `dev_deploy` filenames in this subtree follow
+   `VAM_DEPLOYMENT_AND_NAMING_CANON_V1.md`:
+   - `asset_dev_player.<semver>.<iteration>.assetbundle`
+   - `plugin_player_dev.<semver>.<iteration>.dll`
+   - `scene_dev_player.<semver>.<iteration>.json`
+4. older versioned raw `asset_dev_player.*` and `plugin_player_dev.*` files are
+   comparison witnesses and must not be pruned by later builds
+5. built `.var` outputs under `build/var_packages` are build artifacts unless
    they were actually distributed and promoted as the live authority seam
-4. shells are established enough for operator-led Unity shell work
-5. true interactive Meta runtime surfaces remain an active assistant-owned lane
-6. the deterministic scene generator is still part of the current player lane,
+6. shells are established enough for operator-led Unity shell work
+7. true interactive Meta runtime surfaces remain an active assistant-owned lane
+8. the deterministic scene generator is still part of the current player lane,
    and the operator plans to provide an updated base scene layout before that
    generator is revised around new control placement
 

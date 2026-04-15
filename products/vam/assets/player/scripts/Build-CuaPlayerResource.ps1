@@ -2,6 +2,7 @@ param(
     [string]$RepoRoot = "",
     [string]$VamManagedDir = "F:\sim\vam\VaM_Data\Managed",
     [string]$Version = "",
+    [string]$DeployIteration = "",
     [string]$ForbiddenTermsConfig = "",
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
@@ -24,6 +25,29 @@ function Ensure-Directory {
     if (-not (Test-Path -LiteralPath $PathValue)) {
         New-Item -ItemType Directory -Path $PathValue -Force | Out-Null
     }
+}
+
+function Resolve-DeployIterationToken {
+    param([string]$RequestedIteration)
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        "alpha"
+    }
+    else {
+        $RequestedIteration.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
 }
 
 function Get-BuildRuntimeInfoVersion {
@@ -102,9 +126,10 @@ if (-not (Test-Path -LiteralPath $guardScriptPath)) {
 }
 
 $resolvedVersion = Resolve-PlayerVersion -RepoRootValue $RepoRoot -ExplicitVersion $Version -RuntimeInfoPath $runtimeInfoPath
+$deployIterationToken = Resolve-DeployIterationToken -RequestedIteration $DeployIteration
 $repoArtifactDir = Join-Path $RepoRoot "deployed\plugins"
-$repoArtifactPath = Join-Path $repoArtifactDir ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
-$liveArtifactPath = Join-Path $DeployDir ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+$repoArtifactPath = Join-Path $repoArtifactDir ("plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $deployIterationToken)
+$liveArtifactPath = Join-Path $DeployDir ("plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $deployIterationToken)
 
 if (-not $AllowExistingVersion.IsPresent) {
     $collisionPaths = @($repoArtifactPath)
@@ -160,6 +185,7 @@ if (-not $SkipDeploy.IsPresent) {
 
 [pscustomobject]@{
     buildVersion = $resolvedVersion
+    deployIteration = $deployIterationToken
     configuration = $Configuration
     builtPluginPath = $builtPluginPath
     repoArtifactPath = $repoArtifactPath

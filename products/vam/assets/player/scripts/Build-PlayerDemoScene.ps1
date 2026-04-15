@@ -4,6 +4,7 @@ param(
     [string]$SceneTemplatePath = "",
     [string]$OutputDirectory = "F:\sim\vam\Saves\scene",
     [string]$OutputSceneBaseName = "fa_scene",
+    [string]$DeployIteration = "",
     [string]$ReceiptLabel = "player_demo_scene_build",
     [string]$AssetUrl = "",
     [string]$PluginPath = "",
@@ -109,6 +110,22 @@ function Test-PlayerDemoCurrentControlLayout {
     }
 
     return $true
+}
+
+function Resolve-DeployIterationTokenOrBlank {
+    param([string]$RequestedIteration)
+
+    if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        return ""
+    }
+
+    $value = $RequestedIteration.Trim().ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
 }
 
 function Test-PlayerDemoThreeScreenLayout {
@@ -1441,13 +1458,21 @@ $resolvedOutputSceneBaseName = if ([string]::IsNullOrWhiteSpace($OutputSceneBase
 else {
     $OutputSceneBaseName.Trim()
 }
+$resolvedDeployIteration = Resolve-DeployIterationTokenOrBlank -RequestedIteration $DeployIteration
+$resolvedPlayerArtifactIteration = if ([string]::IsNullOrWhiteSpace($resolvedDeployIteration)) { "alpha" } else { $resolvedDeployIteration }
 $resolvedReceiptLabel = if ([string]::IsNullOrWhiteSpace($ReceiptLabel)) {
     "player_demo_scene_build"
 }
 else {
     $ReceiptLabel.Trim()
 }
-$sceneOutputPath = Join-Path $resolvedOutputDirectory ("{0}.{1}.json" -f $resolvedOutputSceneBaseName, $resolvedVersion)
+$sceneOutputFileName = if ([string]::IsNullOrWhiteSpace($resolvedDeployIteration)) {
+    "{0}.{1}.json" -f $resolvedOutputSceneBaseName, $resolvedVersion
+}
+else {
+    "{0}.{1}.{2}.json" -f $resolvedOutputSceneBaseName, $resolvedVersion, $resolvedDeployIteration
+}
+$sceneOutputPath = Join-Path $resolvedOutputDirectory $sceneOutputFileName
 $previewSourcePath = [System.IO.Path]::ChangeExtension($resolvedTemplatePath, ".jpg")
 $previewOutputPath = [System.IO.Path]::ChangeExtension($sceneOutputPath, ".jpg")
 
@@ -1455,8 +1480,10 @@ if ((Test-Path -LiteralPath $sceneOutputPath) -and -not $AllowExistingVersion.Is
     throw ("Scene output already exists for version {0}: {1}" -f $resolvedVersion, $sceneOutputPath)
 }
 
-$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
-$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+$liveAssetFileName = "asset_dev_player.{0}.{1}.assetbundle" -f $resolvedVersion, $resolvedPlayerArtifactIteration
+$livePluginFileName = "plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $resolvedPlayerArtifactIteration
+$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" $liveAssetFileName
+$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" $livePluginFileName
 
 if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
     if (-not (Test-Path -LiteralPath $liveAssetPath)) {
@@ -1471,14 +1498,14 @@ if ([string]::IsNullOrWhiteSpace($PluginPath)) {
 }
 
 $assetUrl = if ([string]::IsNullOrWhiteSpace($AssetUrl)) {
-    "Custom/Assets/FrameAngel/Player/dev_cua_player.{0}.assetbundle" -f $resolvedVersion
+    "Custom/Assets/FrameAngel/Player/{0}" -f $liveAssetFileName
 }
 else {
     $AssetUrl.Trim()
 }
 
 $pluginPath = if ([string]::IsNullOrWhiteSpace($PluginPath)) {
-    "Custom/Plugins/dev_plugin_player.{0}.dll" -f $resolvedVersion
+    "Custom/Plugins/{0}" -f $livePluginFileName
 }
 else {
     $PluginPath.Trim()

@@ -69,10 +69,6 @@ public partial class FASyncRuntime : MVRScript
     private const float CuaPlayerImageStepRepeatSeconds = 0.22f;
     private const float CuaPlayerGazeMinDistanceMeters = 0.05f;
     private const float CuaPlayerInputStateUpdateIntervalSeconds = 0.10f;
-    private static readonly KeyCode[] CuaPlayerGrabNavigateOverrideKeyCandidates = new[]
-    {
-        KeyCode.JoystickButton5,
-    };
 
     private struct CuaPlayerNavigationSnapshot
     {
@@ -177,19 +173,6 @@ public partial class FASyncRuntime : MVRScript
             return;
         }
 
-        bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
-        if (grabNavigateOverrideActive)
-        {
-            ResetCuaPlayerTriggerTapState();
-            cuaPlayerFocusActive = false;
-            cuaPlayerLastGrabNavigateOverrideActive = true;
-            if (ReferenceEquals(cuaPlayerInputOwner, this) || cuaPlayerNavigationCaptureActive)
-                ReleaseCuaPlayerInputFocus("grab_nav_override");
-            else
-                UpdateCuaPlayerInputState(false, false, "grab_nav", Vector2.zero, "grab_nav_override");
-            return;
-        }
-
         bool gazeActive = TryResolveCuaPlayerGazeHit(out string gazeReason);
         float now = Time.unscaledTime;
         if (gazeActive)
@@ -198,6 +181,7 @@ public partial class FASyncRuntime : MVRScript
         Vector2 navigation = ReadCuaPlayerNavigationVector(sc);
         bool navigationActive = IsCuaPlayerNavigationActive(navigation);
         bool triggerModifierActive = ReadCuaPlayerTriggerModifier();
+        bool grabNavigateOverrideActive = ReadCuaPlayerGrabNavigateOverrideActive();
         cuaPlayerLastTriggerModifierActive = triggerModifierActive;
         float horizontal = Mathf.Abs(navigation.x) >= CuaPlayerNavigationDeadzone ? navigation.x : 0f;
         float vertical = Mathf.Abs(navigation.y) >= CuaPlayerNavigationDeadzone ? navigation.y : 0f;
@@ -206,6 +190,17 @@ public partial class FASyncRuntime : MVRScript
 
         string currentHostAtomUid = ResolveCuaPlayerCurrentHostAtomUid();
         UpdateCuaPlayerVisibleScreenState(currentHostAtomUid);
+
+        if (grabNavigateOverrideActive)
+        {
+            ResetCuaPlayerTriggerTapState();
+            if (ReferenceEquals(cuaPlayerInputOwner, this) || cuaPlayerNavigationCaptureActive || cuaPlayerFocusActive)
+                ReleaseCuaPlayerInputFocus("grab_nav_override");
+
+            cuaPlayerLastGrabNavigateOverrideActive = true;
+            UpdateCuaPlayerInputState(false, gazeActive, "grab_nav", navigation, gazeReason);
+            return;
+        }
 
         cuaPlayerLastGrabNavigateOverrideActive = false;
 
@@ -332,7 +327,7 @@ public partial class FASyncRuntime : MVRScript
             }
 
             CuaPlayerNavigationSnapshot desired = cuaPlayerNavigationSnapshot;
-            desired.disableNavigation = false;
+            desired.disableNavigation = true;
             desired.disableInternalKeyBindings = true;
             desired.disableInternalNavigationKeyBindings = true;
             desired.disableAllNavigationToggle = desired.hasDisableAllNavigationToggle;
@@ -867,8 +862,7 @@ public partial class FASyncRuntime : MVRScript
                    OVRInput.RawButton.LThumbstick)
             || ReadCuaPlayerThumbstickButtonActive(
                    OVRInput.Button.SecondaryThumbstick,
-                   OVRInput.RawButton.RThumbstick)
-            || ReadCuaPlayerGrabNavigateOverrideFallbackKeyActive();
+                   OVRInput.RawButton.RThumbstick);
     }
 
     private static bool ReadCuaPlayerThumbstickButtonActive(OVRInput.Button button, OVRInput.RawButton rawButton)
@@ -880,23 +874,6 @@ public partial class FASyncRuntime : MVRScript
         }
         catch
         {
-        }
-
-        return false;
-    }
-
-    private static bool ReadCuaPlayerGrabNavigateOverrideFallbackKeyActive()
-    {
-        for (int i = 0; i < CuaPlayerGrabNavigateOverrideKeyCandidates.Length; i++)
-        {
-            try
-            {
-                if (Input.GetKey(CuaPlayerGrabNavigateOverrideKeyCandidates[i]))
-                    return true;
-            }
-            catch
-            {
-            }
         }
 
         return false;

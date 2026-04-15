@@ -1,6 +1,7 @@
 param(
     [string]$RepoRoot = "",
     [string]$Version = "",
+    [string]$DeployIteration = "",
     [string]$UnityEditorPath = "C:\Program Files\Unity\Hub\Editor\2018.1.9f2\Editor\Unity.exe",
     [string]$DeployAssetsRoot = "F:\sim\vam\Custom\Assets\FrameAngel\Player",
     [switch]$IncludeControlSurface,
@@ -21,6 +22,29 @@ function Ensure-Directory {
     if (-not (Test-Path -LiteralPath $PathValue)) {
         New-Item -ItemType Directory -Path $PathValue -Force | Out-Null
     }
+}
+
+function Resolve-DeployIterationToken {
+    param([string]$RequestedIteration)
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        "alpha"
+    }
+    else {
+        $RequestedIteration.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
 }
 
 function Write-JsonFile {
@@ -72,11 +96,12 @@ $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
 else {
     $Version.Trim()
 }
+$deployIterationToken = Resolve-DeployIterationToken -RequestedIteration $DeployIteration
 
 $unityProjectPath = $laneRoots.PlayerScreenUnityProjectRoot
 $exportMethod = "FrameAngelPlayerHost2018Exporter.BuildAndDeployBatch"
-$bundleFileName = "dev_cua_player.{0}.assetbundle" -f $resolvedVersion
-$presetFileName = "Preset_FA Player Asset {0}.vap" -f $resolvedVersion
+$bundleFileName = "asset_dev_player.{0}.{1}.assetbundle" -f $resolvedVersion, $deployIterationToken
+$presetFileName = "Preset_dev_player.{0}.{1}.vap" -f $resolvedVersion, $deployIterationToken
 $exportRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "assetbundle_exports" $resolvedVersion)
 $logPath = Join-Path $exportRoot "unity_batch.log"
 $summaryPath = Join-Path $exportRoot "player_screen_summary.json"
@@ -186,6 +211,7 @@ Write-JsonFile -Path $receiptPath -Value $receipt
 
 [pscustomobject]@{
     version = $resolvedVersion
+    deployIteration = $deployIterationToken
     repoArtifactPath = $repoArtifactPath
     deployedAssetPath = if ($SkipDeploy.IsPresent) { "" } else { $liveArtifactPath }
     summaryPath = $summaryPath

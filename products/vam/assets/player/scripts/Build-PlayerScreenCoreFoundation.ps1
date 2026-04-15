@@ -2,6 +2,7 @@ param(
     [string]$RepoRoot = "",
     [string]$VamManagedDir = "F:\sim\vam\VaM_Data\Managed",
     [string]$Version = "",
+    [string]$DeployIteration = "",
     [switch]$AllowExistingVersion,
     [switch]$SkipLiveDeploy,
     [switch]$BuildVarPackage,
@@ -42,6 +43,29 @@ function Ensure-Directory {
     if (-not (Test-Path -LiteralPath $PathValue)) {
         New-Item -ItemType Directory -Path $PathValue -Force | Out-Null
     }
+}
+
+function Resolve-DeployIterationToken {
+    param([string]$RequestedIteration)
+
+    $value = if ([string]::IsNullOrWhiteSpace($RequestedIteration)) {
+        "alpha"
+    }
+    else {
+        $RequestedIteration.Trim()
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration cannot be blank."
+    }
+
+    $value = $value.ToLowerInvariant()
+    $value = ($value -replace '[^a-z0-9_]+', '_').Trim('_')
+    if ([string]::IsNullOrWhiteSpace($value)) {
+        throw "Deploy iteration token resolved blank."
+    }
+
+    return $value
 }
 
 function Write-JsonFile {
@@ -238,13 +262,16 @@ $resolvedVersion = if ([string]::IsNullOrWhiteSpace($Version)) {
 else {
     $Version.Trim()
 }
+$deployIterationToken = Resolve-DeployIterationToken -RequestedIteration $DeployIteration
 
 $releaseRoot = Join-Path $laneRoots.AssetsPlayerBuildRoot (Join-Path "releases" $resolvedVersion)
 $latestManifestPath = Join-Path $laneRoots.AssetsPlayerBuildRoot "releases\player_screen_core_release_latest.json"
-$repoAssetPath = Join-Path $releaseRoot ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
-$repoPluginPath = Join-Path $releaseRoot ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
-$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" ("dev_cua_player.{0}.assetbundle" -f $resolvedVersion)
-$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" ("dev_plugin_player.{0}.dll" -f $resolvedVersion)
+$assetFileName = "asset_dev_player.{0}.{1}.assetbundle" -f $resolvedVersion, $deployIterationToken
+$pluginFileName = "plugin_player_dev.{0}.{1}.dll" -f $resolvedVersion, $deployIterationToken
+$repoAssetPath = Join-Path $releaseRoot $assetFileName
+$repoPluginPath = Join-Path $releaseRoot $pluginFileName
+$liveAssetPath = Join-Path "F:\sim\vam\Custom\Assets\FrameAngel\Player" $assetFileName
+$livePluginPath = Join-Path "F:\sim\vam\Custom\Plugins" $pluginFileName
 $manifestPath = Join-Path $releaseRoot "foundation_release_manifest.json"
 $validatorScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Validate-PlayerScreenCoreRelease.ps1"
 $varPackagerScript = Join-Path $laneRoots.AssetsPlayerRoot "scripts\Build-CuaPlayerVarPackage.ps1"
@@ -286,6 +313,8 @@ $pluginArgs = @(
     $VamManagedDir,
     "-Version",
     $resolvedVersion,
+    "-DeployIteration",
+    $deployIterationToken,
     "-Configuration",
     "Release"
 )
@@ -310,7 +339,9 @@ $assetArgs = @(
     "-RepoRoot",
     $RepoRoot,
     "-Version",
-    $resolvedVersion
+    $resolvedVersion,
+    "-DeployIteration",
+    $deployIterationToken
 )
 if ($AllowExistingVersion.IsPresent) {
     $assetArgs += "-AllowExistingVersion"
@@ -324,7 +355,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "Build-PlayerAssetBundle.ps1 failed."
 }
 
-$repoBuiltPluginPath = Join-Path $RepoRoot "deployed\plugins\dev_plugin_player.$resolvedVersion.dll"
+$repoBuiltPluginPath = Join-Path $RepoRoot ("deployed\plugins\{0}" -f $pluginFileName)
 if (-not (Test-Path -LiteralPath $repoBuiltPluginPath)) {
     throw "Built plugin artifact not found: $repoBuiltPluginPath"
 }
@@ -350,11 +381,9 @@ Write-TextFile -Path $releaseChangelogMarkdownPath -Value (Convert-PlayerRelease
 if (-not $SkipLiveDeploy.IsPresent) {
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Atom\CustomUnityAsset" -Filter "Preset_FA Player Asset *.vap"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_player_asset.*.assetbundle"
-    Remove-FilesByPatternExcept -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "dev_cua_player.*.assetbundle" -ExcludeLiteralPaths @($liveAssetPath)
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Assets\FrameAngel\Player" -Filter "fa_cua_player.*.dll"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_player_plugin.*.dll"
     Remove-FilesByPattern -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "fa_cua_player.*.dll"
-    Remove-FilesByPatternExcept -DirectoryPath "F:\sim\vam\Custom\Plugins" -Filter "dev_plugin_player.*.dll" -ExcludeLiteralPaths @($livePluginPath)
 }
 
 $validationArgs = @(
@@ -367,6 +396,8 @@ $validationArgs = @(
     $RepoRoot,
     "-Version",
     $resolvedVersion,
+    "-DeployIteration",
+    $deployIterationToken,
     "-ReleaseRoot",
     $releaseRoot,
     "-RepoAssetPath",
@@ -397,7 +428,7 @@ $liveScenePath = ""
 $liveScenePreviewPath = ""
 if (-not $SkipLiveDeploy.IsPresent -and -not $SkipLiveScene.IsPresent) {
     $resolvedLiveSceneBaseName = if ([string]::IsNullOrWhiteSpace($LiveSceneOutputBaseName)) {
-        [System.IO.Path]::GetFileNameWithoutExtension($VarSceneTemplatePath)
+        "scene_dev_player"
     }
     else {
         $LiveSceneOutputBaseName.Trim()
@@ -419,8 +450,14 @@ if (-not $SkipLiveDeploy.IsPresent -and -not $SkipLiveScene.IsPresent) {
         $LiveSceneOutputDirectory,
         "-OutputSceneBaseName",
         $resolvedLiveSceneBaseName,
+        "-DeployIteration",
+        $deployIterationToken,
         "-ReceiptLabel",
         "player_live_demo_scene_build",
+        "-AssetUrl",
+        ("Custom/Assets/FrameAngel/Player/{0}" -f $assetFileName),
+        "-PluginPath",
+        ("Custom/Plugins/{0}" -f $pluginFileName),
         "-DisplayPolicy",
         $VarSceneDisplayPolicy,
         "-IncludeManagedControls",
@@ -453,6 +490,7 @@ $manifest = [ordered]@{
     schemaVersion = "frameangel_player_screen_core_release_v5"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     version = $resolvedVersion
+    deployIteration = $deployIterationToken
     repoAssetPath = $repoAssetPath
     repoPluginPath = $repoPluginPath
     liveAssetPath = if ($SkipLiveDeploy.IsPresent) { "" } else { $liveAssetPath }
@@ -467,6 +505,7 @@ $manifest = [ordered]@{
         includesMetaUi = $false
     }
     process = [ordered]@{
+        deployIteration = $deployIterationToken
         pluginBuildScript = $pluginBuildScript
         assetBuildScript = $assetBuildScript
         sceneBuildScript = $sceneBuildScript
@@ -497,6 +536,7 @@ Write-JsonFile -Path $latestManifestPath -Value ([ordered]@{
     schemaVersion = "frameangel_player_screen_core_release_latest_v1"
     generatedAtUtc = (Get-Date).ToUniversalTime().ToString("o")
     version = $resolvedVersion
+    deployIteration = $deployIterationToken
     releaseRoot = $releaseRoot
     manifestPath = $manifestPath
     changelogJsonPath = $releaseChangelogJsonPath

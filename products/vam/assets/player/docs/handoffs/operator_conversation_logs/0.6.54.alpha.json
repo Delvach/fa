@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.54",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.54 rolls the button-5 grab-navigation override back to the narrower 0.6.28 input contract while preserving the restored movie scrub session from 0.6.53, and it restores canonical raw dev_deploy filenames without pruning older versioned comparison artifacts.",
+  "repoAnchors": {
+    "branch": "release/0.6.54-cua-button5-rollback",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.54.json"
+  },
+  "operatorSignals": [
+    "Repo logs identify 0.6.28 as almost perfect and name the joystick top or 5 grab-navigation press as the first input seam that still felt wrong.",
+    "The current lane wants tiny input-contract rollback only, not another movie scrub model change.",
+    "Filename canon was written down already, and the current raw build drifted away from it while deleting older versioned comparison artifacts."
+  ],
+  "actionsTaken": [
+    "Compared the current CUA input module against the 0.6.28 seam and isolated the later button-5 override additions.",
+    "Removed the joystick button 5 fallback override and restored the earlier override timing and capture policy from 0.6.28.",
+    "Kept the restored 0.6.53 movie scrub session and current image stepping behavior intact.",
+    "Restored canonical raw dev_deploy filenames for the core player to asset_dev_player, plugin_player_dev, and scene_dev_player with the alpha iteration token.",
+    "Stopped pruning older versioned raw asset_dev_player and plugin_player_dev artifacts so comparison witnesses remain on disk."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze redesign, or scene-builder changes in this slice.",
+    "No new movie scrub primitive changes in this slice."
+  ]
+}
