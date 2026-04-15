@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.68",
+  "title": "Lower startup volume default to 75 percent",
+  "summary": "0.6.68 changes the startup player volume default to 75 percent across runtime, hosted fallback, plugin UI, and generated demo3 scene defaults without changing transport behavior.",
+  "changes": [
+    "New standalone player records now initialize stored and live volume to 0.75 instead of full volume.",
+    "Hosted fallback initialization now backfills missing startup volume to 0.75 instead of 1.0.",
+    "The plugin volume slider and generated demo3 scene defaults now start at 75 percent so the visible UI matches the runtime default."
+  ],
+  "reasoning": "Full startup volume is unnecessarily hot for the current lane. The safe way to lower it is to move the whole startup chain together so runtime defaults, hosted fallback, plugin UI, and generated scene defaults stay aligned instead of loading with mismatched volume state.",
+  "operatorVisibleOutcomes": [
+    "Fresh player instances and generated demo scenes now come up at 75 percent volume instead of 100 percent.",
+    "The visible plugin and scene slider defaults now match the actual runtime startup volume."
+  ],
+  "knownIssues": [
+    "This slice does not revisit the right-stick volume bump seam.",
+    "This slice does not change transport, sync, slideshow behavior, or default-preset autoload."
+  ],
+  "verification": [
+    "FASyncRuntime.Player.cs, FASyncRuntime.PlayerHosted.cs, FASyncRuntime.cs, Build-PlayerDemoScene.ps1, and scene_templates/demo3.json all now agree on the 0.75 startup volume default.",
+    "No movie transport, sync, slideshow, or preset-storage behavior changed for this slice."
+  ]
+}

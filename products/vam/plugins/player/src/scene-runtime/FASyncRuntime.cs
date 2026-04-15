@@ -393,7 +393,7 @@ public partial class FASyncRuntime : MVRScript
 
         playerVolumeNormalizedField = new JSONStorableFloat(
             "volume_normalized",
-            1f,
+            0.75f,
             delegate(float value)
             {
                 if (suppressStandalonePlayerSliderCallbacks)

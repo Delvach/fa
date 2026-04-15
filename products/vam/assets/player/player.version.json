@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.67",
-    "notes":  "0.6.67 inverts the right-stick vertical volume bump direction and avoids latching a no-op edge bump, without changing the current image/video horizontal transport behavior.",
-    "branch":  "release/0.6.67-cua-volume-bump-invert",
+    "version":  "0.6.68",
+    "notes":  "0.6.68 changes the startup player volume default to 75 percent across runtime, hosted fallback, plugin UI, and generated demo3 scene defaults, without widening transport behavior.",
+    "branch":  "release/0.6.68-default-volume-75",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.67.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.68.json"
 }

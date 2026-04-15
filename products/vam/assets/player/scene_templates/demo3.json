@@ -1969,7 +1969,7 @@
                                         },
                                         {
                                             "id":  "Trigger",
-                                            "value":  "1",
+                                            "value":  "0.75",
                                             "trigger":  {
                                                             "displayName":  "A_volume_normalized:0.00_1.00",
                                                             "startActions":  [

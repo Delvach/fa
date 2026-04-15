@@ -772,7 +772,7 @@ public partial class FASyncRuntime : MVRScript
 
         record.desiredPlaying = false;
         record.muted = false;
-        record.storedVolume = Mathf.Clamp01(record.storedVolume <= 0f ? 1f : record.storedVolume);
+        record.storedVolume = Mathf.Clamp01(record.storedVolume <= 0f ? 0.75f : record.storedVolume);
         record.volume = Mathf.Clamp01(record.storedVolume);
         record.aspectMode = GhostScreenAspectModeFit;
 

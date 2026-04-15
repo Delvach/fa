@@ -1143,7 +1143,7 @@ function New-PlayerDemoThreeScreenTriggerStorable {
                 $existingValue = [string]$ExistingTriggerStorable.value
             }
             if ([string]::IsNullOrWhiteSpace($existingValue)) {
-                $existingValue = if ($receiverTargetName -eq "volume_normalized") { "1" } else { "0" }
+                $existingValue = if ($receiverTargetName -eq "volume_normalized") { "0.75" } else { "0" }
             }
 
             return [pscustomobject]@{

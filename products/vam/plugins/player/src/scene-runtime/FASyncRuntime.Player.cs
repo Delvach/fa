@@ -187,8 +187,8 @@ public partial class FASyncRuntime : MVRScript
         public double seekResumeTargetSeconds = 0d;
         public float seekResumeRequestedAt = 0f;
         public bool muted = false;
-        public float volume = 1f;
-        public float storedVolume = 1f;
+        public float volume = 0.75f;
+        public float storedVolume = 0.75f;
         public string lastError = "";
         public int textureWidth = 0;
         public int textureHeight = 0;
