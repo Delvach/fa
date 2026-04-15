@@ -1,7 +1,7 @@
 {
-    "version":  "0.6.57",
-    "notes":  "0.6.57 keeps non-trigger movie joystick inside the original scrub-session choreography and changes it to one 15-second target step per stick excursion, so joystick distance matches the transport expectation without repeated live skip seeks disturbing sync.",
-    "branch":  "release/0.6.57-cua-movie-scrub-step-session",
+    "version":  "0.6.58",
+    "notes":  "0.6.58 makes non-trigger movie joystick fire the exact existing 15-second skip action once per stick excursion, leaving image stepping and trigger-modified video behavior alone.",
+    "branch":  "release/0.6.58-cua-movie-single-skip",
     "baseBranch":  "main",
-    "changelogPath":  "products/vam/assets/player/changelog/0.6.57.json"
+    "changelogPath":  "products/vam/assets/player/changelog/0.6.58.json"
 }

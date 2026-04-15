@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "frameangel.player.changelog.v1",
+  "version": "0.6.58",
+  "title": "Make non-trigger movie joystick use the exact existing single skip action",
+  "summary": "0.6.58 stops trying to tune movie scrub math and makes non-trigger movie joystick fire the exact existing 15-second skip action once per stick excursion, while leaving image stepping and trigger-modified video behavior alone.",
+  "changes": [
+    "Non-trigger movie joystick input now dispatches the exact existing Player.SkipForward or Player.SkipBackward action once per stick excursion.",
+    "The movie path no longer accumulates custom target math or repeats while the stick is held in one direction.",
+    "Image stepping and trigger-modified video next or previous behavior remain unchanged."
+  ],
+  "reasoning": "The operator explicitly wants movie joystick to match the existing skip button behavior exactly, as a single action rather than a held repeat. This slice keeps the blast radius to the non-trigger movie joystick branch only.",
+  "operatorVisibleOutcomes": [
+    "A right movie joystick nudge should match one 15-second skip forward action.",
+    "A left movie joystick nudge should match one 15-second skip backward action.",
+    "Holding the stick should not repeat more skips until it returns through neutral."
+  ],
+  "knownIssues": [
+    "This slice does not change image stepping behavior.",
+    "This slice does not change trigger-modified video next and previous behavior.",
+    "This slice does not change slideshow, right-stick volume, or deferred gaze work."
+  ],
+  "verification": [
+    "The non-trigger movie joystick branch in FASyncRuntime.CuaPlayerInputModule.cs calls TrySkipForwardStandalonePlayer or TrySkipBackwardStandalonePlayer exactly once per stick excursion.",
+    "The non-trigger movie joystick branch no longer uses custom normalized target accumulation."
+  ]
+}

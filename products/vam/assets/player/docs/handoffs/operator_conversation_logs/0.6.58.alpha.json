@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "frameangel.player.operator.conversation.log.v1",
+  "version": "0.6.58",
+  "iteration": "alpha",
+  "captureMode": "live_with_exact_repo_anchors",
+  "summary": "0.6.58 makes non-trigger movie joystick use the exact existing 15-second skip action once per stick excursion, because the operator wants the same single-action behavior as the skip button and does not want another scrub-math experiment.",
+  "repoAnchors": {
+    "branch": "release/0.6.58-cua-movie-single-skip",
+    "playerVersionPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\player.version.json",
+    "runtimeInfoPath": "C:\\projects\\fa\\products\\vam\\plugins\\player\\src\\shared-runtime\\BuildRuntimeInfo.cs",
+    "changelogPath": "C:\\projects\\fa\\products\\vam\\assets\\player\\changelog\\0.6.58.json"
+  },
+  "operatorSignals": [
+    "The operator explicitly wants movie joystick to behave like the existing skip button.",
+    "The operator explicitly clarified that this should be a single action, not a held repeat.",
+    "Image scrubbing was already back in a good place and should stay untouched."
+  ],
+  "actionsTaken": [
+    "Removed the custom non-trigger movie target-step math from the movie joystick branch.",
+    "Made non-trigger movie joystick dispatch the exact existing skip forward or skip backward action once per stick excursion.",
+    "Left image stepping and trigger-modified video behavior unchanged."
+  ],
+  "nonGoals": [
+    "No slideshow work in this slice.",
+    "No right-stick volume, gaze, or scene-builder changes in this slice.",
+    "No image stepping changes in this slice."
+  ]
+}
